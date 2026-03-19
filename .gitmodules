@@ -1,0 +1,3 @@
+[submodule "cnpy"]
+	path = external/cnpy
+	url = git@github.com:pkestene/cnpy-cmake.git
