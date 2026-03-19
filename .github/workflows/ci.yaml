@@ -73,7 +73,7 @@ jobs:
 
       - name: upload_build_openmp_log
         if: ${{ failure() && steps.make_openmp.outcome == 'failure' }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: build_openmp_log
           path: build_openmp
@@ -87,7 +87,7 @@ jobs:
 
       - name: upload_build_cuda_log
         if: ${{ failure() && steps.make_cuda.outcome == 'failure' }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: build_cuda_log
           path: build_cuda
