@@ -1,3 +1,6 @@
 [submodule "cnpy"]
 	path = external/cnpy
 	url = git@github.com:pkestene/cnpy-cmake.git
+[submodule "kokkos"]
+	path = external/kokkos
+	url = git@github.com:kokkos/kokkos.git
