@@ -4,3 +4,6 @@
 [submodule "kokkos"]
 	path = external/kokkos
 	url = git@github.com:kokkos/kokkos.git
+[submodule "HighFive"]
+	path = external/HighFive
+	url = git@github.com:highfive-devs/highfive.git
