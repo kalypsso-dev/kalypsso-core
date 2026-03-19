@@ -1,0 +1,95 @@
+site_name: @PROJECT_NAME@ @PROJECT_VERSION@ Documentation
+
+#theme: 'readthedocs'
+theme:
+  name: 'material'
+  features:
+    - navigation.tabs
+    - navigation.indexes
+    - navigation.top
+    - navigation.instant
+    - navigation.tracking
+
+  icon:
+    repo: fontawesome/brands/github
+
+  palette:
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: amber
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: amber
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+markdown_extensions:
+  - admonition
+  - codehilite:
+      linenums: true
+      guess_lang: false
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:pymdownx.emoji.to_svg
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+plugins:
+  - search
+  - glightbox
+  - open-in-new-tab
+  - mkdoxy:
+      projects:
+        @PROJECT_NAME@:
+          src-dirs: @PROJECT_SOURCE_DIR@/src @PROJECT_SOURCE_DIR@/test @PROJECT_SOURCE_DIR@/app
+          full-doc: True
+          doxy-cfg: # standard doxygen configuration (key: value)
+            ENABLE_PREPROCESSING: True
+            EXPAND_ONLY_PREDEF: True
+            FILE_PATTERNS: "*.cpp *.h*"
+            HAVE_DOT: True
+            JAVADOC_AUTOBRIEF: True
+            PROJECT_BRIEF: "A performance portable adaptive mesh refinement framework on top of p4est and kokkos."
+            RECURSIVE: True
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/pkestene/kalypsso
+
+repo_name: pkestene/kalypsso
+repo_url: https://github.com/pkestene/kalypsso
+use_directory_urls: true # (optional) for better links without .html extension
+
+# required for MathJax
+# see https://squidfunk.github.io/mkdocs-material/reference/math/#mathjax-mkdocsyml
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - "Home": index.md

@@ -1,0 +1,41 @@
+#%Module1.0
+# -*- mode: Tcl;-*-
+###############################################################################################
+## Modulefile for using kalypsso dependencies (p4est, hdf5, ...)
+###############################################################################################
+
+proc ModulesHelp { } {
+    puts stderr "Sets the environment for using kalypsso dependencies"
+}
+
+module-whatis "sets the environment for using kalypsso dependencies"
+
+conflict kalypsso-dependencies
+
+# get module full name
+set fullname [module-info name]
+
+# split fullname into name/version
+set fullname_splitted [split $fullname /]
+
+# modulefile name
+set product [lindex $fullname_splitted end-1]
+
+# module config
+set version [lindex $fullname_splitted end]
+
+# for Tcl script use only
+set topdir @CMAKE_INSTALL_PREFIX@
+
+prepend-path PATH              $topdir/@CMAKE_INSTALL_BINDIR@
+prepend-path LD_LIBRARY_PATH   $topdir/lib
+prepend-path LD_LIBRARY_PATH   $topdir/@CMAKE_INSTALL_LIBDIR@
+prepend-path CMAKE_PREFIX_PATH $topdir/lib/cmake
+prepend-path CMAKE_PREFIX_PATH $topdir/@CMAKE_INSTALL_LIBDIR@/cmake
+prepend-path CMAKE_PREFIX_PATH $topdir/cmake
+prepend-path PKG_CONFIG_PATH   $topdir/lib/pkgconfig
+prepend-path PKG_CONFIG_PATH   $topdir/@CMAKE_INSTALL_LIBDIR@/pkgconfig
+
+@MODULEFILE_ZLIB_CONFIG@
+
+unset version

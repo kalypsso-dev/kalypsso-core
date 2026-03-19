@@ -1,0 +1,74 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="sources">
+    <SourceProxy name="KalypssoHDF5Reader" class="vtkKalypssoHDF5Reader" label="Kalypsso HDF5 reader">
+      <Documentation>
+	    short_help="Reads an HDF5 file"
+        long_help="Reads an HDF5 file">
+        This reader reads HDF5 files, and the output is a vtkNonOverlappingAMR.
+	  </Documentation>
+      <StringVectorProperty
+          name="FileName"
+          animateable="0"
+          command="SetFileName"
+          number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+      <IntVectorProperty command="SetMaximumLevelsToReadByDefault"
+                         name="AMRLevelMax"
+                         number_of_elements="1"
+                         default_values="1"
+                         panel_visibility="default">
+        <IntRangeDomain name="range" min="0" max="10" />
+        <Documentation>
+          This reader supports demand-driven heavy data reading i.e. downstream
+          pipeline can request specific blocks from the AMR using
+          vtkCompositeDataPipeline::UPDATE_COMPOSITE_INDICES() key in
+          RequestUpdateExtent() pass. However, when down-stream doesn't provide
+          any specific keys, the default behavior can be setup to read at-most N
+          levels by default. The number of levels read can be set using this
+          method.  Set this to 0 to imply no limit. Default is 1.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+          name="CellArrayInfo"
+          information_only="1">
+        <ArraySelectionInformationHelper attribute_name="Cell"/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+        name="CellArrayStatus"
+        command="SetCellArrayStatus"
+        number_of_elements="0"
+        repeat_command="1"
+        number_of_elements_per_command="2"
+        element_types="2 0"
+        information_property="CellArrayInfo"
+        label="Cell Arrays">
+       <ArraySelectionDomain name="array_list">
+          <RequiredProperties>
+             <Property name="CellArrayInfo" function="ArrayList"/>
+          </RequiredProperties>
+       </ArraySelectionDomain>
+       <Documentation>
+         This property contains a list of the cell-centered arrays to read.
+       </Documentation>
+      </StringVectorProperty>
+
+	  <DoubleVectorProperty
+	      name="TimestepValues"
+          repeatable="1"
+	      information_only="1">
+	    <TimeStepsInformationHelper/>
+	    <Documentation>
+		  Available timestep values.
+	    </Documentation>
+	  </DoubleVectorProperty>
+
+      <Hints>
+        <ReaderFactory extensions="h5"
+                       file_description="Kalypsso HDF5 Files" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

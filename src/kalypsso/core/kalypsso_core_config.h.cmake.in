@@ -1,0 +1,71 @@
+// SPDX-FileCopyrightText: 2025 kalypsso-core authors
+//
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+/**
+ * \file kalypsso_core_config.h
+ */
+#ifndef KALYPSSO_CORE_KALYPSSO_CORE_CONFIG_H
+#define KALYPSSO_CORE_KALYPSSO_CORE_CONFIG_H 1
+
+/* kalypsso_core_config.h.  Generated from kalypsso_core_config.h.cmake by cmake.  */
+
+/* Define to 1 when cmake build type is "Debug" */
+#cmakedefine KALYPSSO_CORE_ENABLE_DEBUG 1
+
+/* Define to 1 when checking array bounds at runtime */
+#cmakedefine KALYPSSO_CORE_DEBUG_BOUNDS_CHECK 1
+
+/* Define to 1 when spdlog is available */
+#cmakedefine KALYPSSO_CORE_USE_SPDLOG 1
+
+/* Define to 1 when cnpy is available */
+#cmakedefine KALYPSSO_CORE_USE_CNPY 1
+
+/* Define to 1 when NVTX3 is available */
+#cmakedefine KALYPSSO_CORE_USE_NVTX3 1
+#cmakedefine KALYPSSO_CORE_NVTX_ANNOTATION_ENABLED 1
+
+/* floating point type: float or double ? */
+#cmakedefine KALYPSSO_CORE_USE_DOUBLE 1
+
+/* debug floating point exception */
+#cmakedefine KALYPSSO_CORE_USE_FPE_DEBUG 1
+
+/* timing measurements enabled ? */
+#cmakedefine KALYPSSO_CORE_TIMING_ENABLED 1
+
+/* CPPTRACE helper executable path */
+#cmakedefine KALYPSSO_CORE_USE_CPPTRACE 1
+#define KALYPSSO_CORE_STACK_PRINTER_FULLPATH "@CMAKE_CURRENT_BINARY_DIR@/src/kalypsso/core/kalypsso_stack_printer"
+
+/* enforce instantiate some template on host */
+#cmakedefine KALYPSSO_CORE_INSTANTIATE_HOST_TEMPLATE 1
+
+/* compiler information */
+#define KALYPSSO_CORE_BUILD_TYPE "@CMAKE_BUILD_TYPE@"
+#define KALYPSSO_CORE_BUILD_COMPILER_ID "@CMAKE_CXX_COMPILER_ID@"
+#define KALYPSSO_CORE_BUILD_COMPILER_VERSION "@CMAKE_CXX_COMPILER_VERSION@"
+
+/* system information */
+#define KALYPSSO_CORE_SYSTEM_PROCESSOR "@CMAKE_SYSTEM_PROCESSOR@"
+#define KALYPSSO_CORE_SYSTEM_NAME "@CMAKE_SYSTEM_NAME@"
+
+/* add here any other useful symbols (e.g. MPI implementation, ...) */
+#cmakedefine KALYPSSO_CORE_USE_MPI @KALYPSSO_CORE_USE_MPI@
+#cmakedefine KALYPSSO_CORE_USE_MPI_EXT @KALYPSSO_CORE_USE_MPI_EXT@
+
+/* is MPI GPU (Nvidia, AMD, Intel) support queryable at runtime ? */
+#cmakedefine KALYPSSO_CORE_MPI_HAS_QUERY_CUDA_SUPPORT @KALYPSSO_CORE_MPI_HAS_QUERY_CUDA_SUPPORT@
+#cmakedefine KALYPSSO_CORE_MPI_HAS_QUERY_HIP_SUPPORT @KALYPSSO_CORE_MPI_HAS_QUERY_HIP_SUPPORT@
+#cmakedefine KALYPSSO_CORE_MPI_HAS_QUERY_ZE_SUPPORT @KALYPSSO_CORE_MPI_HAS_QUERY_ZE_SUPPORT@
+
+/* MPI vendor: OpenMPI, MPICH ? */
+#define KALYPSSO_CORE_MPI_VENDOR "@MPI_VENDOR@"
+
+/* HDF5 */
+#cmakedefine KALYPSSO_CORE_USE_HDF5 @KALYPSSO_CORE_USE_HDF5@
+#cmakedefine KALYPSSO_CORE_USE_HDF5_PARALLEL @KALYPSSO_CORE_USE_HDF5_PARALLEL@
+#cmakedefine KALYPSSO_CORE_USE_HDF5_VERSION "@KALYPSSO_CORE_USE_HDF5_VERSION@"
+
+#endif // KALYPSSO_CORE_KALYPSSO_CORE_CONFIG_H
