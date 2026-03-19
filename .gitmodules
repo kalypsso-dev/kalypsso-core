@@ -16,3 +16,6 @@
 [submodule "p4est"]
 	path = external/p4est
 	url = git@github.com:cburstedde/p4est.git
+[submodule "better-enums"]
+	path = external/better-enums
+	url = git@github.com:aantron/better-enums.git
