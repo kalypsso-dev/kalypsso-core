@@ -1,0 +1,12 @@
+NAME
+  pvKalypssoHDF5Reader::KalypssoHDF5Reader
+LIBRARY_NAME
+  KalypssoHDF5Reader
+DEPENDS
+  VTK::CommonCore
+  VTK::CommonDataModel
+  VTK::CommonExecutionModel
+  VTK::CommonMisc
+PRIVATE_DEPENDS
+  VTK::hdf5
+  VTK::mpi

@@ -1,0 +1,6 @@
+add_subdirectory(config)
+add_subdirectory(monitoring)
+add_subdirectory(io)
+add_subdirectory(log)
+add_subdirectory(p4est)
+add_subdirectory(mpi)

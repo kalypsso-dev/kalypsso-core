@@ -1,0 +1,20 @@
+# SPDX-FileCopyrightText: 2025 kalypsso-core authors
+#
+# SPDX-License-Identifier: Unlicense
+
+[files]
+extend-exclude = ["external/*", "doc/doxyfile.in", "dependencies/cmake/modulefile.in"]
+
+[default.extend-words]
+IY = "IY"
+
+[default.extend-identifiers]
+gam0 = "gam0"
+gam_int = "gam_int"
+iten = "iten"
+StateNd = "StateNd"
+som_vit = "som_vit"
+som_vit2 = "som_vit2"
+otParams = "otParams"
+m_otParams = "m_otParams"
+Numer = "Numer"

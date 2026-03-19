@@ -1,0 +1,60 @@
+version = 1
+SPDX-PackageName = "kalypsso-core"
+SPDX-PackageSupplier = "kalypsso-core authors"
+SPDX-PackageDownloadLocation = "https://github.com/kalypsso-dev/kalypsso-core"
+
+[[annotations]]
+path = [
+    ".github/**",  "doc/**", "test/AMRmesh/*.py", "tools/pvpython/*.py", "tools/ParaViewKalypssoPlugin/Readme.md", "tools/ParaViewKalypssoPlugin/src/Reader/KalypssoHDF5_Server.xml", "tools/ParaViewKalypssoPlugin/src/Reader/vtk.module", "tools/ParaViewKalypssoPlugin/src/paraview.plugin"
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025 kalypsso-core authors"
+SPDX-License-Identifier = "Apache-2.0 WITH LLVM-exception"
+
+[[annotations]]
+path = [
+    ".clang-format", ".clangd", ".clang-tidy", ".pre-commit-config.yaml", "REUSE.toml", ".git-blame-ignore-revs", ".editorconfig", ".cmake-format.py", "**/.gitignore", ".gitmodules", ".travis.yml"
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025 kalypsso-core authors"
+SPDX-License-Identifier = "Unlicense"
+
+[[annotations]]
+path = [
+    "**/CMakeLists.txt", "**/*.cmake"
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2025 kalypsso-core authors"
+SPDX-License-Identifier = "Unlicense"
+
+[[annotations]]
+path = [
+    "test/**/*.ini", "unit_test/*.ini", "src/**/Readme.md", "dependencies/**/.in", "dependencies/Readme.md", "src/kalypsso/core/eos/*.md"
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2025 kalypsso-core authors"
+SPDX-License-Identifier = "Apache-2.0 WITH LLVM-exception"
+
+[[annotations]]
+path = [
+    "src/kalypsso/utils/config/inih/**"
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2009, Ben Hoyt"
+SPDX-License-Identifier = "BSD-1-Clause"
+
+[[annotations]]
+path = [
+    "src/kalypsso/utils/io/libb64/**"
+]
+precedence = "override"
+SPDX-FileCopyrightText = "Chris Venter, chris.venter@gmail.com"
+SPDX-License-Identifier = "Unlicense"
+
+[[annotations]]
+path = [
+    "tools/archive/git_archive_all.py"
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2010 Ilya Kulakov"
+SPDX-License-Identifier = "MIT"

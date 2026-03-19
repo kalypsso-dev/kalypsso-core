@@ -1,0 +1,69 @@
+// SPDX-FileCopyrightText: 2025 kalypsso-core authors
+//
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+/**
+ * \file PapiInfo.h
+ * \brief A simple PAPI interface class.
+ *
+ * Parts of this class is adapted from file sc_flops.c found in library
+ * libsc (https://github.com/cburstedde/libsc)
+ *
+ */
+#ifndef KALYPSSO_UTILS_MONITORING_PAPIINFO_H_
+#define KALYPSSO_UTILS_MONITORING_PAPIINFO_H_
+
+#include "OpenMPTimer.h"
+
+namespace kalypsso
+{
+
+class PapiInfo
+{
+public:
+  /**
+   * constructor
+   */
+  PapiInfo();
+
+  /**
+   * destructor
+   */
+  ~PapiInfo();
+
+  void
+  start();
+
+  void
+  stop();
+
+  double
+  getFlops();
+
+  long long int
+  getFlop();
+
+  double
+  elapsed();
+
+protected:
+  /* Wall clock time */
+  OpenMPTimer papiTimer;
+
+  /* cumulative counters */
+  float         crtime;  //!< cumulative real time
+  float         cptime;  //!< cumulative process time
+  long long int cflpops; //!< cumulative floating point operations
+
+  /* values used in start routine */
+  float         irtime;  //!< interval real time
+  float         iptime;  //!< interval process time
+  long long int iflpops; //!< interval floating point operations
+
+  double mflops; //!< MFlop/s rate
+
+}; // class PapiInfo
+
+} // namespace kalypsso
+
+#endif // KALYPSSO_UTILS_MONITORING_PAPIINFO_H_

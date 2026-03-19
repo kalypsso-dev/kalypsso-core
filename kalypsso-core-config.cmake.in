@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: 2025 kalypsso-core authors
+#
+# SPDX-License-Identifier: Unlicense
+
+@PACKAGE_INIT@
+
+#
+# we need to install dependencies that were part of the build
+#
+include(CMakeFindDependencyMacro)
+
+if(KALYPSSO_CORE_KOKKOS_BUILD)
+  find_dependency(Kokkos)
+endif()
+
+if(KALYPSSO_CORE_BUILD_CNPY)
+  find_dependency(cnpy)
+endif()
+
+find_dependency(HighFive)
+
+include(${CMAKE_CURRENT_LIST_DIR}/kalypsso-core-targets.cmake)
+check_required_components(@PROJECT_NAME_SC@)

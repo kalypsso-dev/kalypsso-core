@@ -1,0 +1,8 @@
+NAME
+  pvKalypssoHDF5Reader
+DESCRIPTION
+  Reader for visualization of Kalypsso HDF5 data
+REQUIRES_MODULES
+  VTK::CommonCore
+  VTK::CommonExecutionModel
+  VTK::hdf5
