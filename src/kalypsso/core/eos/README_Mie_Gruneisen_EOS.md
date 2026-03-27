@@ -56,6 +56,7 @@ In the compressive case, isentropic bulk modulus is $`\kappa = \rho\frac{d P}{d\
 - [R.M. Cheng et al., GnarlyX: Eulerian multi-material hydrodynamics coupled to to equation of state and hyperelastic, plastic constitutive models.](https://www.osti.gov/biblio/1963620)
 - [S.C. Dick and E. Johnsen, An analytical method for determining stiffend equation of state parameters from shock-compression experiments, Physica D: Nonlinear Phenomena, Volume 490, 2026, 135179](https://doi.org/10.1016/j.physd.2026.135179)
 - [Allen C. Robinson, The Mie-Gruneisen Power Equation of State, Sandia Report SAND2019-6025](https://www.osti.gov/servlets/purl/1762624)
+- [Mie–Grüneisen equation of state (wikipedia)](https://en.wikipedia.org/wiki/Mie%E2%80%93Gr%C3%BCneisen_equation_of_state)
 
 
 Software:
