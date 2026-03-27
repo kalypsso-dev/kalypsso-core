@@ -23,16 +23,13 @@
  * https://doi.org/10.1063/5.0077314
  *
  */
-#ifndef KALYPSSO_CORE_EOS_MIE_GRUNEISEN_EOS_H_
-#define KALYPSSO_CORE_EOS_MIE_GRUNEISEN_EOS_H_
+#ifndef KALYPSSO_CORE_EOS_MIE_GRUNEISEN_EOS_SW_H_
+#define KALYPSSO_CORE_EOS_MIE_GRUNEISEN_EOS_SW_H_
 
 #include <kalypsso/core/kokkos_shared.h>
 #include <kalypsso/core/real_type.h>
 #include <kalypsso/utils/config/ConfigMap.h>
 #include <kalypsso/core/eos/eos_utils.h>
-
-// already included by real_type.h
-// #include <Kokkos_NumericTraits.hpp>
 
 namespace kalypsso
 {
@@ -80,7 +77,7 @@ struct MieGruneisenEosSWParam
   static auto
   get_parameters(const size_t i_mat, const ConfigMap & config_map)
   {
-    const auto material_id = "material" + std::to_string(i_mat) + "_mie_gruneisen";
+    const auto material_id = "material" + std::to_string(i_mat) + "_mie_gruneisen_sw";
 
     MieGruneisenEosSWParam params;
 
@@ -464,4 +461,4 @@ struct MieGruneisenEosSW
 
 } // namespace kalypsso
 
-#endif // KALYPSSO_CORE_EOS_MIE_GRUNEISEN_EOS_H_
+#endif // KALYPSSO_CORE_EOS_MIE_GRUNEISEN_EOS_SW_H_
