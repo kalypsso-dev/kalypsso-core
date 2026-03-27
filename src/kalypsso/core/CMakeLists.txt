@@ -86,6 +86,7 @@ add_library(
   eos/MieGruneisenEosSW.h
   eos/MieGruneisenEosIdealGas.h
   eos/MieGruneisenEosStiffenedGas.h
+  eos/MieGruneisenEosVanDerWaalsGas.h
   eos/StiffenedGasEos.h
   eos/StiffenedGasMixture.h
   eos/VanDerWaalsGasEos.h
