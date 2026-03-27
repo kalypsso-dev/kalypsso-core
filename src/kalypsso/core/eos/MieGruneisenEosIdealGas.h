@@ -42,7 +42,7 @@ namespace eos
 /**
  * \struct MieGruneisenEosIdealGasParam
  *
- * Define all configurable parameters used in Mie-Gruneisen EOS of type shockwave (SW).
+ * Define all configurable parameters used in Mie-Gruneisen form of ideal gas EOS.
  */
 struct MieGruneisenEosIdealGasParam
 {
@@ -94,7 +94,7 @@ struct MieGruneisenEosIdealGas
   {}
 
   /**
-   * Initialize Mie-Gruneisen Eos.
+   * Initialize ideal gas Mie-Gruneisen Eos.
    *
    * \param[in] config_map input configuration map
    */
@@ -106,9 +106,6 @@ struct MieGruneisenEosIdealGas
    * Compute Gruneisen parameter.
    *
    * Useful and needed for mixture computations.
-   *
-   * \note \f$ e_v = 1-\frac{\rho_0}{\rho} = \frac{U_p}{U_s} \f$ relates particule velocity
-   * to shock velocity.
    *
    * \return Gruneisen parameter.
    */
@@ -187,6 +184,9 @@ struct MieGruneisenEosIdealGas
    *
    * By definition isentropic bulk modulus is \f$\kappa = \rho \frac{dP}{d\rho}|_S\f$,
    * where the derivative is taken at constant entropy.
+   *
+   * In a fluid, one can show that sound speed is \f$c=\sqrt{\frac{\kappa}{\rho}}\f$,
+   * thus \f$\kappa=\rho c^2\f$.
    */
   KOKKOS_INLINE_FUNCTION
   real_t
