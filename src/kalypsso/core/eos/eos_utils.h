@@ -37,7 +37,9 @@ BETTER_ENUM(EOS_TYPE, int,
             IDEAL_GAS,
             STIFFENED_GAS,
             VANDERWAALS_GAS,
-            MIE_GRUNEISEN_SW // shockwave eos
+            MIE_GRUNEISEN, // To be removed
+            MIE_GRUNEISEN_SW, // shockwave eos
+            MIE_GRUNEISEN_CC // Cochran-Chan eos
   )
 // clang-format on
 
@@ -50,6 +52,7 @@ BETTER_ENUM(MG_EOS_TYPE, int,
             MG_IDEAL_GAS,
             MG_STIFFENED_GAS,
             MG_VANDERWAALS_GAS,
+            MG_COCHRAN_CHAN,
             MG_SHOCKWAVE)
 // clang-format on
 

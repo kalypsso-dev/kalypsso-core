@@ -36,6 +36,12 @@ Sound speed for a general EOS is defined as (see [Price et al.](https://doi.org/
 c^2 = \left( \frac{\partial P}{\partial \rho}\right)_S = \left( \frac{\partial P}{\partial \rho}\right)_e + \frac{P}{\rho^2} \left( \frac{\partial P}{\partial e}\right)_\rho
 ```
 
+For an EOS in Mie-Gruneisen form, one obtains:
+
+```math
+c^2 = \frac{d P_{\text{ref}}}{d\rho} -\rho\Gamma \frac{d e_{\text{ref}}}{d\rho} \frac{\Gamma P}{\rho} + (P-P_{\text{ref}})*\left[\frac{1}{\rho} +\frac{1}{\Gamma}\frac{d \Gamma}{d \rho} \right]
+```
+
 ## Isentropic bulk modulus
 
 Using internal code, Mie-Gruneisen EOS is $`P=\phi(\rho)+\rho\Gamma(\rho)(e_{\text{int}}-e_H)`$ where $`e_H=e_{\text{ref}}`$ is the reference internal energy taken along a Hugoniot curve.
@@ -48,6 +54,7 @@ Let's first compute $`\frac{\partial P}{\partial \rho}\bigg\rvert_{e_{\text{int}
 
 In the compressive case, isentropic bulk modulus is $`\kappa = \rho\frac{d P}{d\rho}|_{e_{\text{int}}} + \frac{P}{\rho} \frac{d P}{d e_{\text{int}}}|_{\rho}`$
 
+TODO: why not use `$\kappa = \rho c^2$` (it should be equal to previous relation) ?
 
 # Bibliographic references
 
