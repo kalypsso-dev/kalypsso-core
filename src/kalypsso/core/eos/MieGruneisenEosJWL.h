@@ -307,7 +307,6 @@ struct MieGruneisenEosJWL
   bulk_modulus(real_t pressure, real_t rho) const
   {
     return rho * sound_speed_square(pressure, rho);
-
   } // bulk_modulus
 
 }; // struct MieGruneisenEosJWL
