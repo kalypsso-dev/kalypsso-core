@@ -229,7 +229,11 @@ struct MieGruneisenEosCochranChan
    *
    * for a Mie-Gruneisen EOS, one obtains
    *
-   * \f$ c^2 = \frac{d P_{\text{ref}}}{d\rho} -\rho\Gamma \frac{d e_{\text{ref}}}{d\rho} \frac{\Gamma P}{\rho} + (P-P_{\text{ref}})*\left[\frac{1}{\rho} +\frac{1}{\Gamma}\frac{d \Gamma}{d \rho} \right]\f$
+   * \f[
+   * c^2 = \frac{d P_{\text{ref}}}{d\rho} -
+   * \rho\Gamma \frac{d e_{\text{ref}}}{d\rho} \frac{\Gamma P}{\rho} +
+   * (P-P_{\text{ref}})*\left[\frac{1}{\rho} +\frac{1}{\Gamma}\frac{d \Gamma}{d \rho} \right]
+   * \f]
    *
    */
   KOKKOS_INLINE_FUNCTION
@@ -242,11 +246,11 @@ struct MieGruneisenEosCochranChan
     const auto & E1 = m_params.E1;
     const auto & E2 = m_params.E2;
 
-    const auto gam = gamma(rho);
+    const auto Gamma = gamma(rho);
 
-    const auto c2 = (gam + 1) * pressure / rho -
-                    A1 / rho0 * (gam + 1 - E1) * pow(rho / rho0, E1 - 1) +
-                    A2 / rho0 * (gam + 1 - E2) * pow(rho / rho0, E2 - 1);
+    const auto c2 = (Gamma + 1) * pressure / rho -
+                    A1 / rho0 * (Gamma + 1 - E1) * pow(rho / rho0, E1 - 1) +
+                    A2 / rho0 * (Gamma + 1 - E2) * pow(rho / rho0, E2 - 1);
 
     return c2;
 

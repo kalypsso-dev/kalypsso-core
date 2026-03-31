@@ -14,7 +14,7 @@ where $`e`$ is specific internal energy and $`\Gamma`$ is the so-called Gruneise
 
 $`P_{\text{ref}}(\rho)`$ and $`e_{\text{ref}}(\rho)`$ are reference states which can be taken along isentropic, isothermal or shock Hugoniot compression curves.
 
-By carefully chosing the reference pressure and reference internal energy, many different EOS can be put into Mie-Gruneisen form ([M.A. Price et al, A method for compressible multimaterial flows with condensed phase explosive detonation and airblast on unstructured grids](https://doi.org/10.1016/j.compfluid.2015.01.006)):
+By carefully choosing the reference pressure and reference internal energy, many different EOS can be put into Mie-Gruneisen form ([M.A. Price et al, A method for compressible multimaterial flows with condensed phase explosive detonation and airblast on unstructured grids](https://doi.org/10.1016/j.compfluid.2015.01.006)):
 
 | | Common form | $`\Gamma(\rho)`$ | $`p_{\text{ref}}(\rho)`$ | $`e_{\text{ref}}(\rho)`$|
 |---|-------------|------------------|--------------------------|-------------------------|

@@ -257,9 +257,11 @@ struct MieGruneisenEosJWL
    *
    * for a Mie-Gruneisen EOS, one obtains
    *
-   * \f$ c^2 = \frac{d P_{\text{ref}}}{d\rho} -\rho\Gamma \frac{d e_{\text{ref}}}{d\rho}
+   * \f[
+   * c^2 = \frac{d P_{\text{ref}}}{d\rho} -\rho\Gamma \frac{d e_{\text{ref}}}{d\rho}
    * \frac{\Gamma P}{\rho} + (P-P_{\text{ref}})*\left[\frac{1}{\rho} +\frac{1}{\Gamma}\frac{d
-   * \Gamma}{d \rho} \right]\f$
+   * \Gamma}{d \rho} \right]
+   * \f]
    *
    */
   KOKKOS_INLINE_FUNCTION
@@ -272,11 +274,11 @@ struct MieGruneisenEosJWL
     const auto & R1 = m_params.R1;
     const auto & R2 = m_params.R2;
 
-    const auto gam = gamma(rho);
+    const auto Gamma = gamma(rho);
 
-    const auto c2 = (gam + 1) * pressure / rho -
-                    A1 / rho * (gam + 1 - R1 * rho0 / rho) * exp(-R1 * rho0 / rho) -
-                    A2 / rho * (gam + 1 - R2 * rho0 / rho) * exp(-R2 * rho0 / rho);
+    const auto c2 = (Gamma + 1) * pressure / rho -
+                    A1 / rho * (Gamma + 1 - R1 * rho0 / rho) * exp(-R1 * rho0 / rho) -
+                    A2 / rho * (Gamma + 1 - R2 * rho0 / rho) * exp(-R2 * rho0 / rho);
 
     return c2;
 

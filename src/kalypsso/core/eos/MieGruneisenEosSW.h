@@ -346,8 +346,8 @@ struct MieGruneisenEosSW
     {
       const auto ev = 1 - m_params.rho0 / rho;
 
-      const auto gam = m_params.Gamma0 * (1 - ev) + m_params.b * ev;
-      const auto dpde = gam * rho;
+      const auto Gamma = m_params.Gamma0 * (1 - ev) + m_params.b * ev;
+      const auto dpde = Gamma * rho;
       const auto dgam = m_params.rho0 * (m_params.Gamma0 - m_params.b);
 
       if (ev > 0) // COMPRESSION
@@ -364,7 +364,8 @@ struct MieGruneisenEosSW
 
         const auto dphi = phi * m_params.rho0 * (-1 / (ev + min_real) - 2 * s_der / d);
         const auto deh = phi * (-1 - ev * s_der / d);
-        const auto dpdv = dphi + (dgam - gam * rho) * (eint_specific - eh) * rho - gam * rho * deh;
+        const auto dpdv =
+          dphi + (dgam - Gamma * rho) * (eint_specific - eh) * rho - Gamma * rho * deh;
 
         // return sound speed
         c2 = (pressure * dpde - dpdv) / (rho * rho);
