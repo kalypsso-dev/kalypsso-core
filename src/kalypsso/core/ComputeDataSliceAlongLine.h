@@ -87,6 +87,36 @@ public:
   /**
    * \brief Computes a slice along a line and saves it in cnpy format.
    *
+   * \param data Data array to slice.
+   * \param start_octant The first owned octant.
+   * \param end_octant The last owned octant, excluded.
+   * \param start_point The segment's start.
+   * \param end_point The segments' end.
+   * \param keys Orchard keys.
+   * \param fm Hydro variables to index mapper.
+   * \param vars Vector of variables to save.
+   * \param var_names Vector of variables names.
+   * \param file_prefix Files prefix.
+   * \param parallel_env Parallel environment.
+   * \param config_map Inputted config map.
+   */
+  static void
+  apply(const DataArrayBlock<dim, real_t, device_t> & data,
+        const int32_t                                 start_octant,
+        const int32_t                                 end_octant,
+        const Kokkos::Array<real_t, dim>              start_point,
+        const Kokkos::Array<real_t, dim>              end_point,
+        const OrchardKeys &                           keys,
+        const std::vector<int32_t>                    vars,
+        const std::vector<std::string>                var_names,
+        const std::string &                           file_prefix,
+        const ParallelEnv &                           parallel_env,
+        const ConfigMap &                             config_map);
+
+
+  /**
+   * \brief Computes a slice along a line and saves it in cnpy format.
+   *
    * Same as above, but the start and end point are automatically determined to be the middle box
    * axis along a given direction.
    *

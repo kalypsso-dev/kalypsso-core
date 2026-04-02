@@ -180,49 +180,17 @@ ComputeDataSliceAlongLine<dim, device_t>::apply(const DataArrayBlock<dim, real_t
 template <size_t dim, typename device_t>
 void
 ComputeDataSliceAlongLine<dim, device_t>::apply(const DataArrayBlock<dim, real_t, device_t> & data,
-                                                const int32_t       start_octant,
-                                                const int32_t       end_octant,
-                                                const int32_t       direction,
-                                                const OrchardKeys & keys,
-                                                const int32_t       var,
-                                                const std::string & file_prefix,
-                                                const ParallelEnv & parallel_env,
-                                                const ConfigMap &   config_map)
+                                                const int32_t                    start_octant,
+                                                const int32_t                    end_octant,
+                                                const Kokkos::Array<real_t, dim> start_point,
+                                                const Kokkos::Array<real_t, dim> end_point,
+                                                const OrchardKeys &              keys,
+                                                const std::vector<int32_t>       vars,
+                                                const std::vector<std::string>   var_names,
+                                                const std::string &              file_prefix,
+                                                const ParallelEnv &              parallel_env,
+                                                const ConfigMap &                config_map)
 {
-  const Kokkos::Array<real_t, dim> start_point = get_mid_box_start_point(config_map, direction);
-  const Kokkos::Array<real_t, dim> end_point = get_mid_box_end_point(config_map, direction);
-
-  ComputeDataSliceAlongLine<dim, device_t>::apply(data,
-                                                  start_octant,
-                                                  end_octant,
-                                                  start_point,
-                                                  end_point,
-                                                  keys,
-                                                  var,
-                                                  file_prefix,
-                                                  parallel_env,
-                                                  config_map);
-
-} // ComputeDataSliceAlongLine<dim, device_t>::apply
-
-// ================================================================================================
-// ================================================================================================
-template <size_t dim, typename device_t>
-void
-ComputeDataSliceAlongLine<dim, device_t>::apply(const DataArrayBlock<dim, real_t, device_t> & data,
-                                                const int32_t                  start_octant,
-                                                const int32_t                  end_octant,
-                                                const int32_t                  direction,
-                                                const OrchardKeys &            keys,
-                                                const std::vector<int32_t>     vars,
-                                                const std::vector<std::string> var_names,
-                                                const std::string &            file_prefix,
-                                                const ParallelEnv &            parallel_env,
-                                                const ConfigMap &              config_map)
-{
-  const Kokkos::Array<real_t, dim> start_point = get_mid_box_start_point(config_map, direction);
-  const Kokkos::Array<real_t, dim> end_point = get_mid_box_end_point(config_map, direction);
-
   const auto                               nb_cells = data.num_cells();
   const auto                               start_index = start_octant * nb_cells;
   const auto                               end_index = end_octant * nb_cells;
@@ -284,6 +252,68 @@ ComputeDataSliceAlongLine<dim, device_t>::apply(const DataArrayBlock<dim, real_t
       save_cnpy(data_host, file_prefix + "_" + rank + "_" + var_names[iv]);
     }
   }
+} // ComputeDataSliceAlongLine<dim, device_t>::apply
+
+// ================================================================================================
+// ================================================================================================
+template <size_t dim, typename device_t>
+void
+ComputeDataSliceAlongLine<dim, device_t>::apply(const DataArrayBlock<dim, real_t, device_t> & data,
+                                                const int32_t       start_octant,
+                                                const int32_t       end_octant,
+                                                const int32_t       direction,
+                                                const OrchardKeys & keys,
+                                                const int32_t       var,
+                                                const std::string & file_prefix,
+                                                const ParallelEnv & parallel_env,
+                                                const ConfigMap &   config_map)
+{
+  const Kokkos::Array<real_t, dim> start_point = get_mid_box_start_point(config_map, direction);
+  const Kokkos::Array<real_t, dim> end_point = get_mid_box_end_point(config_map, direction);
+
+  ComputeDataSliceAlongLine<dim, device_t>::apply(data,
+                                                  start_octant,
+                                                  end_octant,
+                                                  start_point,
+                                                  end_point,
+                                                  keys,
+                                                  var,
+                                                  file_prefix,
+                                                  parallel_env,
+                                                  config_map);
+
+} // ComputeDataSliceAlongLine<dim, device_t>::apply
+
+// ================================================================================================
+// ================================================================================================
+template <size_t dim, typename device_t>
+void
+ComputeDataSliceAlongLine<dim, device_t>::apply(const DataArrayBlock<dim, real_t, device_t> & data,
+                                                const int32_t                  start_octant,
+                                                const int32_t                  end_octant,
+                                                const int32_t                  direction,
+                                                const OrchardKeys &            keys,
+                                                const std::vector<int32_t>     vars,
+                                                const std::vector<std::string> var_names,
+                                                const std::string &            file_prefix,
+                                                const ParallelEnv &            parallel_env,
+                                                const ConfigMap &              config_map)
+{
+  const Kokkos::Array<real_t, dim> start_point = get_mid_box_start_point(config_map, direction);
+  const Kokkos::Array<real_t, dim> end_point = get_mid_box_end_point(config_map, direction);
+
+  ComputeDataSliceAlongLine<dim, device_t>::apply(data,
+                                                  start_octant,
+                                                  end_octant,
+                                                  start_point,
+                                                  end_point,
+                                                  keys,
+                                                  vars,
+                                                  var_names,
+                                                  file_prefix,
+                                                  parallel_env,
+                                                  config_map);
+
 } // ComputeDataSliceAlongLine<dim, device_t>::apply
 
 // ================================================================================================
