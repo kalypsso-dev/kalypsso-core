@@ -58,9 +58,9 @@ if(KALYPSSO_CORE_BUILD_SPDLOG)
   add_dependencies(spdlog spdlog_external)
 
   if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(SPDLOG_LIBNAME "libspdlogd.so")
+    set(SPDLOG_LIBNAME "libspdlogd${CMAKE_SHARED_LIBRARY_SUFFIX}")
   else()
-    set(SPDLOG_LIBNAME "libspdlog.so")
+    set(SPDLOG_LIBNAME "libspdlog${CMAKE_SHARED_LIBRARY_SUFFIX}")
   endif()
 
   set_target_properties(spdlog PROPERTIES IMPORTED_LOCATION "${SPDLOG_LIBDIR}/${SPDLOG_LIBNAME}"

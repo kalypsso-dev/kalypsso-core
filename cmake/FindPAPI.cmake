@@ -30,7 +30,7 @@
 
 find_library(
   PAPI_LIBRARY
-  NAMES libpapi.so libpapi.a papi
+  NAMES libpapi${CMAKE_SHARED_LIBRARY_SUFFIX} libpapi.a papi
   HINTS ENV PAPI_ROOT
   PATH_SUFFIXES lib lib64)
 
