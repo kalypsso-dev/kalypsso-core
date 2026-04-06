@@ -209,6 +209,47 @@ MieGruneisenMixture<device_t>::material_pressure_ref(int imat, real_t rho) const
 // =====================================================================
 template <typename device_t>
 real_t
+MieGruneisenMixture<device_t>::material_sound_speed_square(int    imat,
+                                                           real_t pressure,
+                                                           real_t rho) const
+{
+  // get EOS type
+  const auto eos_type = m_material_eos_type(imat);
+
+  // get material eos id
+  const auto material_eos_id = m_material_eos_id(imat);
+
+  if (eos_type == +MG_EOS_TYPE::MG_IDEAL_GAS)
+  {
+    return m_mg_eos_ig(material_eos_id).sound_speed_square(pressure, rho);
+  }
+  else if (eos_type == +MG_EOS_TYPE::MG_STIFFENED_GAS)
+  {
+    return m_mg_eos_sg(material_eos_id).sound_speed_square(pressure, rho);
+  }
+  else if (eos_type == +MG_EOS_TYPE::MG_VANDERWAALS_GAS)
+  {
+    return m_mg_eos_vdw(material_eos_id).sound_speed_square(pressure, rho);
+  }
+  else if (eos_type == +MG_EOS_TYPE::MG_SHOCKWAVE)
+  {
+    return m_mg_eos_sw(material_eos_id).sound_speed_square(pressure, rho);
+  }
+  else if (eos_type == +MG_EOS_TYPE::MG_JWL)
+  {
+    return m_mg_eos_jwl(material_eos_id).sound_speed_square(pressure, rho);
+  }
+  else if (eos_type == +MG_EOS_TYPE::MG_COCHRAN_CHAN)
+  {
+    return m_mg_eos_cc(material_eos_id).sound_speed_square(pressure, rho);
+  }
+
+} // MieGruneisenMixture<device_t>::material_sound_speed_square
+
+// =====================================================================
+// =====================================================================
+template <typename device_t>
+real_t
 MieGruneisenMixture<device_t>::mixture_gruneisen_param(real_t phi0,
                                                        real_t phi1,
                                                        real_t phi_rho0,
@@ -324,6 +365,57 @@ MieGruneisenMixture<device_t>::mixture_volumic_eint(real_t rho,
 {
   return rho * mixture_volumic_eint(rho, pressure, phi0, phi1, phi_rho0, phi_rho1);
 } // MieGruneisenMixture<device_t>::mixture_volumic_eint
+
+// =====================================================================
+// =====================================================================
+template <typename device_t>
+real_t
+MieGruneisenMixture<device_t>::mixture_sound_speed_square(real_t rho,
+                                                          real_t pressure,
+                                                          real_t phi0,
+                                                          real_t phi1,
+                                                          real_t phi_rho0,
+                                                          real_t phi_rho1) const
+{
+  real_t tmp = ZERO_F;
+
+  // material 0
+  if (phi0 > LOW_PHI)
+  {
+    const auto rho0 = phi_rho0 / phi0;
+    const auto Y0 = phi_rho0 / rho; // mass fraction
+    tmp += phi0 * Y0 * material_sound_speed_square(0, pressure, rho0) /
+           material_gruneisen_param(0, rho0);
+  }
+
+  // material 1
+  if (phi1 > LOW_PHI)
+  {
+    const auto rho1 = phi_rho1 / phi1;
+    const auto Y1 = phi_rho1 / rho; // mass fraction
+    tmp += phi1 * Y1 * material_sound_speed_square(1, pressure, rho1) /
+           material_gruneisen_param(1, rho1);
+  }
+
+  return mixture_gruneisen_param(phi0, phi1, phi_rho0, phi_rho1) * tmp;
+
+} // MieGruneisenMixture<device_t>::mixture_sound_speed_square
+
+// =====================================================================
+// =====================================================================
+template <typename device_t>
+real_t
+MieGruneisenMixture<device_t>::mixture_sound_speed(real_t rho,
+                                                   real_t pressure,
+                                                   real_t phi0,
+                                                   real_t phi1,
+                                                   real_t phi_rho0,
+                                                   real_t phi_rho1) const
+{
+
+  return sqrt(mixture_sound_speed(rho, pressure, phi0, phi1, phi_rho0, phi_rho1));
+
+} // MieGruneisenMixture<device_t>::mixture_sound_speed
 
 } // namespace eos
 } // namespace core

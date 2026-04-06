@@ -192,6 +192,20 @@ private:
   real_t
   material_pressure_ref(int imat, real_t rho) const;
 
+  /**
+   * Retrieve sound speed square of a given material.
+   *
+   * \param[in] imat material id
+   * \param[in] pressure (same for all materials, isobaric closure)
+   * \param[in] rho material density (rho_phi/phi)
+   *
+   * \note the caller is responsible for computing material density and cross-checking
+   * that the volume fraction is not too small
+   */
+  KOKKOS_FUNCTION
+  real_t
+  material_sound_speed_square(int imat, real_t pressure, real_t rho) const;
+
 public:
   /**
    * Compute mixture Gruneisen parameter (two materials).
@@ -267,6 +281,48 @@ public:
                        real_t phi1,
                        real_t phi_rho0,
                        real_t phi_rho1) const;
+
+  /**
+   * Compute mixture squared speed of sound.
+   *
+   * To be used only when there are two materials
+   *
+   * \param[in] rho mixture density
+   * \param[in] eint mixture internal energy
+   * \param[in] phi0 volume fraction of material 0
+   * \param[in] phi1 volume fraction of material 1
+   * \param[in] rho_phi0 partial density of material 0
+   * \param[in] rho_phi1 partial density of material 1
+   */
+  KOKKOS_FUNCTION
+  real_t
+  mixture_sound_speed_square(real_t rho,
+                             real_t pressure,
+                             real_t phi0,
+                             real_t phi1,
+                             real_t phi_rho0,
+                             real_t phi_rho1) const;
+
+  /**
+   * Compute mixture speed of sound.
+   *
+   * To be used only when there are two materials
+   *
+   * \param[in] rho mixture density
+   * \param[in] eint mixture internal energy
+   * \param[in] phi0 volume fraction of material 0
+   * \param[in] phi1 volume fraction of material 1
+   * \param[in] rho_phi0 partial density of material 0
+   * \param[in] rho_phi1 partial density of material 1
+   */
+  KOKKOS_FUNCTION
+  real_t
+  mixture_sound_speed(real_t rho,
+                      real_t pressure,
+                      real_t phi0,
+                      real_t phi1,
+                      real_t phi_rho0,
+                      real_t phi_rho1) const;
 
 }; // class MieGruneisenMixture
 
