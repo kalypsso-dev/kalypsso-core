@@ -16,6 +16,7 @@
 #include <kalypsso/core/models/Hydro.h>
 
 #include <kalypsso/core/AMRmesh.h>
+#include <kalypsso/core/MeshMap.h>
 #include <kalypsso/core/kalypsso_data_container.h>
 #ifdef KALYPSSO_CORE_USE_HDF5
 #  include <kalypsso/core/HDF5_Xdmf_Writer_legacy.h>

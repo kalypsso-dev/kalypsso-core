@@ -15,12 +15,12 @@ namespace kalypsso
 // ================================================================================
 template <size_t dim, typename device_t, typename model_t>
 void
-DataWriter<dim, device_t, model_t>::save(std::string              filename,
-                                         DataArrayLeaf_t          userdataLeaf,
-                                         DataArrayBlock_t         userdataBlock,
-                                         const ConfigMap &        config_map,
-                                         AMRmesh<dim> /*const*/ & amr_mesh,
-                                         model_t const &          model)
+DataWriter<dim, device_t, model_t>::save([[maybe_unused]] std::string              filename,
+                                         [[maybe_unused]] DataArrayLeaf_t          userdataLeaf,
+                                         [[maybe_unused]] DataArrayBlock_t         userdataBlock,
+                                         [[maybe_unused]] const ConfigMap &        config_map,
+                                         [[maybe_unused]] AMRmesh<dim> /*const*/ & amr_mesh,
+                                         [[maybe_unused]] model_t const &          model)
 {
 #ifdef KALYPSSO_CORE_USE_HDF5
   const auto fm = model.get_fieldmap();
@@ -98,14 +98,15 @@ DataWriter<dim, device_t, model_t>::save(std::string              filename,
 // ================================================================================
 template <size_t dim, typename device_t, typename model_t>
 void
-DataWriter<dim, device_t, model_t>::save(std::string                             filename,
-                                         DataArrayLeaf_t                         userdataLeaf,
-                                         DataArrayBlock_t                        userdataBlock,
-                                         const ConfigMap &                       config_map,
-                                         const ParallelEnv &                     par_env,
-                                         std::shared_ptr<MeshMap<dim, device_t>> mesh_map,
-                                         bool                                    use_outside_quads,
-                                         model_t const &                         model)
+DataWriter<dim, device_t, model_t>::save(
+  [[maybe_unused]] std::string                             filename,
+  [[maybe_unused]] DataArrayLeaf_t                         userdataLeaf,
+  [[maybe_unused]] DataArrayBlock_t                        userdataBlock,
+  [[maybe_unused]] const ConfigMap &                       config_map,
+  [[maybe_unused]] const ParallelEnv &                     par_env,
+  [[maybe_unused]] std::shared_ptr<MeshMap<dim, device_t>> mesh_map,
+  [[maybe_unused]] bool                                    use_outside_quads,
+  [[maybe_unused]] model_t const &                         model)
 {
 #ifdef KALYPSSO_CORE_USE_HDF5
   const auto fm = model.get_fieldmap();
@@ -302,11 +303,11 @@ DataWriter<dim, device_t, model_t>::save(std::string                            
 // ================================================================================
 template <size_t dim, typename device_t, typename model_t>
 void
-DataWriter<dim, device_t, model_t>::save(std::string              filename,
-                                         DataArrayBlock_t         userdataBlock,
-                                         const ConfigMap &        config_map,
-                                         /*const*/ AMRmesh<dim> & amr_mesh,
-                                         model_t const &          model)
+DataWriter<dim, device_t, model_t>::save([[maybe_unused]] std::string              filename,
+                                         [[maybe_unused]] DataArrayBlock_t         userdataBlock,
+                                         [[maybe_unused]] const ConfigMap &        config_map,
+                                         [[maybe_unused]] /*const*/ AMRmesh<dim> & amr_mesh,
+                                         [[maybe_unused]] model_t const &          model)
 {
 #ifdef KALYPSSO_CORE_USE_HDF5
   const auto fm = model.get_fieldmap();
@@ -355,11 +356,11 @@ DataWriter<dim, device_t, model_t>::save(std::string              filename,
 // ================================================================================
 template <size_t dim, typename device_t, typename model_t>
 void
-DataWriter<dim, device_t, model_t>::save_scalar(std::string              filename,
-                                                DataArrayBlock_t         userdataBlock,
-                                                int                      ivar,
-                                                const ConfigMap &        config_map,
-                                                /*const*/ AMRmesh<dim> & amr_mesh)
+DataWriter<dim, device_t, model_t>::save_scalar([[maybe_unused]] std::string       filename,
+                                                [[maybe_unused]] DataArrayBlock_t  userdataBlock,
+                                                [[maybe_unused]] int               ivar,
+                                                [[maybe_unused]] const ConfigMap & config_map,
+                                                [[maybe_unused]] /*const*/ AMRmesh<dim> & amr_mesh)
 {
 #ifdef KALYPSSO_CORE_USE_HDF5
 
@@ -393,12 +394,13 @@ DataWriter<dim, device_t, model_t>::save_scalar(std::string              filenam
 // ================================================================================
 template <size_t dim, typename device_t, typename model_t>
 void
-DataWriter<dim, device_t, model_t>::save(std::string              filename,
-                                         DataArrayGhostedBlock_t  userdata_ghosted_block,
-                                         const ConfigMap &        config_map,
-                                         /*const*/ AMRmesh<dim> & amr_mesh,
-                                         bool                     save_full,
-                                         model_t const &          model)
+DataWriter<dim, device_t, model_t>::save(
+  [[maybe_unused]] std::string              filename,
+  [[maybe_unused]] DataArrayGhostedBlock_t  userdata_ghosted_block,
+  [[maybe_unused]] const ConfigMap &        config_map,
+  [[maybe_unused]] /*const*/ AMRmesh<dim> & amr_mesh,
+  [[maybe_unused]] bool                     save_full,
+  [[maybe_unused]] model_t const &          model)
 {
 #ifdef KALYPSSO_CORE_USE_HDF5
   const auto fm = model.get_fieldmap();
@@ -458,11 +460,11 @@ DataWriter<dim, device_t, model_t>::save(std::string              filename,
 // ================================================================================
 template <size_t dim, typename device_t, typename model_t>
 void
-DataWriter<dim, device_t, model_t>::save(std::string              filename,
-                                         FaceDataArrayBlock_t     facedata,
-                                         const ConfigMap &        config_map,
-                                         /*const*/ AMRmesh<dim> & amr_mesh,
-                                         std::string              varname)
+DataWriter<dim, device_t, model_t>::save([[maybe_unused]] std::string              filename,
+                                         [[maybe_unused]] FaceDataArrayBlock_t     facedata,
+                                         [[maybe_unused]] const ConfigMap &        config_map,
+                                         [[maybe_unused]] /*const*/ AMRmesh<dim> & amr_mesh,
+                                         [[maybe_unused]] std::string              varname)
 {
 #ifdef KALYPSSO_CORE_USE_HDF5
   std::string outputDir = config_map.getString("output", "outputDir", "./");

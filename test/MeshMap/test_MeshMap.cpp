@@ -381,9 +381,11 @@ void
 run_test(const ParallelEnv & par_env, int argc, char * argv[])
 {
   using namespace p4est;
+#ifdef KALYPSSO_CORE_USE_HDF5
   // using DataArrayLeafHost_t = DataArrayLeafHost<real_t, device_t>;
   // using DataArrayBlockHost_t = DataArrayBlockHost<real_t, device_t>;
   using DataArrayBlock_t = DataArrayBlock<dim, real_t, device_t>;
+#endif
 
   // check if user passed a custom ini filename
   std::string config_filename = kalypsso::cmdline_get_string(argv, argv + argc, "--ini");
