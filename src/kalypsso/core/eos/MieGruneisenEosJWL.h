@@ -101,7 +101,7 @@ struct MieGruneisenEosJWLParam
 struct MieGruneisenEosJWL
 {
   //! JWL Mie-Gruneisen parameters
-  const MieGruneisenEosJWLParam m_params;
+  MieGruneisenEosJWLParam m_params;
 
   KOKKOS_DEFAULTED_FUNCTION
   MieGruneisenEosJWL() = default;

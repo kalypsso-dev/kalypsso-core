@@ -65,7 +65,7 @@ template <typename device_t>
 using mg_eos_vdw_array_t = Kokkos::View<MieGruneisenEosVanDerWaalsGas *, device_t>;
 
 //! return the number of material of given Mie-Gruneisen type
-int
+size_t
 get_number_of_eos(ConfigMap const & config_map, MG_EOS_TYPE mg_eos_type);
 
 
@@ -241,6 +241,27 @@ public:
                    real_t phi_rho1) const;
 
   /**
+   * Compute mixture volumic internal energy.
+   *
+   * To be used only when there are two materials
+   *
+   * \param[in] rho mixture density
+   * \param[in] eint mixture internal energy
+   * \param[in] phi0 volume fraction of material 0
+   * \param[in] phi1 volume fraction of material 1
+   * \param[in] rho_phi0 partial density of material 0
+   * \param[in] rho_phi1 partial density of material 1
+   */
+  KOKKOS_FUNCTION
+  real_t
+  mixture_volumic_eint(real_t rho,
+                       real_t pressure,
+                       real_t phi0,
+                       real_t phi1,
+                       real_t phi_rho0,
+                       real_t phi_rho1) const;
+
+  /**
    * Compute mixture specific internal energy.
    *
    * To be used only when there are two materials
@@ -261,26 +282,6 @@ public:
                         real_t phi_rho0,
                         real_t phi_rho1) const;
 
-  /**
-   * Compute mixture volumic internal energy.
-   *
-   * To be used only when there are two materials
-   *
-   * \param[in] rho mixture density
-   * \param[in] eint mixture internal energy
-   * \param[in] phi0 volume fraction of material 0
-   * \param[in] phi1 volume fraction of material 1
-   * \param[in] rho_phi0 partial density of material 0
-   * \param[in] rho_phi1 partial density of material 1
-   */
-  KOKKOS_FUNCTION
-  real_t
-  mixture_volumic_eint(real_t rho,
-                       real_t pressure,
-                       real_t phi0,
-                       real_t phi1,
-                       real_t phi_rho0,
-                       real_t phi_rho1) const;
 
   /**
    * Compute mixture squared speed of sound.
@@ -325,6 +326,12 @@ public:
                       real_t phi_rho1) const;
 
 }; // class MieGruneisenMixture
+
+// explicit template instantiation
+#ifdef KALYPSSO_CORE_INSTANTIATE_HOST_TEMPLATE
+extern template class MieGruneisenMixture<HostDevice>;
+#endif
+extern template class MieGruneisenMixture<DefaultDevice>;
 
 } // namespace eos
 } // namespace core

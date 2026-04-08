@@ -101,7 +101,7 @@ struct MieGruneisenEosCochranChanParam
 struct MieGruneisenEosCochranChan
 {
   //! Cochran-Chan Mie-Gruneisen parameters
-  const MieGruneisenEosCochranChanParam m_params;
+  MieGruneisenEosCochranChanParam m_params;
 
   KOKKOS_DEFAULTED_FUNCTION
   MieGruneisenEosCochranChan() = default;

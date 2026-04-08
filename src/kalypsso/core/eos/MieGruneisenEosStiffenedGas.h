@@ -82,7 +82,7 @@ struct MieGruneisenEosStiffenedGasParam
 struct MieGruneisenEosStiffenedGas
 {
   //! Stiffened gas Mie-Gruneisen parameters
-  const MieGruneisenEosStiffenedGasParam m_params;
+  MieGruneisenEosStiffenedGasParam m_params;
 
   KOKKOS_DEFAULTED_FUNCTION
   MieGruneisenEosStiffenedGas() = default;
@@ -174,13 +174,23 @@ struct MieGruneisenEosStiffenedGas
   } // specific_eint_from_pressure
 
   /**
+   * Speed of sound square.
+   */
+  KOKKOS_INLINE_FUNCTION
+  real_t
+  sound_speed_square(real_t pressure, real_t rho) const
+  {
+    return m_params.gamma * (pressure + m_params.pinf) / rho;
+  } // sound_speed_square
+
+  /**
    * Speed of sound.
    */
   KOKKOS_INLINE_FUNCTION
   real_t
   sound_speed(real_t pressure, real_t rho) const
   {
-    return sqrt(m_params.gamma * (pressure + m_params.pinf) / rho);
+    return sqrt(sound_speed_square(pressure, rho));
   } // sound_speed
 
   /**

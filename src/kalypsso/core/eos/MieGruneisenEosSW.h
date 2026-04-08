@@ -107,7 +107,7 @@ struct MieGruneisenEosSWParam
 struct MieGruneisenEosSW
 {
   //! Shockwave Mie-Gruneisen parameters
-  const MieGruneisenEosSWParam m_params;
+  MieGruneisenEosSWParam m_params;
 
   KOKKOS_DEFAULTED_FUNCTION
   MieGruneisenEosSW() = default;

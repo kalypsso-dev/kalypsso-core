@@ -19,10 +19,10 @@ namespace eos
 
 // =====================================================================
 // =====================================================================
-int
+size_t
 get_number_of_eos(ConfigMap const & config_map, MG_EOS_TYPE mg_eos_type)
 {
-  int        num_mat = 0;
+  size_t     num_mat = 0;
   const auto nmat = static_cast<size_t>(config_map.getInteger("run", "nmat", 2));
 
   for (size_t imat = 0; imat < nmat; ++imat)
@@ -41,12 +41,12 @@ get_number_of_eos(ConfigMap const & config_map, MG_EOS_TYPE mg_eos_type)
 template <typename device_t>
 MieGruneisenMixture<device_t>::MieGruneisenMixture(ConfigMap const & config_map)
   : m_num_material(static_cast<size_t>(config_map.getInteger("run", "nmat", 2)))
-  , m_mg_eos_ig(get_number_of_eos(config_map, MG_EOS_TYPE::MG_IDEAL_GAS))
-  , m_mg_eos_sg(get_number_of_eos(config_map, MG_EOS_TYPE::MG_STIFFENED_GAS))
-  , m_mg_eos_vdw(get_number_of_eos(config_map, MG_EOS_TYPE::MG_VANDERWAALS_GAS))
-  , m_mg_eos_sw(get_number_of_eos(config_map, MG_EOS_TYPE::MG_SHOCKWAVE))
-  , m_mg_eos_cc(get_number_of_eos(config_map, MG_EOS_TYPE::MG_COCHRAN_CHAN))
-  , m_mg_eos_jwl(get_number_of_eos(config_map, MG_EOS_TYPE::MG_JWL))
+  , m_mg_eos_ig("mg_eos_ig", get_number_of_eos(config_map, MG_EOS_TYPE::MG_IDEAL_GAS))
+  , m_mg_eos_sg("mg_eos_sg", get_number_of_eos(config_map, MG_EOS_TYPE::MG_STIFFENED_GAS))
+  , m_mg_eos_vdw("mg_eos_vdw", get_number_of_eos(config_map, MG_EOS_TYPE::MG_VANDERWAALS_GAS))
+  , m_mg_eos_sw("mg_eos_sw", get_number_of_eos(config_map, MG_EOS_TYPE::MG_SHOCKWAVE))
+  , m_mg_eos_cc("mg_eos_cc", get_number_of_eos(config_map, MG_EOS_TYPE::MG_COCHRAN_CHAN))
+  , m_mg_eos_jwl("mg_eos_jwl", get_number_of_eos(config_map, MG_EOS_TYPE::MG_JWL))
   , m_material_eos_type("material_eos_type", m_num_material)
   , m_material_eos_id("material_eos_id", m_num_material)
 {
@@ -67,9 +67,11 @@ MieGruneisenMixture<device_t>::MieGruneisenMixture(ConfigMap const & config_map)
     const auto eos_type = get_mg_eos_type(imat, config_map);
     assertm(eos_type != +MG_EOS_TYPE::MG_INVALID,
             "Wrong Mie-Gruneisen eos type. Please check input file.");
+    const auto eos_type_int = static_cast<int>(eos_type);
+
     material_eos_type_host(imat) = eos_type;
-    material_eos_id_host(imat) = eos_histogram(eos_type);
-    eos_histogram(eos_type) += 1;
+    material_eos_id_host(imat) = eos_histogram(eos_type_int);
+    eos_histogram(eos_type_int) = eos_histogram(eos_type_int) + 1;
   }
 
   // monitoring
@@ -83,8 +85,8 @@ MieGruneisenMixture<device_t>::MieGruneisenMixture(ConfigMap const & config_map)
   }
 
   // copy to device
-  Kokkos::deep_copy(m_material_eos_id, material_eos_id_host);
-  Kokkos::deep_copy(m_material_eos_type, material_eos_type_host);
+  Kokkos::deep_copy(m_material_eos_id.logical_view(), material_eos_id_host.logical_view());
+  Kokkos::deep_copy(m_material_eos_type.logical_view(), material_eos_type_host.logical_view());
 
 } // MieGruneisenMixture<device_t>::MieGruneisenMixture
 
@@ -125,6 +127,8 @@ MieGruneisenMixture<device_t>::material_gruneisen_param(int imat, real_t rho) co
     return m_mg_eos_cc(material_eos_id).gamma(rho);
   }
 
+  return ZERO_F;
+
 } // MieGruneisenMixture<device_t>::material_gruneisen_param
 
 // =====================================================================
@@ -164,6 +168,8 @@ MieGruneisenMixture<device_t>::material_eint_ref(int imat, real_t rho) const
     return m_mg_eos_cc(material_eos_id).eint_ref(rho);
   }
 
+  return ZERO_F;
+
 } // MieGruneisenMixture<device_t>::material_eint_ref
 
 // =====================================================================
@@ -202,6 +208,8 @@ MieGruneisenMixture<device_t>::material_pressure_ref(int imat, real_t rho) const
   {
     return m_mg_eos_cc(material_eos_id).pressure_ref(rho);
   }
+
+  return ZERO_F;
 
 } // MieGruneisenMixture<device_t>::material_pressure_ref
 
@@ -243,6 +251,8 @@ MieGruneisenMixture<device_t>::material_sound_speed_square(int    imat,
   {
     return m_mg_eos_cc(material_eos_id).sound_speed_square(pressure, rho);
   }
+
+  return ZERO_F;
 
 } // MieGruneisenMixture<device_t>::material_sound_speed_square
 
@@ -318,12 +328,12 @@ MieGruneisenMixture<device_t>::mixture_pressure(real_t rho,
 // =====================================================================
 template <typename device_t>
 real_t
-MieGruneisenMixture<device_t>::mixture_specific_eint(real_t rho,
-                                                     real_t pressure,
-                                                     real_t phi0,
-                                                     real_t phi1,
-                                                     real_t phi_rho0,
-                                                     real_t phi_rho1) const
+MieGruneisenMixture<device_t>::mixture_volumic_eint([[maybe_unused]] real_t rho,
+                                                    real_t                  pressure,
+                                                    real_t                  phi0,
+                                                    real_t                  phi1,
+                                                    real_t                  phi_rho0,
+                                                    real_t                  phi_rho1) const
 {
   // use eq (33) from Wallis et all, A unified diffuse interface method for the interaction
   // of rigid bodies with elastoplastic solids and multi-phase mixtures.
@@ -349,22 +359,21 @@ MieGruneisenMixture<device_t>::mixture_specific_eint(real_t rho,
   }
 
   return eint;
-
-} // MieGruneisenMixture<device_t>::mixture_specific_eint
+} // MieGruneisenMixture<device_t>::mixture_volumic_eint
 
 // =====================================================================
 // =====================================================================
 template <typename device_t>
 real_t
-MieGruneisenMixture<device_t>::mixture_volumic_eint(real_t rho,
-                                                    real_t pressure,
-                                                    real_t phi0,
-                                                    real_t phi1,
-                                                    real_t phi_rho0,
-                                                    real_t phi_rho1) const
+MieGruneisenMixture<device_t>::mixture_specific_eint(real_t rho,
+                                                     real_t pressure,
+                                                     real_t phi0,
+                                                     real_t phi1,
+                                                     real_t phi_rho0,
+                                                     real_t phi_rho1) const
 {
-  return rho * mixture_volumic_eint(rho, pressure, phi0, phi1, phi_rho0, phi_rho1);
-} // MieGruneisenMixture<device_t>::mixture_volumic_eint
+  return mixture_volumic_eint(rho, pressure, phi0, phi1, phi_rho0, phi_rho1) / rho;
+} // MieGruneisenMixture<device_t>::mixture_specific_eint
 
 // =====================================================================
 // =====================================================================
@@ -413,9 +422,15 @@ MieGruneisenMixture<device_t>::mixture_sound_speed(real_t rho,
                                                    real_t phi_rho1) const
 {
 
-  return sqrt(mixture_sound_speed(rho, pressure, phi0, phi1, phi_rho0, phi_rho1));
+  return sqrt(mixture_sound_speed_square(rho, pressure, phi0, phi1, phi_rho0, phi_rho1));
 
 } // MieGruneisenMixture<device_t>::mixture_sound_speed
+
+// explicit template instantiation
+#ifdef KALYPSSO_CORE_INSTANTIATE_HOST_TEMPLATE
+template class MieGruneisenMixture<HostDevice>;
+#endif
+template class MieGruneisenMixture<DefaultDevice>;
 
 } // namespace eos
 } // namespace core
