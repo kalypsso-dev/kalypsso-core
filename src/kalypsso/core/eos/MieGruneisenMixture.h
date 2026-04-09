@@ -240,7 +240,7 @@ public:
    * To be used only when there are two materials
    *
    * \param[in] rho mixture density
-   * \param[in] eint mixture internal energy
+   * \param[in] eint mixture specific internal energy
    * \param[in] phi0 volume fraction of material 0
    * \param[in] phi1 volume fraction of material 1
    * \param[in] rho_phi0 partial density of material 0
@@ -261,7 +261,7 @@ public:
    * To be used only when there are two materials
    *
    * \param[in] rho mixture density
-   * \param[in] eint mixture internal energy
+   * \param[in] pressure mixture pressure
    * \param[in] phi0 volume fraction of material 0
    * \param[in] phi1 volume fraction of material 1
    * \param[in] rho_phi0 partial density of material 0
@@ -282,7 +282,7 @@ public:
    * To be used only when there are two materials
    *
    * \param[in] rho mixture density
-   * \param[in] eint mixture internal energy
+   * \param[in] pressure mixture pressure
    * \param[in] phi0 volume fraction of material 0
    * \param[in] phi1 volume fraction of material 1
    * \param[in] rho_phi0 partial density of material 0
