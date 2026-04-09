@@ -362,13 +362,13 @@ MieGruneisenMixture<device_t>::mixture_gruneisen_param(real_t phi0,
   real_t tmp = ZERO_F;
 
   // material 0
-  if (phi0 > LOW_PHI)
+  // if (phi0 > LOW_PHI)
   {
     tmp += phi0 / material_gruneisen_param(0, phi_rho0 / phi0);
   }
 
   // material 1
-  if (phi1 > LOW_PHI)
+  // if (phi1 > LOW_PHI)
   {
     tmp += phi1 / material_gruneisen_param(1, phi_rho1 / phi1);
   }
@@ -396,20 +396,15 @@ MieGruneisenMixture<device_t>::mixture_pressure(real_t rho,
   real_t tmp = ZERO_F;
 
   // material 0
-  if (phi0 > LOW_PHI)
-  {
-    const auto rho0 = phi_rho0 / phi0;
-    tmp += phi_rho0 * material_specific_eint_ref(0, rho0) -
-           phi0 * material_pressure_ref(0, rho0) / material_gruneisen_param(0, rho0);
-  }
+  const auto rho0 = phi0 > LOW_PHI ? phi_rho0 / phi0 : ONE_F;
+  tmp += phi_rho0 * material_specific_eint_ref(0, rho0) -
+         phi0 * material_pressure_ref(0, rho0) / material_gruneisen_param(0, rho0);
+
 
   // material 1
-  if (phi1 > LOW_PHI)
-  {
-    const auto rho1 = phi_rho1 / phi1;
-    tmp += phi_rho1 * material_specific_eint_ref(1, rho1) -
-           phi1 * material_pressure_ref(1, rho1) / material_gruneisen_param(1, rho1);
-  }
+  const auto rho1 = phi1 > LOW_PHI ? phi_rho1 / phi1 : ONE_F;
+  tmp += phi_rho1 * material_specific_eint_ref(1, rho1) -
+         phi1 * material_pressure_ref(1, rho1) / material_gruneisen_param(1, rho1);
 
   const auto pressure_mix =
     mixture_gruneisen_param(phi0, phi1, phi_rho0, phi_rho1) * (rho * eint - tmp);
@@ -437,22 +432,17 @@ MieGruneisenMixture<device_t>::mixture_volumic_eint([[maybe_unused]] real_t rho,
   real_t eint = ZERO_F;
 
   // material 0
-  if (phi0 > LOW_PHI)
-  {
-    const auto rho0 = phi_rho0 / phi0;
-    eint += phi_rho0 * material_specific_eint_ref(0, rho0);
-    eint += phi0 * (pressure - material_pressure_ref(0, rho0)) / material_gruneisen_param(0, rho0);
-  }
+  const auto rho0 = phi0 > LOW_PHI ? phi_rho0 / phi0 : ONE_F;
+  eint += phi_rho0 * material_specific_eint_ref(0, rho0);
+  eint += phi0 * (pressure - material_pressure_ref(0, rho0)) / material_gruneisen_param(0, rho0);
 
   // material 1
-  if (phi1 > LOW_PHI)
-  {
-    const auto rho1 = phi_rho1 / phi1;
-    eint += phi_rho1 * material_specific_eint_ref(1, rho1);
-    eint += phi1 * (pressure - material_pressure_ref(1, rho1)) / material_gruneisen_param(1, rho1);
-  }
+  const auto rho1 = phi1 > LOW_PHI ? phi_rho1 / phi1 : ONE_F;
+  eint += phi_rho1 * material_specific_eint_ref(1, rho1);
+  eint += phi1 * (pressure - material_pressure_ref(1, rho1)) / material_gruneisen_param(1, rho1);
 
   return eint;
+
 } // MieGruneisenMixture<device_t>::mixture_volumic_eint
 
 // =====================================================================
@@ -490,20 +480,14 @@ MieGruneisenMixture<device_t>::mixture_sound_speed_square(real_t rho,
   real_t tmp = ZERO_F;
 
   // material 0
-  if (phi0 > LOW_PHI)
-  {
-    const auto rho0 = phi_rho0 / phi0;
-    const auto Y0 = phi_rho0 / rho; // mass fraction
-    tmp += Y0 * material_sound_speed_square(0, pressure, rho0) / material_gruneisen_param(0, rho0);
-  }
+  const auto rho0 = phi0 > LOW_PHI ? phi_rho0 / phi0 : ONE_F;
+  const auto Y0 = phi_rho0 / rho; // mass fraction
+  tmp += Y0 * material_sound_speed_square(0, pressure, rho0) / material_gruneisen_param(0, rho0);
 
   // material 1
-  if (phi1 > LOW_PHI)
-  {
-    const auto rho1 = phi_rho1 / phi1;
-    const auto Y1 = phi_rho1 / rho; // mass fraction
-    tmp += Y1 * material_sound_speed_square(1, pressure, rho1) / material_gruneisen_param(1, rho1);
-  }
+  const auto rho1 = phi1 > LOW_PHI ? phi_rho1 / phi1 : ONE_F;
+  const auto Y1 = phi_rho1 / rho; // mass fraction
+  tmp += Y1 * material_sound_speed_square(1, pressure, rho1) / material_gruneisen_param(1, rho1);
 
   return mixture_gruneisen_param(phi0, phi1, phi_rho0, phi_rho1) * tmp;
 
