@@ -102,7 +102,7 @@ get_number_of_eos(ConfigMap const & config_map, MG_EOS_TYPE mg_eos_type);
  *
  * \f$ K_S = \frac{1}{\sum_i \frac{\phi_i}{\K_{S,i}} } \f$
  *
- * The mixture internal energy is given by:
+ * The mixture volumic internal energy is given by:
  *
  * \f$ \rho \mathcal{E} = \sum_i $\phi_i \rho_i eint_i \f$
  *
@@ -143,16 +143,25 @@ private:
   //! array of eos, one per material (JWL)
   mg_eos_jwl_array_t<device_t> m_mg_eos_jwl;
 
+  //! type alias for material eos type array
+  //! apparently one can't use a better-enum as a Kokkos::View data type on device (nvcc KO)
+  // using material_eos_type_t = DataArray<MG_EOS_TYPE, device_t>; // KO
+  using material_eos_type_t = DataArray<MG_EOS_TYPE::_integral, device_t>;
+
+  //! type alias for material eos id array
+  using material_eos_id_t = DataArray<int, device_t>;
+
   //! material eos type array
-  DataArray<MG_EOS_TYPE, device_t> m_material_eos_type;
+  material_eos_type_t m_material_eos_type;
 
   //! material eos id.
   //! material id among all material with the same eos
-  DataArray<int, device_t> m_material_eos_id;
+  material_eos_id_t m_material_eos_id;
 
   //! low value for a volume fraction
   static constexpr real_t LOW_PHI = 1e-5;
 
+public:
   /**
    * Retrieve Gruneisen parameter of a given material.
    *
@@ -167,7 +176,7 @@ private:
   material_gruneisen_param(int imat, real_t rho) const;
 
   /**
-   * Retrieve reference internal energy of a given material.
+   * Retrieve reference specific internal energy of a given material.
    *
    * \param[in] imat material id
    * \param[in] rho material density (rho_phi/phi)
@@ -177,7 +186,7 @@ private:
    */
   KOKKOS_FUNCTION
   real_t
-  material_eint_ref(int imat, real_t rho) const;
+  material_specific_eint_ref(int imat, real_t rho) const;
 
   /**
    * Retrieve reference pressure of a given material.
@@ -206,7 +215,6 @@ private:
   real_t
   material_sound_speed_square(int imat, real_t pressure, real_t rho) const;
 
-public:
   /**
    * Compute mixture Gruneisen parameter (two materials).
    *

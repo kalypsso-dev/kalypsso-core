@@ -74,6 +74,7 @@ struct MieGruneisenEosSWParam
   //! reference internal energy
   real_t e0;
 
+  //! retrieve parameters from input config
   static auto
   get_parameters(const size_t i_mat, const ConfigMap & config_map)
   {
@@ -93,6 +94,21 @@ struct MieGruneisenEosSWParam
 
     return params;
   } // get_parameters
+
+  //! print parameters
+  void
+  print()
+  {
+    KALYPSSO_INFO("Mie-Gruneisen Shockwave: rho0={} Gamma0={} c0={} s1={} s2={} s3={} b={} e0={}",
+                  rho0,
+                  Gamma0,
+                  c0,
+                  s1,
+                  s2,
+                  s3,
+                  b,
+                  e0);
+  }
 
 }; // struct MieGruneisenEosSWParam
 
@@ -130,6 +146,13 @@ struct MieGruneisenEosSW
   MieGruneisenEosSW(const ConfigMap & config_map)
     : MieGruneisenEosSW(0, config_map)
   {}
+
+  //! print parameters
+  void
+  print()
+  {
+    m_params.print();
+  }
 
   /**
    * Compute Gruneisen parameter.

@@ -8,6 +8,8 @@
 #include <kalypsso/core/eos/MieGruneisenMixture.h>
 #include <kalypsso/utils/log/kalypsso_log.h>
 
+#include <type_traits> // for std::is_same_v
+
 namespace kalypsso
 {
 
@@ -54,39 +56,119 @@ MieGruneisenMixture<device_t>::MieGruneisenMixture(ConfigMap const & config_map)
   auto eos_histogram = Kokkos::View<int *, HostDevice>("EOS histogram", MG_EOS_TYPE::MG_NUM);
   Kokkos::deep_copy(eos_histogram, 0);
 
-  auto material_eos_type_host =
-    DataArray<MG_EOS_TYPE, device_t>::create_host_mirror_view(m_material_eos_type);
-  auto material_eos_id_host = DataArray<int, device_t>::create_host_mirror_view(m_material_eos_id);
+  auto material_eos_type_host = material_eos_type_t::create_host_mirror_view(m_material_eos_type);
+  auto material_eos_id_host = material_eos_id_t::create_host_mirror_view(m_material_eos_id);
 
   for (size_t i = 0; i < m_num_material; ++i)
     material_eos_id_host(i) = 0;
 
   // init material eos type array (on host)
-  for (size_t imat = 0; imat < m_num_material; ++imat)
+  for (size_t i_mat = 0; i_mat < m_num_material; ++i_mat)
   {
-    const auto eos_type = get_mg_eos_type(imat, config_map);
+    const auto eos_type = get_mg_eos_type(i_mat, config_map);
     assertm(eos_type != +MG_EOS_TYPE::MG_INVALID,
             "Wrong Mie-Gruneisen eos type. Please check input file.");
-    const auto eos_type_int = static_cast<int>(eos_type);
+    const auto eos_type_int = eos_type._to_integral();
 
-    material_eos_type_host(imat) = eos_type;
-    material_eos_id_host(imat) = eos_histogram(eos_type_int);
+    material_eos_type_host(i_mat) = eos_type_int;
+    material_eos_id_host(i_mat) = eos_histogram(eos_type_int);
     eos_histogram(eos_type_int) = eos_histogram(eos_type_int) + 1;
   }
 
-  // monitoring
-  KALYPSSO_INFO("Mie-Gruneisen mixture");
-  for (size_t imat = 0; imat < m_num_material; ++imat)
+  // create host mirror views
+  auto mg_eos_ig_host = Kokkos::create_mirror_view(m_mg_eos_ig);
+  auto mg_eos_sg_host = Kokkos::create_mirror_view(m_mg_eos_sg);
+  auto mg_eos_vdw_host = Kokkos::create_mirror_view(m_mg_eos_vdw);
+  auto mg_eos_sw_host = Kokkos::create_mirror_view(m_mg_eos_sw);
+  auto mg_eos_cc_host = Kokkos::create_mirror_view(m_mg_eos_cc);
+  auto mg_eos_jwl_host = Kokkos::create_mirror_view(m_mg_eos_jwl);
+
+  // initialize all eos
+  for (size_t i_mat = 0; i_mat < m_num_material; ++i_mat)
   {
-    KALYPSSO_INFO("material #{} eos={} id={}",
-                  imat,
-                  material_eos_type_host(imat)._to_string(),
-                  material_eos_id_host(imat));
+    const auto eos_type = MG_EOS_TYPE::_from_integral_unchecked(material_eos_type_host(i_mat));
+    const auto material_eos_id = material_eos_id_host(i_mat);
+
+    if (eos_type == +MG_EOS_TYPE::MG_IDEAL_GAS)
+    {
+      mg_eos_ig_host(material_eos_id) = MieGruneisenEosIdealGas(i_mat, config_map);
+    }
+    else if (eos_type == +MG_EOS_TYPE::MG_STIFFENED_GAS)
+    {
+      mg_eos_sg_host(material_eos_id) = MieGruneisenEosStiffenedGas(i_mat, config_map);
+    }
+    else if (eos_type == +MG_EOS_TYPE::MG_VANDERWAALS_GAS)
+    {
+      mg_eos_vdw_host(material_eos_id) = MieGruneisenEosVanDerWaalsGas(i_mat, config_map);
+    }
+    else if (eos_type == +MG_EOS_TYPE::MG_SHOCKWAVE)
+    {
+      mg_eos_sw_host(material_eos_id) = MieGruneisenEosSW(i_mat, config_map);
+    }
+    else if (eos_type == +MG_EOS_TYPE::MG_COCHRAN_CHAN)
+    {
+      mg_eos_cc_host(material_eos_id) = MieGruneisenEosCochranChan(i_mat, config_map);
+    }
+    else if (eos_type == +MG_EOS_TYPE::MG_JWL)
+    {
+      mg_eos_jwl_host(material_eos_id) = MieGruneisenEosJWL(i_mat, config_map);
+    }
   }
 
   // copy to device
   Kokkos::deep_copy(m_material_eos_id.logical_view(), material_eos_id_host.logical_view());
   Kokkos::deep_copy(m_material_eos_type.logical_view(), material_eos_type_host.logical_view());
+
+  Kokkos::deep_copy(m_mg_eos_ig, mg_eos_ig_host);
+  Kokkos::deep_copy(m_mg_eos_sg, mg_eos_sg_host);
+  Kokkos::deep_copy(m_mg_eos_vdw, mg_eos_vdw_host);
+  Kokkos::deep_copy(m_mg_eos_sw, mg_eos_sw_host);
+  Kokkos::deep_copy(m_mg_eos_cc, mg_eos_cc_host);
+  Kokkos::deep_copy(m_mg_eos_jwl, mg_eos_jwl_host);
+
+  // monitoring
+  if constexpr (std::is_same_v<device_t, HostDevice>)
+  {
+    KALYPSSO_INFO("Initializing Mie-Gruneisen mixture on host");
+  }
+  else
+  {
+    KALYPSSO_INFO("Initializing Mie-Gruneisen mixture on device");
+  }
+
+  for (size_t i_mat = 0; i_mat < m_num_material; ++i_mat)
+  {
+    const auto eos_type = MG_EOS_TYPE::_from_integral_unchecked(material_eos_type_host(i_mat));
+    KALYPSSO_INFO(
+      "material #{} eos={} id={}", i_mat, eos_type._to_string(), material_eos_id_host(i_mat));
+    const auto material_eos_id = material_eos_id_host(i_mat);
+
+    if (eos_type == +MG_EOS_TYPE::MG_IDEAL_GAS)
+    {
+      mg_eos_ig_host(material_eos_id).print();
+    }
+    else if (eos_type == +MG_EOS_TYPE::MG_STIFFENED_GAS)
+    {
+      mg_eos_sg_host(material_eos_id).print();
+    }
+    else if (eos_type == +MG_EOS_TYPE::MG_VANDERWAALS_GAS)
+    {
+      mg_eos_vdw_host(material_eos_id).print();
+    }
+    else if (eos_type == +MG_EOS_TYPE::MG_SHOCKWAVE)
+    {
+      mg_eos_sw_host(material_eos_id).print();
+    }
+    else if (eos_type == +MG_EOS_TYPE::MG_COCHRAN_CHAN)
+    {
+      mg_eos_cc_host(material_eos_id).print();
+    }
+    else if (eos_type == +MG_EOS_TYPE::MG_JWL)
+    {
+      mg_eos_jwl_host(material_eos_id).print();
+    }
+  }
+
 
 } // MieGruneisenMixture<device_t>::MieGruneisenMixture
 
@@ -97,7 +179,7 @@ real_t
 MieGruneisenMixture<device_t>::material_gruneisen_param(int imat, real_t rho) const
 {
   // get EOS type
-  const auto eos_type = m_material_eos_type(imat);
+  const auto eos_type = MG_EOS_TYPE::_from_integral_unchecked(m_material_eos_type(imat));
 
   // get material eos id
   const auto material_eos_id = m_material_eos_id(imat);
@@ -135,10 +217,10 @@ MieGruneisenMixture<device_t>::material_gruneisen_param(int imat, real_t rho) co
 // =====================================================================
 template <typename device_t>
 real_t
-MieGruneisenMixture<device_t>::material_eint_ref(int imat, real_t rho) const
+MieGruneisenMixture<device_t>::material_specific_eint_ref(int imat, real_t rho) const
 {
   // get EOS type
-  const auto eos_type = m_material_eos_type(imat);
+  const auto eos_type = MG_EOS_TYPE::_from_integral_unchecked(m_material_eos_type(imat));
 
   // get material eos id
   const auto material_eos_id = m_material_eos_id(imat);
@@ -170,7 +252,7 @@ MieGruneisenMixture<device_t>::material_eint_ref(int imat, real_t rho) const
 
   return ZERO_F;
 
-} // MieGruneisenMixture<device_t>::material_eint_ref
+} // MieGruneisenMixture<device_t>::material_specific_eint_ref
 
 // =====================================================================
 // =====================================================================
@@ -179,7 +261,7 @@ real_t
 MieGruneisenMixture<device_t>::material_pressure_ref(int imat, real_t rho) const
 {
   // get EOS type
-  const auto eos_type = m_material_eos_type(imat);
+  const auto eos_type = MG_EOS_TYPE::_from_integral_unchecked(m_material_eos_type(imat));
 
   // get material eos id
   const auto material_eos_id = m_material_eos_id(imat);
@@ -222,7 +304,7 @@ MieGruneisenMixture<device_t>::material_sound_speed_square(int    imat,
                                                            real_t rho) const
 {
   // get EOS type
-  const auto eos_type = m_material_eos_type(imat);
+  const auto eos_type = MG_EOS_TYPE::_from_integral_unchecked(m_material_eos_type(imat));
 
   // get material eos id
   const auto material_eos_id = m_material_eos_id(imat);
@@ -276,7 +358,7 @@ MieGruneisenMixture<device_t>::mixture_gruneisen_param(real_t phi0,
   // material 1
   if (phi1 > LOW_PHI)
   {
-    tmp += phi1 / material_gruneisen_param(0, phi_rho1 / phi1);
+    tmp += phi1 / material_gruneisen_param(1, phi_rho1 / phi1);
   }
 
   return 1 / tmp;
@@ -305,7 +387,7 @@ MieGruneisenMixture<device_t>::mixture_pressure(real_t rho,
   if (phi0 > LOW_PHI)
   {
     const auto rho0 = phi_rho0 / phi0;
-    tmp += phi_rho0 * material_eint_ref(0, rho0) -
+    tmp += phi_rho0 * material_specific_eint_ref(0, rho0) -
            phi0 * material_pressure_ref(0, rho0) / material_gruneisen_param(0, rho0);
   }
 
@@ -313,7 +395,7 @@ MieGruneisenMixture<device_t>::mixture_pressure(real_t rho,
   if (phi1 > LOW_PHI)
   {
     const auto rho1 = phi_rho1 / phi1;
-    tmp += phi_rho1 * material_eint_ref(1, rho1) -
+    tmp += phi_rho1 * material_specific_eint_ref(1, rho1) -
            phi1 * material_pressure_ref(1, rho1) / material_gruneisen_param(1, rho1);
   }
 
@@ -346,7 +428,7 @@ MieGruneisenMixture<device_t>::mixture_volumic_eint([[maybe_unused]] real_t rho,
   if (phi0 > LOW_PHI)
   {
     const auto rho0 = phi_rho0 / phi0;
-    eint += phi_rho0 * material_eint_ref(0, rho0);
+    eint += phi_rho0 * material_specific_eint_ref(0, rho0);
     eint += phi0 * (pressure - material_pressure_ref(0, rho0)) / material_gruneisen_param(0, rho0);
   }
 
@@ -354,7 +436,7 @@ MieGruneisenMixture<device_t>::mixture_volumic_eint([[maybe_unused]] real_t rho,
   if (phi1 > LOW_PHI)
   {
     const auto rho1 = phi_rho1 / phi1;
-    eint += phi_rho1 * material_eint_ref(1, rho1);
+    eint += phi_rho1 * material_specific_eint_ref(1, rho1);
     eint += phi1 * (pressure - material_pressure_ref(1, rho1)) / material_gruneisen_param(1, rho1);
   }
 
@@ -386,6 +468,13 @@ MieGruneisenMixture<device_t>::mixture_sound_speed_square(real_t rho,
                                                           real_t phi_rho0,
                                                           real_t phi_rho1) const
 {
+  // use eq (31) from Wallis et all, A unified diffuse interface method for the interaction
+  // of rigid bodies with elastoplastic solids and multi-phase mixtures.
+  // J. Appl. Phys. 131, 104901 (2022)
+  // https://doi.org/10.1063/5.0079970
+  //
+  // The formula from this article is slightly erroneous, but we use the correct one
+
   real_t tmp = ZERO_F;
 
   // material 0
@@ -393,8 +482,7 @@ MieGruneisenMixture<device_t>::mixture_sound_speed_square(real_t rho,
   {
     const auto rho0 = phi_rho0 / phi0;
     const auto Y0 = phi_rho0 / rho; // mass fraction
-    tmp += phi0 * Y0 * material_sound_speed_square(0, pressure, rho0) /
-           material_gruneisen_param(0, rho0);
+    tmp += Y0 * material_sound_speed_square(0, pressure, rho0) / material_gruneisen_param(0, rho0);
   }
 
   // material 1
@@ -402,8 +490,7 @@ MieGruneisenMixture<device_t>::mixture_sound_speed_square(real_t rho,
   {
     const auto rho1 = phi_rho1 / phi1;
     const auto Y1 = phi_rho1 / rho; // mass fraction
-    tmp += phi1 * Y1 * material_sound_speed_square(1, pressure, rho1) /
-           material_gruneisen_param(1, rho1);
+    tmp += Y1 * material_sound_speed_square(1, pressure, rho1) / material_gruneisen_param(1, rho1);
   }
 
   return mixture_gruneisen_param(phi0, phi1, phi_rho0, phi_rho1) * tmp;

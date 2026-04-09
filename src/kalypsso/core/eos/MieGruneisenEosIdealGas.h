@@ -52,6 +52,7 @@ struct MieGruneisenEosIdealGasParam
   //! one over gamma minus one
   real_t one_over_gammam1;
 
+  //! retrieve parameters from input config
   static auto
   get_parameters(const size_t i_mat, const ConfigMap & config_map)
   {
@@ -64,6 +65,13 @@ struct MieGruneisenEosIdealGasParam
 
     return params;
   } // get_parameters
+
+  //! print parameters
+  void
+  print()
+  {
+    KALYPSSO_INFO("Ideal gas: gamma={}", gamma);
+  }
 
 }; // struct MieGruneisenEosIdealGasParam
 
@@ -102,6 +110,13 @@ struct MieGruneisenEosIdealGas
     : MieGruneisenEosIdealGas(0, config_map)
   {}
 
+  //! print parameters
+  void
+  print()
+  {
+    m_params.print();
+  }
+
   /**
    * Compute Gruneisen parameter.
    *
@@ -125,7 +140,7 @@ struct MieGruneisenEosIdealGas
   } // pressure_ref
 
   /**
-   * Compute reference internal energy.
+   * Compute reference specifc internal energy.
    */
   KOKKOS_INLINE_FUNCTION real_t
   eint_ref([[maybe_unused]] const real_t rho) const

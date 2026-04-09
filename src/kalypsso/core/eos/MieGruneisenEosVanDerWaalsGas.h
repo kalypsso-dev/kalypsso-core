@@ -60,6 +60,7 @@ struct MieGruneisenEosVanDerWaalsGasParam
   //! covolume
   real_t b;
 
+  //! retrieve parameters from input config
   static auto
   get_parameters(const size_t i_mat, const ConfigMap & config_map)
   {
@@ -74,6 +75,13 @@ struct MieGruneisenEosVanDerWaalsGasParam
 
     return params;
   } // get_parameters
+
+  //! print parameters
+  void
+  print()
+  {
+    KALYPSSO_INFO("Van der Waals gas: gamma={} a={} b={}", gamma, a, b);
+  }
 
 }; // struct MieGruneisenEosVanDerWaalsGasParam
 
@@ -111,6 +119,13 @@ struct MieGruneisenEosVanDerWaalsGas
   MieGruneisenEosVanDerWaalsGas(const ConfigMap & config_map)
     : MieGruneisenEosVanDerWaalsGas(0, config_map)
   {}
+
+  //! print parameters
+  void
+  print()
+  {
+    m_params.print();
+  }
 
   /**
    * Compute Gruneisen parameter.

@@ -55,6 +55,7 @@ struct MieGruneisenEosStiffenedGasParam
   //! one over gamma minus one
   real_t one_over_gammam1;
 
+  //! retrieve parameters from input config
   static auto
   get_parameters(const size_t i_mat, const ConfigMap & config_map)
   {
@@ -68,6 +69,13 @@ struct MieGruneisenEosStiffenedGasParam
 
     return params;
   } // get_parameters
+
+  //! print parameters
+  void
+  print()
+  {
+    KALYPSSO_INFO("Stiffened gas: gamma={} pinf={}", gamma, pinf);
+  }
 
 }; // struct MieGruneisenEosStiffenedGasParam
 
@@ -106,6 +114,13 @@ struct MieGruneisenEosStiffenedGas
     : MieGruneisenEosStiffenedGas(0, config_map)
   {}
 
+  //! print parameters
+  void
+  print()
+  {
+    m_params.print();
+  }
+
   /**
    * Compute Gruneisen parameter.
    *
@@ -129,7 +144,7 @@ struct MieGruneisenEosStiffenedGas
   } // pressure_ref
 
   /**
-   * Compute reference internal energy.
+   * Compute reference specific internal energy.
    */
   KOKKOS_INLINE_FUNCTION real_t
   eint_ref([[maybe_unused]] const real_t rho) const

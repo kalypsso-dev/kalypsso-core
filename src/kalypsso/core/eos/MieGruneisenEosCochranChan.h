@@ -70,6 +70,7 @@ struct MieGruneisenEosCochranChanParam
   //! reference specific internal energy
   real_t e0;
 
+  //! retrieve parameters from input config
   static auto
   get_parameters(const size_t i_mat, const ConfigMap & config_map)
   {
@@ -87,6 +88,20 @@ struct MieGruneisenEosCochranChanParam
 
     return params;
   } // get_parameters
+
+  //! print parameters
+  void
+  print()
+  {
+    KALYPSSO_INFO("Mie-Gruneisen Cochran-Chan: Gamma0={} rho0={} E1={} E2={} A1={} A2={} e0={}",
+                  Gamma0,
+                  rho0,
+                  E1,
+                  E2,
+                  A1,
+                  A2,
+                  e0);
+  }
 
 }; // struct MieGruneisenEosCochranChanParam
 
@@ -124,6 +139,13 @@ struct MieGruneisenEosCochranChan
   MieGruneisenEosCochranChan(const ConfigMap & config_map)
     : MieGruneisenEosCochranChan(0, config_map)
   {}
+
+  //! print parameters
+  void
+  print()
+  {
+    m_params.print();
+  }
 
   /**
    * Compute Gruneisen parameter.
