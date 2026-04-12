@@ -60,6 +60,11 @@ struct MieGruneisenEosVanDerWaalsGasParam
   //! covolume
   real_t b;
 
+  //! reference density.
+  //! For multimaterial usage: when material volume fraction is too small, use reference density
+  real_t rho0;
+
+  //! retrieve parameters from input config
   static auto
   get_parameters(const size_t i_mat, const ConfigMap & config_map)
   {
@@ -71,9 +76,17 @@ struct MieGruneisenEosVanDerWaalsGasParam
     params.one_over_gammam1 = ONE_F / (params.gamma - ONE_F);
     params.a = config_map.getReal(material_id, "a", KALYPSSO_NUM(0.0));
     params.b = config_map.getReal(material_id, "b", KALYPSSO_NUM(0.0));
+    params.rho0 = config_map.getReal(material_id, "rho0", KALYPSSO_NUM(1.0));
 
     return params;
   } // get_parameters
+
+  //! print parameters
+  void
+  print()
+  {
+    KALYPSSO_INFO("Van der Waals gas: gamma={} a={} b={}", gamma, a, b);
+  }
 
 }; // struct MieGruneisenEosVanDerWaalsGasParam
 
@@ -88,7 +101,7 @@ struct MieGruneisenEosVanDerWaalsGasParam
 struct MieGruneisenEosVanDerWaalsGas
 {
   //! Van Der Waals gas Mie-Gruneisen parameters
-  const MieGruneisenEosVanDerWaalsGasParam m_params;
+  MieGruneisenEosVanDerWaalsGasParam m_params;
 
   KOKKOS_DEFAULTED_FUNCTION
   MieGruneisenEosVanDerWaalsGas() = default;
@@ -111,6 +124,22 @@ struct MieGruneisenEosVanDerWaalsGas
   MieGruneisenEosVanDerWaalsGas(const ConfigMap & config_map)
     : MieGruneisenEosVanDerWaalsGas(0, config_map)
   {}
+
+  //! print parameters
+  void
+  print()
+  {
+    m_params.print();
+  }
+
+  /**
+   * Reference density.
+   */
+  KOKKOS_INLINE_FUNCTION real_t
+  density_ref() const
+  {
+    return m_params.rho0;
+  }
 
   /**
    * Compute Gruneisen parameter.
@@ -180,7 +209,7 @@ struct MieGruneisenEosVanDerWaalsGas
   } // specific_eint_from_pressure
 
   /**
-   * Compute speed of sound.
+   * Compute speed of sound square.
    *
    * By using the alternate definition of speed of sound
    *
@@ -192,14 +221,24 @@ struct MieGruneisenEosVanDerWaalsGas
    */
   KOKKOS_INLINE_FUNCTION
   real_t
-  sound_speed(real_t pressure, real_t rho) const
+  sound_speed_square(real_t pressure, real_t rho) const
   {
     const auto arho2 = m_params.a * rho * rho;
 
-    return sqrt(
-      (m_params.gamma * pressure + (m_params.gamma - 2) * arho2 + 2 * m_params.b * arho2 * rho) /
-      (rho - m_params.b * rho * rho));
+    return (m_params.gamma * pressure + (m_params.gamma - 2) * arho2 +
+            2 * m_params.b * arho2 * rho) /
+           (rho - m_params.b * rho * rho);
 
+  } // sound_speed_square
+
+  /**
+   * Speed of sound.
+   */
+  KOKKOS_INLINE_FUNCTION
+  real_t
+  sound_speed(real_t pressure, real_t rho) const
+  {
+    return sqrt(sound_speed_square(pressure, rho));
   } // sound_speed
 
   /**

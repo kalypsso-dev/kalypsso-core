@@ -70,6 +70,7 @@ struct MieGruneisenEosJWLParam
   //! reference specific internal energy
   real_t e0;
 
+  //! retrieve parameters from input config
   static auto
   get_parameters(const size_t i_mat, const ConfigMap & config_map)
   {
@@ -88,6 +89,21 @@ struct MieGruneisenEosJWLParam
     return params;
   } // get_parameters
 
+  //! print parameters
+  void
+  print()
+  {
+    KALYPSSO_INFO(
+      "Mie-Gruneisen Jones-Wilikns-Lee: Gamma0={} rho0={} R1={} R2={} A1={} A2={} e0={}",
+      Gamma0,
+      rho0,
+      R1,
+      R2,
+      A1,
+      A2,
+      e0);
+  }
+
 }; // struct MieGruneisenEosJWLParam
 
 // ==============================================================================
@@ -101,7 +117,7 @@ struct MieGruneisenEosJWLParam
 struct MieGruneisenEosJWL
 {
   //! JWL Mie-Gruneisen parameters
-  const MieGruneisenEosJWLParam m_params;
+  MieGruneisenEosJWLParam m_params;
 
   KOKKOS_DEFAULTED_FUNCTION
   MieGruneisenEosJWL() = default;
@@ -124,6 +140,22 @@ struct MieGruneisenEosJWL
   MieGruneisenEosJWL(const ConfigMap & config_map)
     : MieGruneisenEosJWL(0, config_map)
   {}
+
+  //! print parameters
+  void
+  print()
+  {
+    m_params.print();
+  }
+
+  /**
+   * Reference density.
+   */
+  KOKKOS_INLINE_FUNCTION real_t
+  density_ref() const
+  {
+    return m_params.rho0;
+  }
 
   /**
    * Compute Gruneisen parameter.

@@ -39,6 +39,7 @@ BETTER_ENUM(EOS_TYPE, int,
             VANDERWAALS_GAS,
             MIE_GRUNEISEN, // To be removed
             MIE_GRUNEISEN_SW, // shockwave eos
+            MIE_GRUNEISEN_SW2, // shockwave eos (v2)
             MIE_GRUNEISEN_CC, // Cochran-Chan eos
             MIE_GRUNEISEN_JWL // JWL (Jones-Wilkins-Lee) eos
   )
@@ -50,12 +51,16 @@ BETTER_ENUM(EOS_TYPE, int,
  * Enumerate types of equation of states (multifluid) using the Mie-Gruneisen form.
  */
 BETTER_ENUM(MG_EOS_TYPE, int,
-            MG_IDEAL_GAS,
-            MG_STIFFENED_GAS,
-            MG_VANDERWAALS_GAS,
-            MG_COCHRAN_CHAN,
-            MG_JWL,
-            MG_SHOCKWAVE)
+            MG_IDEAL_GAS =       0,
+            MG_STIFFENED_GAS =   1,
+            MG_VANDERWAALS_GAS = 2,
+            MG_COCHRAN_CHAN =    3,
+            MG_JWL =             4,
+            MG_SHOCKWAVE =       5,
+            MG_SHOCKWAVE2 =      6,
+            MG_INVALID =         7, // MUST BE LAST
+            MG_NUM = MG_INVALID     // total number of EOS
+            )
 // clang-format on
 
 /**
@@ -83,11 +88,11 @@ get_mg_eos_type(const size_t i_mat, ConfigMap const & config_map)
 {
   const auto material_id = "material" + std::to_string(i_mat);
 
-  auto eos_name = config_map.getString(material_id, "mg_eos_name", "MG_STIFFENED_GAS");
+  auto eos_name = config_map.getString(material_id, "mg_eos_name", "MG_INVALID");
   auto maybe_value = MG_EOS_TYPE::_from_string_nothrow(eos_name.c_str());
   if (maybe_value)
     return *maybe_value;
-  return MG_EOS_TYPE::MG_STIFFENED_GAS;
+  return MG_EOS_TYPE::MG_INVALID;
 }
 
 /**

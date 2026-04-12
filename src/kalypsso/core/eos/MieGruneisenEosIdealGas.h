@@ -52,6 +52,11 @@ struct MieGruneisenEosIdealGasParam
   //! one over gamma minus one
   real_t one_over_gammam1;
 
+  //! reference density.
+  //! For multimaterial usage: when material volume fraction is too small, use reference density
+  real_t rho0;
+
+  //! retrieve parameters from input config
   static auto
   get_parameters(const size_t i_mat, const ConfigMap & config_map)
   {
@@ -61,9 +66,17 @@ struct MieGruneisenEosIdealGasParam
 
     params.gamma = config_map.getReal(material_id, "gamma", KALYPSSO_NUM(1.0));
     params.one_over_gammam1 = ONE_F / (params.gamma - ONE_F);
+    params.rho0 = config_map.getReal(material_id, "rho0", KALYPSSO_NUM(1.0));
 
     return params;
   } // get_parameters
+
+  //! print parameters
+  void
+  print()
+  {
+    KALYPSSO_INFO("Ideal gas: gamma={}", gamma);
+  }
 
 }; // struct MieGruneisenEosIdealGasParam
 
@@ -78,7 +91,7 @@ struct MieGruneisenEosIdealGasParam
 struct MieGruneisenEosIdealGas
 {
   //! Ideal gas Mie-Gruneisen parameters
-  const MieGruneisenEosIdealGasParam m_params;
+  MieGruneisenEosIdealGasParam m_params;
 
   KOKKOS_DEFAULTED_FUNCTION
   MieGruneisenEosIdealGas() = default;
@@ -101,6 +114,22 @@ struct MieGruneisenEosIdealGas
   MieGruneisenEosIdealGas(const ConfigMap & config_map)
     : MieGruneisenEosIdealGas(0, config_map)
   {}
+
+  //! print parameters
+  void
+  print()
+  {
+    m_params.print();
+  }
+
+  /**
+   * Reference density.
+   */
+  KOKKOS_INLINE_FUNCTION real_t
+  density_ref() const
+  {
+    return m_params.rho0;
+  }
 
   /**
    * Compute Gruneisen parameter.
@@ -125,7 +154,7 @@ struct MieGruneisenEosIdealGas
   } // pressure_ref
 
   /**
-   * Compute reference internal energy.
+   * Compute reference specific internal energy.
    */
   KOKKOS_INLINE_FUNCTION real_t
   eint_ref([[maybe_unused]] const real_t rho) const
@@ -170,13 +199,23 @@ struct MieGruneisenEosIdealGas
   } // specific_eint_from_pressure
 
   /**
+   * Speed of sound square.
+   */
+  KOKKOS_INLINE_FUNCTION
+  real_t
+  sound_speed_square(real_t pressure, real_t rho) const
+  {
+    return m_params.gamma * pressure / rho;
+  } // sound_speed_square
+
+  /**
    * Speed of sound.
    */
   KOKKOS_INLINE_FUNCTION
   real_t
   sound_speed(real_t pressure, real_t rho) const
   {
-    return sqrt(m_params.gamma * pressure / rho);
+    return sqrt(sound_speed_square(pressure, rho));
   } // sound_speed
 
   /**
@@ -190,10 +229,9 @@ struct MieGruneisenEosIdealGas
    */
   KOKKOS_INLINE_FUNCTION
   real_t
-  bulk_modulus(real_t pressure, real_t rho) const
+  bulk_modulus(real_t pressure, [[maybe_unused]] real_t rho) const
   {
-    const auto c = sound_speed(pressure, rho);
-    return rho * c * c;
+    return m_params.gamma * pressure;
   } // bulk_modulus
 
 }; // struct MieGruneisenEosIdealGas
