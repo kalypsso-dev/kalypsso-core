@@ -413,6 +413,54 @@ MieGruneisenEosArray<device_t>::material_bulk_modulus(int i_mat, real_t pressure
 
 } // MieGruneisenEosArray<device_t>::material_bulk_modulus
 
+// =====================================================================
+// =====================================================================
+template <typename device_t>
+real_t
+MieGruneisenEosArray<device_t>::material_specific_eint_from_pressure(int    i_mat,
+                                                                     real_t pressure,
+                                                                     real_t rho) const
+{
+
+  // get EOS type
+  const auto eos_type = MG_EOS_TYPE::_from_integral_unchecked(m_material_eos_type(i_mat));
+
+  // get material eos id
+  const auto material_eos_id = m_material_eos_id(i_mat);
+
+  if (eos_type == +MG_EOS_TYPE::MG_IDEAL_GAS)
+  {
+    return m_mg_eos_ig(material_eos_id).specific_eint_from_pressure(pressure, rho);
+  }
+  else if (eos_type == +MG_EOS_TYPE::MG_STIFFENED_GAS)
+  {
+    return m_mg_eos_sg(material_eos_id).specific_eint_from_pressure(pressure, rho);
+  }
+  else if (eos_type == +MG_EOS_TYPE::MG_VANDERWAALS_GAS)
+  {
+    return m_mg_eos_vdw(material_eos_id).specific_eint_from_pressure(pressure, rho);
+  }
+  else if (eos_type == +MG_EOS_TYPE::MG_SHOCKWAVE)
+  {
+    return m_mg_eos_sw(material_eos_id).specific_eint_from_pressure(pressure, rho);
+  }
+  else if (eos_type == +MG_EOS_TYPE::MG_SHOCKWAVE2)
+  {
+    return m_mg_eos_sw2(material_eos_id).specific_eint_from_pressure(pressure, rho);
+  }
+  else if (eos_type == +MG_EOS_TYPE::MG_JWL)
+  {
+    return m_mg_eos_jwl(material_eos_id).specific_eint_from_pressure(pressure, rho);
+  }
+  else if (eos_type == +MG_EOS_TYPE::MG_COCHRAN_CHAN)
+  {
+    return m_mg_eos_cc(material_eos_id).specific_eint_from_pressure(pressure, rho);
+  }
+
+  return ZERO_F;
+
+} // MieGruneisenEosArray<device_t>::material_specific_eint_from_pressure
+
 // explicit template instantiation
 #ifdef KALYPSSO_CORE_INSTANTIATE_HOST_TEMPLATE
 template class MieGruneisenEosArray<HostDevice>;
