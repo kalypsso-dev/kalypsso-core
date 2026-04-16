@@ -310,13 +310,16 @@ MeshGhostsExchangerMultiVar<dim, T, device_t>::exchange_multi_var(
 
   resize_offsets();
 
+  auto ghost_offsets = m_ghost_offsets;
+  auto mirror_offsets = m_mirror_offsets;
+
   const auto start_ghost = this->m_amr_mesh.local_num_quadrants();
   Kokkos::parallel_for(
     "init ghost offsets",
     Kokkos::RangePolicy<exec_space>(0, this->m_amr_mesh.local_num_ghosts() + 1),
     KOKKOS_LAMBDA(const int32_t i_oct) {
       auto start_offset = userdata_block.offsets()(start_ghost);
-      m_ghost_offsets(i_oct) = userdata_block.offsets()(start_ghost + i_oct) - start_offset;
+      ghost_offsets(i_oct) = userdata_block.offsets()(start_ghost + i_oct) - start_offset;
     });
 
   const auto num_mirrors = this->m_amr_mesh.local_num_mirrors();
@@ -325,7 +328,7 @@ MeshGhostsExchangerMultiVar<dim, T, device_t>::exchange_multi_var(
     Kokkos::RangePolicy<exec_space>(0, num_mirrors + 1),
     KOKKOS_LAMBDA(const int32_t i_oct, uint32_t & offset, bool is_final) {
       if (is_final)
-        m_mirror_offsets(i_oct) = offset;
+        mirror_offsets(i_oct) = offset;
       if (i_oct != num_mirrors)
       {
         const auto key = mirror_keys(i_oct);
