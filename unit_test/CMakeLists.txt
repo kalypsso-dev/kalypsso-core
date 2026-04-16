@@ -78,6 +78,8 @@ endfunction(kalypsso_add_test)
 #
 # core
 #
+kalypsso_add_test(geometry_test TEST_USE_MPI_OFF core/geometry_test.cpp main.cpp)
+
 kalypsso_add_test(geometry_utils_test TEST_USE_MPI_OFF core/geometry_utils_test.cpp main.cpp)
 
 kalypsso_add_test(morton_utils_test TEST_USE_MPI_OFF core/morton_utils_test.cpp main.cpp)

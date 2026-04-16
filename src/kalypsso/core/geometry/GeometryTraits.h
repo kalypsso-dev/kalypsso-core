@@ -1,0 +1,133 @@
+// SPDX-FileCopyrightText: 2026 kalypsso-core authors
+//
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+/*
+ * The code below is based on ArborX : https://github.com/arborx/ArborX
+ *
+ * Copyright (c) 2025, ArborX authors
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+/**
+ * \file GeometryTraits.h
+ */
+#ifndef KALYPSSO_CORE_GEOMETRY_GEOMETRYTRAITS_H_
+#define KALYPSSO_CORE_GEOMETRY_GEOMETRYTRAITS_H_
+
+#include <Kokkos_DetectionIdiom.hpp>
+#include <Kokkos_Macros.hpp>
+
+namespace kalypsso
+{
+
+namespace core
+{
+
+namespace GeometryTraits
+{
+
+template <typename Geometry>
+struct dimension
+{
+  using not_specialized = void; // tag to detect existence of a specialization
+};
+template <typename Geometry>
+inline constexpr int dimension_v = dimension<std::remove_cv_t<Geometry>>::value;
+
+struct not_specialized
+{};
+
+template <typename Geometry>
+struct tag
+{
+  using type = not_specialized;
+};
+template <typename Geometry>
+using tag_t = typename tag<std::remove_cv_t<Geometry>>::type;
+
+template <typename Geometry>
+struct coordinate_type
+{
+  using type = not_specialized;
+};
+template <typename Geometry>
+using coordinate_type_t = typename coordinate_type<std::remove_cv_t<Geometry>>::type;
+
+// clang - format off
+#define DEFINE_GEOMETRY(name, name_tag)                      \
+  struct name_tag                                            \
+  {};                                                        \
+  template <typename Geometry>                               \
+  struct is_##name : std::is_same<tag_t<Geometry>, name_tag> \
+  {};                                                        \
+  template <typename Geometry>                               \
+  inline constexpr bool is_##name##_v = is_##name<Geometry>::value
+// clang-format on
+
+DEFINE_GEOMETRY(point, PointTag);
+DEFINE_GEOMETRY(box, BoxTag);
+DEFINE_GEOMETRY(sphere, SphereTag);
+DEFINE_GEOMETRY(triangle, TriangleTag);
+DEFINE_GEOMETRY(tetrahedron, TetrahedronTag);
+DEFINE_GEOMETRY(segment, SegmentTag);
+DEFINE_GEOMETRY(ellipsoid, EllipsoidTag);
+#undef DEFINE_GEOMETRY
+
+template <typename Geometry>
+inline constexpr bool is_valid_geometry =
+  (is_point_v<Geometry> || is_box_v<Geometry> || is_sphere_v<Geometry> || is_triangle_v<Geometry> ||
+   is_tetrahedron_v<Geometry> || is_segment_v<Geometry> || is_ellipsoid_v<Geometry>);
+
+template <typename Geometry>
+using DimensionNotSpecializedArchetypeAlias = typename dimension<Geometry>::not_specialized;
+
+template <typename Geometry>
+using TagNotSpecializedArchetypeAlias = typename tag<Geometry>::not_specialized;
+
+template <typename Geometry>
+using CoordinateNotSpecializedArchetypeAlias = typename coordinate_type<Geometry>::not_specialized;
+
+template <typename Geometry>
+using DimensionArchetypeAlias = decltype(dimension_v<Geometry>);
+
+template <typename Geometry>
+void
+check_valid_geometry_traits(Geometry const &)
+{
+  static_assert(!Kokkos::is_detected<DimensionNotSpecializedArchetypeAlias, Geometry>{},
+                "Must specialize GeometryTraits::dimension<Geometry>");
+  static_assert(!Kokkos::is_detected<TagNotSpecializedArchetypeAlias, Geometry>{},
+                "Must specialize GeometryTraits::tag<Geometry>");
+  static_assert(!Kokkos::is_detected<CoordinateNotSpecializedArchetypeAlias, Geometry>{},
+                "Must specialize GeometryTraits::coordinate_type<Geometry>");
+
+  static_assert(Kokkos::is_detected<DimensionArchetypeAlias, Geometry>{},
+                "GeometryTraits::dimension<Geometry> must define 'value' member type");
+  static_assert(std::is_integral<Kokkos::detected_t<DimensionArchetypeAlias, Geometry>>{} &&
+                  GeometryTraits::dimension_v<Geometry> > 0,
+                "GeometryTraits::dimension<Geometry>::value must be a positive integral");
+
+  static_assert(!std::is_same_v<tag_t<Geometry>, not_specialized>,
+                "GeometryTraits::tag<Geometry> must define 'type' member type");
+  static_assert(is_valid_geometry<Geometry>,
+                "GeometryTraits::tag<Geometry>::type must be PointTag, BoxTag, "
+                "Ellipsoid, SphereTag, Tetrahedron or TriangleTag");
+
+  static_assert(!std::is_same_v<coordinate_type_t<Geometry>, not_specialized>,
+                "GeometryTraits::coordinate_type<Geometry> must define 'type' "
+                "member type");
+  using Coordinate = coordinate_type_t<Geometry>;
+  static_assert(std::is_arithmetic_v<Coordinate>,
+                "GeometryTraits::coordinate_type<Geometry> must be an arithmetic type");
+} // check_valid_geometry_traits
+
+} // namespace GeometryTraits
+
+} // namespace core
+
+} // namespace kalypsso
+
+#endif // KALYPSSO_CORE_GEOMETRY_GEOMETRYTRAITS_H_

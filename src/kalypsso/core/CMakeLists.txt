@@ -117,6 +117,12 @@ add_library(
   FiniteDifferenceData.h
   FirstOrderDerivativeFiniteDifference.cpp
   FirstOrderDerivativeFiniteDifference.h
+  geometry/Box.h
+  geometry/GeometryTraits.h
+  geometry/Point.h
+  geometry/Sphere.h
+  geometry/Triangle.h
+  geometry/Vector.h
   geometry_utils.h
   GravityField.h
   GravityField.cpp

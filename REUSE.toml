@@ -29,7 +29,7 @@ SPDX-License-Identifier = "Unlicense"
 
 [[annotations]]
 path = [
-    "test/**/*.ini", "unit_test/*.ini", "src/**/Readme.md", "dependencies/**/.in", "dependencies/Readme.md", "src/kalypsso/core/eos/*.md"
+    "test/**/*.ini", "unit_test/*.ini", "src/**/Readme.md", "dependencies/**/.in", "dependencies/Readme.md", "src/kalypsso/core/eos/*.md", "src/kalypsso/core/geometry/readme.md"
 ]
 precedence = "override"
 SPDX-FileCopyrightText = "2025 kalypsso-core authors"
