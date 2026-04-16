@@ -31,6 +31,23 @@ FUZZY_THRESHOLD()
   }
 }
 
+template <typename T>
+KOKKOS_INLINE_FUNCTION bool
+IS_FUZZY_EQUAL(T a, T b)
+{
+  static_assert(std::is_floating_point_v<T>, "Type T must be a floating-point type");
+
+  return (fabs(a - b) < FUZZY_THRESHOLD<T>());
+}
+
+template <typename T>
+KOKKOS_INLINE_FUNCTION bool
+IS_FUZZY_EQUAL(T a, T b, T tol)
+{
+  static_assert(std::is_floating_point_v<T>, "Type T must be a floating-point type");
+
+  return (fabs(a - b) < tol);
+}
 
 template <typename T>
 KOKKOS_INLINE_FUNCTION bool
