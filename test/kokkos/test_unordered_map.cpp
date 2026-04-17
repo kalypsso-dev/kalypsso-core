@@ -91,7 +91,7 @@ test_unordered_map_2d(int N)
   std::cout << "dataMap.size()     = " << dataMap.size() << std::endl;
   std::cout << "dataMap.capacity() = " << dataMap.capacity() << " (max size)" << std::endl;
 
-  DataMap::HostMirror dataMapOnHost(dataMap.capacity());
+  DataMap::host_mirror_type dataMapOnHost(dataMap.capacity());
   Kokkos::deep_copy(dataMapOnHost, dataMap);
 
   for (std::size_t i = 0; i < dataMapOnHost.capacity(); ++i)
@@ -147,7 +147,7 @@ test_unordered_map_3d(int N)
   std::cout << "dataMap.size()     = " << dataMap.size() << std::endl;
   std::cout << "dataMap.capacity() = " << dataMap.capacity() << " (max size)" << std::endl;
 
-  DataMap::HostMirror dataMapOnHost(dataMap.capacity());
+  DataMap::host_mirror_type dataMapOnHost(dataMap.capacity());
   Kokkos::deep_copy(dataMapOnHost, dataMap);
 
   for (std::size_t i = 0; i < dataMapOnHost.capacity(); ++i)
