@@ -54,10 +54,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #
 include(cmake/options.cmake)
 
-# C++17 is required for Kokkos >= 4.0 CMAKE_CXX_STANDARD is the default value for the CXX_STANDARD
+# C++20 is required for Kokkos >= 5.0.0 CMAKE_CXX_STANDARD is the default value for the CXX_STANDARD
 # target property
 if(NOT DEFINED CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD 20)
   set(CMAKE_CXX_EXTENSIONS OFF)
 else()
   message(STATUS "CMAKE_CXX_STANDARD already set to ${CMAKE_CXX_STANDARD}")
