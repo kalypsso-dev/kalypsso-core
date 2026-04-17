@@ -237,7 +237,7 @@ VTKWriter::write_cell_data(const std::string &                                  
                            const Kokkos::View<real_t *, Kokkos::DefaultExecutionSpace> cell_data_d)
 {
 
-  Kokkos::View<real_t *, Kokkos::DefaultExecutionSpace>::HostMirror cell_data =
+  Kokkos::View<real_t *, Kokkos::DefaultExecutionSpace>::host_mirror_type cell_data =
     Kokkos::create_mirror(cell_data_d);
 
   Kokkos::deep_copy(cell_data, cell_data_d);

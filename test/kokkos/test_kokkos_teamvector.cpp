@@ -21,7 +21,7 @@ template <typename device_t>
 struct TestFunctorBase
 {
   using Data_t = Kokkos::View<int32_t *, device_t>;
-  using DataHost_t = typename Data_t::HostMirror;
+  using DataHost_t = typename Data_t::host_mirror_type;
 };
 
 /*************************************************/

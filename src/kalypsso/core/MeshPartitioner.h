@@ -72,7 +72,7 @@ public:
   using MaterialPresenceView_t = MaterialPresenceView<device_t>;
 
   using Weights_t = Kokkos::View<uint32_t *, HostDevice>;
-  using Hashmap_t = typename hashmap_base_t<device_t>::map_t::HostMirror;
+  using Hashmap_t = typename hashmap_base_t<device_t>::map_t::host_mirror_type;
 
   // =========================================================================
   // =========================================================================

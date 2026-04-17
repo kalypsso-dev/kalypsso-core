@@ -695,7 +695,7 @@ struct VtkWriter : public MandelbrotConfig<device_t>
     // allocate a 2d device View of size : number of nodes by 3
     // (x,y,z) of a given node
     using Nodes_pos = typename Kokkos::View<real_t * [3], device_t>;
-    using Nodes_pos_host = typename Nodes_pos::HostMirror;
+    using Nodes_pos_host = typename Nodes_pos::host_mirror_type;
 
     Nodes_pos nodes_pos = Nodes_pos("nodes_position", nbNodes);
 
@@ -704,7 +704,7 @@ struct VtkWriter : public MandelbrotConfig<device_t>
 
     // Kokkos view of keys
     using KeyVec = typename Kokkos::View<amr_key_t *, device_t>;
-    // using KeyVec_h = Kokkos::View<amr_key_t*, device_t>::HostMirror;
+    // using KeyVec_h = Kokkos::View<amr_key_t*, device_t>::host_mirror_type;
 
     KeyVec keyVec = KeyVec("vector_of_keys", mandelbrotMap.size());
 
@@ -886,7 +886,7 @@ struct MandelbrotCompute : public MandelbrotConfig<device_t>
 
     // create array of morton key (TODO replace uint64_t by morton_key_t)
     using KeyVec2 = typename Kokkos::View<uint64_t *, device_t>;
-    // using KeyVec_h = Kokkos::View<amr_key_t*, device_t>::HostMirror;
+    // using KeyVec_h = Kokkos::View<amr_key_t*, device_t>::host_mirror_type;
 
     KeyVec  keyVec = KeyVec("keys", mandelbrotMap.size());
     KeyVec2 sorted_keyVec = KeyVec2("sorted_keys", mandelbrotMap.size());
