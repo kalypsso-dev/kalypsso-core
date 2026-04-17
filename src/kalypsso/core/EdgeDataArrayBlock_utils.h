@@ -677,8 +677,8 @@ get_edge_outside_unit_vector(edge_multiindex_t<dim> const & ijk,
   auto const & edge_dir = ijk[dim];
 
   // compute normal directions to current edge
-  const auto dir1 = (edge_dir + 1) % 3;
-  const auto dir2 = (edge_dir + 2) % 3;
+  const auto dir1 = static_cast<size_t>((edge_dir + 1) % 3);
+  const auto dir2 = static_cast<size_t>((edge_dir + 2) % 3);
 
   if (edge_normal_type == +EdgeNormalType::DIAGONAL or edge_normal_type == +EdgeNormalType::DIR1)
   {

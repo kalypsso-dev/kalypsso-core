@@ -211,12 +211,13 @@ public:
 
     for (int i = 1; i <= static_cast<int>(dim); ++i)
     {
+      const size_t im1 = static_cast<size_t>(i) - 1;
       if (dir == i)
-        shift[i - 1] = 1;
+        shift[im1] = 1;
       else if (dir == -i)
-        shift[i - 1] = -1;
+        shift[im1] = -1;
       else
-        shift[i - 1] = 0;
+        shift[im1] = 0;
     }
     return shift;
   }
@@ -251,7 +252,7 @@ public:
   {
     KOKKOS_ASSERT((dir >= 0 and dir < static_cast<int>(dim)) &&
                   "[StencilHelper::is_brick_periodic] wrong value for dir");
-    return m_is_brick_periodic[dir];
+    return m_is_brick_periodic[static_cast<size_t>(dir)];
   }
 
   // =========================================================================================

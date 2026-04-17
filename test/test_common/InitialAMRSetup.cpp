@@ -336,7 +336,7 @@ InitialAMRSetup<dim, device_t, Function>::setup_initial_data_block_flux(
 
   // flux size
   auto fSizes = bSizes;
-  fSizes[direction]++;
+  fSizes[static_cast<size_t>(direction)]++;
 
   // get domain lower left corner
   const auto xyz_min = get_xyz_min<dim>(m_config_map);
@@ -579,9 +579,9 @@ InitialAMRSetup<dim, device_t, Function>::setup_initial_data_ghosted_block(
     const auto nbOcts = m_amr_mesh->local_num_quadrants_total();
     const auto num_vars = nbvar;
 
-    const auto tx = ghosted_block_size[IX];
-    const auto ty = ghosted_block_size[IY];
-    const auto tz = [=]() {
+    const auto                  tx = ghosted_block_size[IX];
+    const auto                  ty = ghosted_block_size[IY];
+    [[maybe_unused]] const auto tz = [&]() {
       if constexpr (dim == 2)
         return 1;
       if constexpr (dim == 3)
@@ -590,7 +590,7 @@ InitialAMRSetup<dim, device_t, Function>::setup_initial_data_ghosted_block(
 
     const int32_t bx = m_block_sizes[IX];
     const int32_t by = m_block_sizes[IY];
-    const int32_t bz = [=]() {
+    const int32_t bz = [&]() {
       if constexpr (dim == 3)
         return m_block_sizes[IZ];
       else
@@ -599,7 +599,7 @@ InitialAMRSetup<dim, device_t, Function>::setup_initial_data_ghosted_block(
 
     const int32_t gx = m_ghost_sizes[IX];
     const int32_t gy = m_ghost_sizes[IY];
-    const int32_t gz = [=]() {
+    const int32_t gz = [&]() {
       if constexpr (dim == 3)
         return m_ghost_sizes[IZ];
       else

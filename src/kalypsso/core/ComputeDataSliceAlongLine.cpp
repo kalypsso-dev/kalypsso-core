@@ -532,9 +532,9 @@ ComputeDataSliceAlongLine<dim, device_t>::operator()(const TagMarkCells,
   // signed dim
   constexpr auto sdim = static_cast<int>(dim);
 
-  const auto dir0 = (m_dir + 0) % sdim; // Segment axis
-  const auto dir1 = (m_dir + 1) % sdim;
-  const auto dir2 = (m_dir + 2) % sdim;
+  const auto dir0 = static_cast<size_t>((m_dir + 0) % sdim); // Segment axis
+  const auto dir1 = static_cast<size_t>((m_dir + 1) % sdim);
+  const auto dir2 = static_cast<size_t>((m_dir + 2) % sdim);
 
   // Check if segment crosses cell
   bool cross = false;

@@ -64,13 +64,13 @@ struct BrickLinearToXYZ
     {
       m_logx[2] = SC_LOG2_32(brick_sizes[2] - 1) + 1;
       m_n_iter *= (1 << m_logx[2]);
-      if (m_logx[2] < m_logx[m_rankx[0]])
+      if (m_logx[2] < m_logx[static_cast<size_t>(m_rankx[0])])
       {
         m_rankx[2] = m_rankx[1];
         m_rankx[1] = m_rankx[0];
         m_rankx[0] = 2;
       }
-      else if (m_logx[m_rankx[1]] <= m_logx[2])
+      else if (m_logx[static_cast<size_t>(m_rankx[1])] <= m_logx[2])
       {
         m_rankx[2] = 2;
       }
@@ -96,30 +96,32 @@ struct BrickLinearToXYZ
   {
     Kokkos::Array<uint16_t, dim> tx;
 
-    int i, j, k;
+    int i, j;
     int lastlog = 0;
 
     auto sdim = static_cast<int>(dim);
 
-    for (i = 0; i < sdim; i++)
+    for (size_t ii = 0; ii < dim; ii++)
     {
-      tx[i] = 0;
+      tx[ii] = 0;
     }
 
     for (i = 0; i < sdim - 1; i++)
     {
+      auto ii = static_cast<size_t>(i);
+
       p4est_topidx_t tempx[3] = { 0, 0, 0 };
-      int            logi = m_logx[m_rankx[i]] - lastlog;
+      int            logi = m_logx[static_cast<size_t>(m_rankx[ii])] - lastlog;
       int            idx[3] = { -1, -1, -1 };
       int            c = 0;
 
-      for (k = 0; k < sdim - i; k++)
+      for (size_t k = 0; k < dim - ii; k++)
       {
-        int d = m_rankx[i + k];
+        size_t d = static_cast<size_t>(m_rankx[ii + k]);
 
         idx[d] = 0;
       }
-      for (k = 0; k < sdim; k++)
+      for (size_t k = 0; k < dim; k++)
       {
         if (idx[k] == 0)
         {
@@ -132,7 +134,7 @@ struct BrickLinearToXYZ
         int base = (sdim - i) * j;
         int shift = (sdim - i - 1) * j;
 
-        for (k = 0; k < sdim; k++)
+        for (size_t k = 0; k < dim; k++)
         {
           int id = idx[k];
 
@@ -142,14 +144,14 @@ struct BrickLinearToXYZ
           }
         }
       }
-      for (k = 0; k < sdim; k++)
+      for (size_t k = 0; k < dim; k++)
       {
         tx[k] += static_cast<uint16_t>(tempx[k] << lastlog);
       }
       lastlog += logi;
       treeId >>= (sdim - i) * logi;
     }
-    tx[m_rankx[sdim - 1]] += static_cast<uint16_t>(treeId << lastlog);
+    tx[static_cast<size_t>(m_rankx[dim - 1])] += static_cast<uint16_t>(treeId << lastlog);
 
     return tx;
 
