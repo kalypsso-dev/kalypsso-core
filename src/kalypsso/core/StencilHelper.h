@@ -40,14 +40,14 @@ private:
   edge_shift_x(int i)
   {
     static constexpr edge_shift_t EDGE_SHIFT_X{ -1, 0, 1, -1, 0, 1, -1, 0, 1 };
-    return EDGE_SHIFT_X[i];
+    return EDGE_SHIFT_X[static_cast<size_t>(i)];
   }
 
   KOKKOS_FUNCTION static int
   edge_shift_y(int i)
   {
     const edge_shift_t EDGE_SHIFT_Y{ -1, -1, -1, 0, 0, 0, 1, 1, 1 };
-    return EDGE_SHIFT_Y[i];
+    return EDGE_SHIFT_Y[static_cast<size_t>(i)];
   }
 
   KOKKOS_FUNCTION static int
@@ -59,7 +59,7 @@ private:
                                                  3, 6, 7,    /* neighbors of EDGE_10 */
                                                  5, 7, 8 };  /* neighbors of EDGE_11 */
     // clang-format on
-    return INDEX_TO_SHIFT[i];
+    return INDEX_TO_SHIFT[static_cast<size_t>(i)];
   }
 
 public:

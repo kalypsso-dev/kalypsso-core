@@ -1135,9 +1135,8 @@ StencilHelper<dim, device_t>::getEdgeSiblingLoc(EdgeLocation_t const & edge_loc_
 
   const auto edge_index_out = to_edge_multiindex<dim>(ijk_sibling, edge_dir);
 
-  EdgeLocation_t edge_loc_out{
-    edge_index_out, cell_loc2.key, cell_loc2.iOct, cell_loc2.is_outside_domain, is_edge_valid
-  };
+  auto edge_loc_out = EdgeLocation_t(
+    edge_index_out, cell_loc2.key, cell_loc2.iOct, cell_loc2.is_outside_domain, is_edge_valid);
 
   return edge_loc_out;
 
