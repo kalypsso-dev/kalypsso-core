@@ -8,8 +8,8 @@
 # NOTE about required C++ standard we better chose to set the minimum C++ standard level if not
 # already done:
 #
-# * when building kokkos <  4.0.00, it defaults to c++-14
-# * when building kokkos >= 4.0.00, it defaults to c++-17
+# * when building kokkos <  5.0.0, it defaults to c++-17
+# * when building kokkos >= 5.0.0, it defaults to c++-20
 # * when using installed kokkos, we set C++ standard according to kokkos version
 
 #
@@ -35,11 +35,12 @@ set(KALYPSSO_CORE_KOKKOS_BACKEND
 # Set the possible values for kokkos backend device
 set_property(CACHE KALYPSSO_CORE_KOKKOS_BACKEND PROPERTY STRINGS "OpenMP" "Cuda" "HIP" "Undefined")
 
-# raise the minimum C++ standard level if not already done when build kokkos, it defaults to c++-17
-# when using installed kokkos, it is not set, so defaulting to c++-17 kokkos 4.0.00 requires c++-17
-# anyway
-if(NOT "${CMAKE_CXX_STANDARD}")
-  set(CMAKE_CXX_STANDARD 17)
+# raise the minimum C++ standard level if not already done
+# when build kokkos, it defaults to c++-20
+# when using installed kokkos, it is not set, so defaulting to c++-20
+# kokkos 5.0.0 requires c++-20 anyway
+if (NOT "${CMAKE_CXX_STANDARD}")
+  set(CMAKE_CXX_STANDARD 20)
 endif()
 
 # check if user requested a build of kokkos use carefully, it may strongly increase build time
@@ -71,12 +72,6 @@ if(KALYPSSO_CORE_KOKKOS_BUILD)
 
     if((NOT DEFINED Kokkos_ENABLE_CUDA) OR (NOT Kokkos_ENABLE_CUDA))
       set(Kokkos_ENABLE_CUDA
-          ON
-          CACHE BOOL "")
-    endif()
-
-    if((NOT DEFINED Kokkos_ENABLE_CUDA_LAMBDA) OR (NOT Kokkos_ENABLE_CUDA_LAMBDA))
-      set(Kokkos_ENABLE_CUDA_LAMBDA
           ON
           CACHE BOOL "")
     endif()
@@ -156,16 +151,17 @@ if(KALYPSSO_CORE_KOKKOS_BUILD)
   include(FetchContent)
 
   if(KALYPSSO_CORE_KOKKOS_USE_GIT)
+    message("[kalypsso-core] Building kokkos from source using git sources")
     FetchContent_Declare(
       kokkos_external
       SYSTEM
       GIT_REPOSITORY https://github.com/kokkos/kokkos.git
-      GIT_TAG 4.2.00)
+      GIT_TAG 5.1.0)
   else()
+    message("[kalypsso-core] Building kokkos from source using git submodule")
     FetchContent_Declare(
       kokkos_external
       SYSTEM
-      # URL https://github.com/kokkos/kokkos/archive/refs/tags/4.2.00.tar.gz
       SOURCE_DIR ${PROJECT_SOURCE_DIR}/external/kokkos)
   endif()
 
@@ -189,7 +185,7 @@ else()
   #
   # check if an already installed kokkos exists
   #
-  find_package(Kokkos 4.0.00 CONFIG REQUIRED)
+  find_package(Kokkos 5.1.0 CONFIG REQUIRED)
 
   if(TARGET Kokkos::kokkos)
 
@@ -198,7 +194,6 @@ else()
     if(KALYPSSO_CORE_ENABLE_GPU_CUDA)
       # kokkos_check is defined in KokkosConfigCommon.cmake
       kokkos_check(DEVICES "Cuda")
-      kokkos_check(OPTIONS CUDA_LAMBDA)
       kokkos_check(OPTIONS CUDA_CONSTEXPR)
     elseif(KALYPSSO_CORE_ENABLE_GPU_HIP)
       # TODO
