@@ -22,7 +22,7 @@ run_test(uint32_t nx, uint32_t ny)
   using exec_space = typename device_t::execution_space;
 
   using Data_t = Kokkos::View<int32_t **, Kokkos::LayoutLeft, device_t>;
-  // using DataHost_t = typename Data_t::HostMirror;
+  // using DataHost_t = typename Data_t::host_mirror_type;
 
   /*
    * TestKokkosMdrangeForFunctor

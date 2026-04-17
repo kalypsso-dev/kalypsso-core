@@ -81,7 +81,7 @@ public:
   using amr_hashmap_t = typename hashmap_base_t<device_t>::map_t;
 
   //! type alias for a host mirror of amr_hashmap_t
-  using amr_hashmap_host_t = typename amr_hashmap_t::HostMirror;
+  using amr_hashmap_host_t = typename amr_hashmap_t::host_mirror_type;
 
 private:
   //! config map (input parameter)
