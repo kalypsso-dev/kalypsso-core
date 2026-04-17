@@ -197,7 +197,7 @@ struct AMRContext : public AMRContextBase
   using amrflags_view_t = typename Kokkos::View<amrflag_t *, device_t>;
 
   //! type alias for a kokkos view holding amr flags on host
-  using amrflags_view_host_t = typename amrflags_view_t::HostMirror;
+  using amrflags_view_host_t = typename amrflags_view_t::host_mirror_type;
 
   using p4est_t = typename p4est::Wrapper<dim>;
   using forest_t = typename p4est_t::forest_t;
