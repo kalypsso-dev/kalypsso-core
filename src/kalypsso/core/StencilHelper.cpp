@@ -1461,7 +1461,9 @@ StencilHelper<dim, device_t>::compute_face_siblings_average(
   // check that fluxes is a flux array along the given face location (normal)
   {
     [[maybe_unused]] const auto dir = face_loc.ijk[dim];
-    KOKKOS_ASSERT((fluxes.shape()[dir] == cell_block_size[dir] + 1) && "fluxes has wrong size");
+    KOKKOS_ASSERT(
+      (fluxes.shape()[static_cast<size_t>(dir)] == cell_block_size[static_cast<size_t>(dir)] + 1) &&
+      "fluxes has wrong size");
     KOKKOS_ASSERT((fluxes.shape()[static_cast<size_t>(dir + 1) % dim] ==
                    cell_block_size[static_cast<size_t>(dir + 1) % dim]) &&
                   "fluxes has wrong size");
