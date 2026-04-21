@@ -14,7 +14,7 @@ if(KALYPSSO_CORE_USE_SPDLOG)
 
   target_compile_definitions(kalypsso_log PUBLIC -DSPDLOG_ACTIVE_LEVEL=${KALYPSSO_CORE_LOG_LEVEL})
 
-  target_link_libraries(kalypsso_log PRIVATE kalypsso_warnings kalypsso_core_config)
+  target_link_libraries(kalypsso_log PRIVATE kalypsso_warnings_host_only kalypsso_core_config)
 
   target_link_libraries(kalypsso_log PUBLIC spdlog::spdlog)
 endif(KALYPSSO_CORE_USE_SPDLOG)

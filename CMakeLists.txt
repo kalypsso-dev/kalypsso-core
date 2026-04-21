@@ -68,6 +68,7 @@ endif()
 #
 
 add_library(kalypsso_warnings INTERFACE)
+add_library(kalypsso_warnings_host_only INTERFACE)
 
 include(cmake/CompilerWarnings.cmake)
 
@@ -75,6 +76,7 @@ if(KALYPSSO_CORE_ENABLE_WARNINGS)
   kalypsso_set_project_warnings(
     kalypsso_warnings
     ${KALYPSSO_CORE_ENABLE_WARNINGS_AS_ERRORS}
+    ""
     ""
     ""
     ""
@@ -88,7 +90,8 @@ else()
     CLANG_CXX_WARNINGS_DEFAULT
     GCC_C_WARNINGS_DEFAULT
     GCC_CXX_WARNINGS_DEFAULT
-    CUDA_WARNINGS_DEFAULT)
+    CUDA_WARNINGS_DEFAULT
+    KOKKOS_DEVICE_SPECIFIC_WARNINGS_DEFAULT)
 endif()
 add_library(kalypsso::warnings ALIAS kalypsso_warnings)
 
