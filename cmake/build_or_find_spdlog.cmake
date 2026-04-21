@@ -6,8 +6,10 @@
 #   just use cmake option \"-DKALYPSSO_CORE_BUILD_SPDLOG=ON\" to enable it
 #
 
-# default value is OFF
-option(KALYPSSO_CORE_BUILD_SPDLOG "Building spdlog" OFF)
+# default value is ON (since Kokkos 5.1.0 and using c++-20, we need to upgrade spdlog to
+# version 1.17 when building for Kokkos::CUDA backend; so we can't rely on default spdlog
+# version on ubuntu).
+option(KALYPSSO_CORE_BUILD_SPDLOG "Building spdlog" ON)
 
 # build spdlog ?
 if(KALYPSSO_CORE_BUILD_SPDLOG)
