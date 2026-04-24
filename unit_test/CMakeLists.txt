@@ -28,7 +28,8 @@ function(kalypsso_add_test unit_test_name test_use_mpi)
   add_executable(${unit_test_name} "")
   target_sources(${unit_test_name} PRIVATE ${ARGN} kalypsso_unittest_utils.h)
 
-  target_include_directories(${unit_test_name} PUBLIC ${PROJECT_SOURCE_DIR}/unit_test ${PROJECT_SOURCE_DIR}/test)
+  target_include_directories(${unit_test_name} PUBLIC ${PROJECT_SOURCE_DIR}/unit_test
+                                                      ${PROJECT_SOURCE_DIR}/test)
   target_link_libraries(
     ${unit_test_name}
     PUBLIC kalypsso::config
