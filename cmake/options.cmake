@@ -30,6 +30,8 @@ option(KALYPSSO_CORE_CUDA_LINEINFO
        "When Cuda backend is enabled, add compile flag \"-lineinfo\" (default OFF)" OFF)
 option(KALYPSSO_CORE_CUDA_RES_USAGE
        "When Cuda backend is enabled, add compile flag \"-res_usage\" (default OFF)" OFF)
+option(KALYPSSO_CORE_CUDA_PTXAS_VERBOSE
+       "When Cuda backend is enabled, add compile flag \"--ptxas-options -v\" (default OFF)" OFF)
 
 # option (USE_MOOD "build MOOD numerical schemes" OFF)
 

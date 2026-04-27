@@ -164,6 +164,10 @@ function(
         set(KOKKOS_DEVICE_SPECIFIC_WARNINGS ${KOKKOS_DEVICE_SPECIFIC_WARNINGS} -res-usage)
       endif(KALYPSSO_CORE_CUDA_RES_USAGE)
 
+      if(KALYPSSO_CORE_CUDA_PTXAS_VERBOSE)
+        set(KOKKOS_DEVICE_SPECIFIC_WARNINGS ${KOKKOS_DEVICE_SPECIFIC_WARNINGS} -Xptxas=-v)
+      endif(KALYPSSO_CORE_CUDA_PTXAS_VERBOSE)
+
     else()
       set(GCC_CXX_WARNINGS ${GCC_C_WARNINGS} -Wold-style-cast # warn for c-style casts
       )
