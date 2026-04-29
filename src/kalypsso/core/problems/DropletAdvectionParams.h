@@ -5,8 +5,8 @@
 /**
  * \file DropletAdvectionParams.h
  */
-#ifndef KALYPSSO_GODUNOV_FIVE_EQ_DROPLET_ADVECTION_PARAMS_H_
-#define KALYPSSO_GODUNOV_FIVE_EQ_DROPLET_ADVECTION_PARAMS_H_
+#ifndef KALYPSSO_CORE_PROBLEMS_DROPLET_ADVECTION_PARAMS_H_
+#define KALYPSSO_CORE_PROBLEMS_DROPLET_ADVECTION_PARAMS_H_
 
 #include <kalypsso/utils/config/ConfigMap.h>
 #include <kalypsso/core/real_type.h>
@@ -73,4 +73,4 @@ struct DropletAdvectionParams
 
 } // namespace kalypsso
 
-#endif // KALYPSSO_GODUNOV_FIVE_EQ_DROPLET_ADVECTION_PARAMS_H_
+#endif // KALYPSSO_CORE_PROBLEMS_DROPLET_ADVECTION_PARAMS_H_
