@@ -199,8 +199,7 @@ if(KALYPSSO_CORE_KOKKOS_BUILD)
     kokkoscore
     kokkoscontainers
     kokkosalgorithms
-    kokkossimd
-    LIBDL)
+    kokkossimd)
   if(Kokkos_ENABLE_CUDA)
     list(APPEND targets_list CUDA)
   endif()

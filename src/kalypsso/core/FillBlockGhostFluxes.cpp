@@ -260,8 +260,8 @@ FillBlockGhostFluxesFunctor<dim, device_t>::fill_ghosts(
     shift_t<dim> shift = get_shift<dim>(0);
     shift[m_direction] = m_cell_block_size[m_direction] * dir;
 
-    const FaceLocation_t face_loc_cur{ face_multiindex_in, key_cur, iOct_global, false };
-    const auto           face_loc_neigh = m_stencil_helper.getNeighLoc(face_loc_cur, shift);
+    const auto face_loc_cur = FaceLocation_t(face_multiindex_in, key_cur, iOct_global, false);
+    const auto face_loc_neigh = m_stencil_helper.getNeighLoc(face_loc_cur, shift);
 
     /*
      * Dealing with the 3 possibilities:

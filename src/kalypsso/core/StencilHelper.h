@@ -40,14 +40,14 @@ private:
   edge_shift_x(int i)
   {
     static constexpr edge_shift_t EDGE_SHIFT_X{ -1, 0, 1, -1, 0, 1, -1, 0, 1 };
-    return EDGE_SHIFT_X[i];
+    return EDGE_SHIFT_X[static_cast<size_t>(i)];
   }
 
   KOKKOS_FUNCTION static int
   edge_shift_y(int i)
   {
     const edge_shift_t EDGE_SHIFT_Y{ -1, -1, -1, 0, 0, 0, 1, 1, 1 };
-    return EDGE_SHIFT_Y[i];
+    return EDGE_SHIFT_Y[static_cast<size_t>(i)];
   }
 
   KOKKOS_FUNCTION static int
@@ -59,7 +59,7 @@ private:
                                                  3, 6, 7,    /* neighbors of EDGE_10 */
                                                  5, 7, 8 };  /* neighbors of EDGE_11 */
     // clang-format on
-    return INDEX_TO_SHIFT[i];
+    return INDEX_TO_SHIFT[static_cast<size_t>(i)];
   }
 
 public:
@@ -211,12 +211,13 @@ public:
 
     for (int i = 1; i <= static_cast<int>(dim); ++i)
     {
+      const size_t im1 = static_cast<size_t>(i) - 1;
       if (dir == i)
-        shift[i - 1] = 1;
+        shift[im1] = 1;
       else if (dir == -i)
-        shift[i - 1] = -1;
+        shift[im1] = -1;
       else
-        shift[i - 1] = 0;
+        shift[im1] = 0;
     }
     return shift;
   }
@@ -251,7 +252,7 @@ public:
   {
     KOKKOS_ASSERT((dir >= 0 and dir < static_cast<int>(dim)) &&
                   "[StencilHelper::is_brick_periodic] wrong value for dir");
-    return m_is_brick_periodic[dir];
+    return m_is_brick_periodic[static_cast<size_t>(dir)];
   }
 
   // =========================================================================================

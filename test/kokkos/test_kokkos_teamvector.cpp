@@ -87,8 +87,7 @@ public:
 
     while (iBlock < nbBlocks)
     {
-
-      Kokkos::parallel_for(Kokkos::TeamVectorRange(member, bSize), [=](const int32_t index) {
+      Kokkos::parallel_for(Kokkos::TeamVectorRange(member, bSize), [&](const int32_t index) {
         // copy q state in q global
         data(index + iBlock * bSize) += 12;
       }); // end TeamVectorRange
@@ -178,7 +177,7 @@ public:
 
       Kokkos::parallel_reduce(
         Kokkos::TeamVectorRange(member, bSize),
-        [=](const int32_t index, int & local_sum) {
+        [&](const int32_t index, int & local_sum) {
           // copy q state in q global
           local_sum += data(index + iBlock * bSize);
         },

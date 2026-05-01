@@ -66,7 +66,7 @@ struct ScanIndexByLevel
   void
   init(ScanValue & update) const
   {
-    for (int i = 0; i < num_levels; ++i)
+    for (size_t i = 0; i < static_cast<size_t>(num_levels); ++i)
     {
       update[i] = 0;
     }
@@ -76,7 +76,7 @@ struct ScanIndexByLevel
   void
   join(ScanValue & update, const ScanValue & input) const
   {
-    for (int i = 0; i < num_levels; ++i)
+    for (size_t i = 0; i < static_cast<size_t>(num_levels); ++i)
     {
       update[i] += input[i];
     }

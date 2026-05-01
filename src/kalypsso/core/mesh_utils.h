@@ -292,7 +292,7 @@ get_unit_vector(int direction)
   Kokkos::Array<int, dim> v;
   for (int i = 0; i < static_cast<int>(dim); ++i)
   {
-    v[i] = i == direction ? 1 : 0;
+    v[static_cast<size_t>(i)] = (i == direction) ? 1 : 0;
   }
   return v;
 } // get_unit_vector

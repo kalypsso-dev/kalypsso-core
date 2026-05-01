@@ -120,7 +120,7 @@ struct FiniteDifferenceData
   KOKKOS_INLINE_FUNCTION real_t const &
   coef3(int32_t pos, int32_t shift) const
   {
-    return FIRST_ORDER_3[pos * 3 + shift];
+    return FIRST_ORDER_3[static_cast<size_t>(pos * 3 + shift)];
   }
 
   // ==============================================================
@@ -134,7 +134,7 @@ struct FiniteDifferenceData
   KOKKOS_INLINE_FUNCTION real_t const &
   coef5(int32_t pos, int32_t shift) const
   {
-    return FIRST_ORDER_5[pos * 5 + shift];
+    return FIRST_ORDER_5[static_cast<size_t>(pos * 5 + shift)];
   }
 
   // ==============================================================
@@ -148,7 +148,7 @@ struct FiniteDifferenceData
   KOKKOS_INLINE_FUNCTION real_t const &
   coef7(int32_t pos, int32_t shift) const
   {
-    return FIRST_ORDER_7[pos * 7 + shift];
+    return FIRST_ORDER_7[static_cast<size_t>(pos * 7 + shift)];
   }
 
 }; // struct FiniteDifferenceData

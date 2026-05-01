@@ -133,6 +133,14 @@ struct FaceLocation
   KOKKOS_DEFAULTED_FUNCTION
   FaceLocation(FaceLocation const & other) = default;
 
+  KOKKOS_INLINE_FUNCTION
+  FaceLocation(face_multiindex_t<dim> _ijk, uint64_t _key, iOct_t _iOct, bool _is_outside_domain)
+    : ijk(_ijk)
+    , key(_key)
+    , iOct(_iOct)
+    , is_outside_domain(_is_outside_domain)
+  {}
+
   KOKKOS_DEFAULTED_FUNCTION
   FaceLocation &
   operator=(FaceLocation const & other) = default;
@@ -226,6 +234,28 @@ struct EdgeLocation
 
   KOKKOS_DEFAULTED_FUNCTION
   EdgeLocation(EdgeLocation const & other) = default;
+
+  KOKKOS_INLINE_FUNCTION
+  EdgeLocation(edge_multiindex_t<dim> _ijk,
+               uint64_t               _key,
+               iOct_t                 _iOct,
+               bool                   _is_outside_domain,
+               bool                   _is_valid)
+    : ijk(_ijk)
+    , key(_key)
+    , iOct(_iOct)
+    , is_outside_domain(_is_outside_domain)
+    , is_valid(_is_valid)
+  {}
+
+  KOKKOS_INLINE_FUNCTION
+  EdgeLocation(edge_multiindex_t<dim> _ijk, uint64_t _key, iOct_t _iOct, bool _is_outside_domain)
+    : ijk(_ijk)
+    , key(_key)
+    , iOct(_iOct)
+    , is_outside_domain(_is_outside_domain)
+    , is_valid(true)
+  {}
 
   KOKKOS_DEFAULTED_FUNCTION
   EdgeLocation &

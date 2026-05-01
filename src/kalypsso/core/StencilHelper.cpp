@@ -170,8 +170,8 @@ StencilHelper<dim, device_t>::is_edge_location_at_block_border(
   }
 
   // get transverse directions
-  const auto dir1 = (edge_dir + 1) % 3;
-  const auto dir2 = (edge_dir + 2) % 3;
+  const auto dir1 = static_cast<size_t>((edge_dir + 1) % 3);
+  const auto dir2 = static_cast<size_t>((edge_dir + 2) % 3);
 
   if (edge_loc.ijk[dir1] == 0 or edge_loc.ijk[dir1] == cell_block_sizes[dir1] or
       edge_loc.ijk[dir2] == 0 or edge_loc.ijk[dir2] == cell_block_sizes[dir2])
@@ -427,11 +427,11 @@ StencilHelper<dim, device_t>::getNeighLoc(FaceLocation<dim> const & face_loc,
   if constexpr (dim == 2)
   {
     if (ivar < 2)
-      face_block_sizes[ivar] += 1;
+      face_block_sizes[static_cast<size_t>(ivar)] += 1;
   }
   else if constexpr (dim == 3)
   {
-    face_block_sizes[ivar] += 1;
+    face_block_sizes[static_cast<size_t>(ivar)] += 1;
   }
 
   // beware signed values
@@ -1031,13 +1031,13 @@ StencilHelper<dim, device_t>::getBorderEdgeLocSymmetric(EdgeLocation<dim> const 
   // watch out inversion dir1 <==> dir2
   if (edge_normal_type == +EdgeNormalType::DIR1)
   {
-    const auto dir2 = (edge_dir + 2) % 3;
+    const auto dir2 = static_cast<size_t>((edge_dir + 2) % 3);
     if (edge_loc.ijk[dir2] == cell_block_sizes[dir2])
       edge_index_neigh[dir2] = cell_block_sizes[dir2];
   }
   else if (edge_normal_type == +EdgeNormalType::DIR2)
   {
-    const auto dir1 = (edge_dir + 1) % 3;
+    const auto dir1 = static_cast<size_t>((edge_dir + 1) % 3);
     if (edge_loc.ijk[dir1] == cell_block_sizes[dir1])
       edge_index_neigh[dir1] = cell_block_sizes[dir1];
   }
@@ -1081,8 +1081,8 @@ StencilHelper<dim, device_t>::getEdgeSiblingLoc(EdgeLocation_t const & edge_loc_
   // the shifted cell
 
   // get edge transverse directions for an edge along IZ
-  int dir1 = IX;
-  int dir2 = IY;
+  size_t dir1 = IX;
+  size_t dir2 = IY;
   if (edge_dir == IX)
   {
     dir1 = IY;
@@ -1135,9 +1135,8 @@ StencilHelper<dim, device_t>::getEdgeSiblingLoc(EdgeLocation_t const & edge_loc_
 
   const auto edge_index_out = to_edge_multiindex<dim>(ijk_sibling, edge_dir);
 
-  EdgeLocation_t edge_loc_out{
-    edge_index_out, cell_loc2.key, cell_loc2.iOct, cell_loc2.is_outside_domain, is_edge_valid
-  };
+  auto edge_loc_out = EdgeLocation_t(
+    edge_index_out, cell_loc2.key, cell_loc2.iOct, cell_loc2.is_outside_domain, is_edge_valid);
 
   return edge_loc_out;
 
@@ -1462,7 +1461,9 @@ StencilHelper<dim, device_t>::compute_face_siblings_average(
   // check that fluxes is a flux array along the given face location (normal)
   {
     [[maybe_unused]] const auto dir = face_loc.ijk[dim];
-    KOKKOS_ASSERT((fluxes.shape()[dir] == cell_block_size[dir] + 1) && "fluxes has wrong size");
+    KOKKOS_ASSERT(
+      (fluxes.shape()[static_cast<size_t>(dir)] == cell_block_size[static_cast<size_t>(dir)] + 1) &&
+      "fluxes has wrong size");
     KOKKOS_ASSERT((fluxes.shape()[static_cast<size_t>(dir + 1) % dim] ==
                    cell_block_size[static_cast<size_t>(dir + 1) % dim]) &&
                   "fluxes has wrong size");
@@ -1786,7 +1787,7 @@ StencilHelper<dim, device_t>::compute_face_siblings_sum(CellLocation_t const &  
 
     // if coord[dir] is odd  we are in a right face
     // if coord[dir] is even we are in a left  face
-    if (coord[dir] % 2 == 1)
+    if (coord[static_cast<size_t>(dir)] % 2 == 1)
       ii += static_cast<uint16_t>(1 << dir);
 
     if constexpr (dim == 2)
@@ -1867,7 +1868,7 @@ StencilHelper<dim, device_t>::compute_face_siblings_sum(CellLocation_t const &  
   auto flux_offset = init_kokkos_array<int, dim>(0);
   if (use_right_flux)
   {
-    flux_offset[dir] = 1;
+    flux_offset[static_cast<size_t>(dir)] = 1;
   }
 
   // return value
@@ -1883,7 +1884,7 @@ StencilHelper<dim, device_t>::compute_face_siblings_sum(CellLocation_t const &  
 
     // if coord[dir] is odd  we are in a right face
     // if coord[dir] is even we are in a left  face
-    if (coord[dir] % 2 == 1)
+    if (coord[static_cast<size_t>(dir)] % 2 == 1)
       ii += static_cast<uint16_t>(1 << dir);
 
     if constexpr (dim == 2)

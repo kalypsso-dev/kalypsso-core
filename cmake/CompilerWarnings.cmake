@@ -59,6 +59,12 @@ macro(kalypsso_set_default_warning_flags)
     set(KOKKOS_DEVICE_SPECIFIC_WARNINGS_DEFAULT)
   endif()
 
+  if(DEFINED ENV{KALYPSSO_ADDITIONAL_FLAGS})
+    set(KALYPSSO_ADDITIONAL_FLAGS $ENV{KALYPSSO_ADDITIONAL_FLAGS})
+  elseif(NOT DEFINED KALYPSSO_ADDITIONAL_FLAGS)
+    set(KALYPSSO_ADDITIONAL_FLAGS)
+  endif()
+
 endmacro(kalypsso_set_default_warning_flags)
 
 kalypsso_set_default_warning_flags()
@@ -127,6 +133,8 @@ function(
   else()
     set(CLANG_CXX_WARNINGS ${${CLANG_CXX_WARNINGS}})
   endif()
+
+  set(CLANG_CXX_WARNINGS ${CLANG_CXX_WARNINGS} ${KALYPSSO_ADDITIONAL_FLAGS})
   message(STATUS "Clang CXX warnings flags are: ${CLANG_CXX_WARNINGS}")
 
   if("${GCC_C_WARNINGS}" STREQUAL "")
@@ -140,6 +148,8 @@ function(
   else()
     set(GCC_C_WARNINGS ${${GCC_C_WARNINGS}})
   endif()
+
+  set(GCC_C_WARNINGS ${GCC_C_WARNINGS} ${KALYPSSO_ADDITIONAL_FLAGS})
   message(STATUS "Gcc C warnings flags are: ${GCC_C_WARNINGS}")
 
   if("${GCC_CXX_WARNINGS}" STREQUAL "")

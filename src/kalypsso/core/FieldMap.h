@@ -63,13 +63,13 @@ public:
 private:
   Kokkos::Array<int32_t, VARCOUNT> id2index{};
   Kokkos::Array<bool, VARCOUNT>    field_enabled{};
-  int                              m_nbfields = 0;
+  int32_t                          m_nbfields = 0;
 
 public:
   void
   enable(VarId id)
   {
-    id2index[id] = m_nbfields;
+    id2index[static_cast<size_t>(id)] = m_nbfields;
 
     // we add field only if field is not already enabled
     if (!field_enabled[id])
@@ -83,32 +83,32 @@ public:
   enabled_fields() const
   {
     std::set<VarId> res;
-    for (int i = 0; i < VARCOUNT; ++i)
+    for (size_t i = 0; i < VARCOUNT; ++i)
       if (field_enabled[i])
         res.insert(static_cast<VarId>(i));
     return res;
   }
 
   KOKKOS_INLINE_FUNCTION
-  int
+  int32_t
   nbfields() const
   {
     return m_nbfields;
   }
 
   KOKKOS_INLINE_FUNCTION
-  int
+  int32_t
   operator[](VarId id) const
   {
-    assert(field_enabled[id]); // This variable is not active
-    return id2index[id];
+    assert(field_enabled[static_cast<size_t>(id)]); // This variable is not active
+    return id2index[static_cast<size_t>(id)];
   }
 
   KOKKOS_INLINE_FUNCTION
   bool
   enabled(VarId id) const
   {
-    return field_enabled[id];
+    return field_enabled[static_cast<size_t>(id)];
   }
 
 }; // class FieldMap

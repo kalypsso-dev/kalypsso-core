@@ -230,8 +230,8 @@ CheckEdgeSiblingsConnectivity<dim, device_t>::check(index_t const & edge_flatind
 
   // create an edge location for current edge's cell (just round down edge index in transverse
   // direction)
-  const EdgeLocation_t edge_loc{ edge_indexes, key_cur, iOct, false };
-  const auto           level = edge_loc.level();
+  const auto edge_loc = EdgeLocation_t(edge_indexes, key_cur, iOct, false);
+  const auto level = edge_loc.level();
 
   // get sibling edge locations
   const auto edge_loc0 = m_stencil_helper.getEdgeSiblingLoc(edge_loc, 0);

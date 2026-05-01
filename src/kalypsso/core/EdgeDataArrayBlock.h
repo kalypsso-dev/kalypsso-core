@@ -293,8 +293,9 @@ public:
     // update number of quadrants
     m_num_quadrants = num_quads;
 
-    Kokkos::resize(
-      Kokkos::view_alloc(Kokkos::WithoutInitializing), m_storage_data, m_offsets[3] * num_quads);
+    const size_t new_size = static_cast<size_t>(m_offsets[3] * num_quads);
+
+    Kokkos::resize(Kokkos::view_alloc(Kokkos::WithoutInitializing), m_storage_data, new_size);
 
   } // resize
 
