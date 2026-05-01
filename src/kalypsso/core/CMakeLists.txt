@@ -201,6 +201,7 @@ add_library(
   problems/RayleighTaylorParams.h
   problems/ShuOsherParams.h
   problems/SodParams.h
+  problems/SphericalImplosionParams.h
   problems/StaticDropletParams.h
   problems/TriplePointParams.h
   problems/TwoFluidShockTubeParams.h
