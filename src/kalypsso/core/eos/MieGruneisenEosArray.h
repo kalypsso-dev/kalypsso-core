@@ -144,7 +144,7 @@ public:
    */
   KOKKOS_FUNCTION
   real_t
-  material_gruneisen_param(int i_mat, real_t rho) const;
+  material_gruneisen_param(size_t i_mat, real_t rho) const;
 
   /**
    * Retrieve reference specific internal energy of a given material.
@@ -157,7 +157,7 @@ public:
    */
   KOKKOS_FUNCTION
   real_t
-  material_specific_eint_ref(int i_mat, real_t rho) const;
+  material_specific_eint_ref(size_t i_mat, real_t rho) const;
 
   /**
    * Retrieve reference pressure of a given material.
@@ -170,7 +170,7 @@ public:
    */
   KOKKOS_FUNCTION
   real_t
-  material_pressure_ref(int i_mat, real_t rho) const;
+  material_pressure_ref(size_t i_mat, real_t rho) const;
 
   /**
    * Retrieve sound speed square of a given material.
@@ -184,28 +184,28 @@ public:
    */
   KOKKOS_FUNCTION
   real_t
-  material_sound_speed_square(int i_mat, real_t pressure, real_t rho) const;
+  material_sound_speed_square(size_t i_mat, real_t pressure, real_t rho) const;
 
   /**
    * Retrieve isentropic bulk modulus of a given material.
    */
   KOKKOS_FUNCTION
   real_t
-  material_bulk_modulus(int i_mat, real_t pressure, real_t rho) const;
+  material_bulk_modulus(size_t i_mat, real_t pressure, real_t rho) const;
 
   /**
    * Retrieve specific internal energy of a given material from pressure.
    */
   KOKKOS_FUNCTION
   real_t
-  material_specific_eint_from_pressure(int i_mat, real_t pressure, real_t rho) const;
+  material_specific_eint_from_pressure(size_t i_mat, real_t pressure, real_t rho) const;
 
   /**
    * Retrieve pressure of a given material from specific internal energy.
    */
   KOKKOS_FUNCTION
   real_t
-  material_pressure_from_specific_eint(int i_mat, real_t eint_specific, real_t rho) const;
+  material_pressure_from_specific_eint(size_t i_mat, real_t eint_specific, real_t rho) const;
 
 }; // class MieGruneisenEosArray
 
