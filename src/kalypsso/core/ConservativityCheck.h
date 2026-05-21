@@ -54,7 +54,7 @@ public:
    */
   ConservativityCheck()
     : m_reference_values()
-    , m_test_values() {};
+    , m_test_values(){};
 
   /**
    * \brief Register a reference or test value.
