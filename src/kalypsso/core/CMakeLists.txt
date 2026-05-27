@@ -177,6 +177,8 @@ add_library(
   OutputParams.cpp
   OutputParams.h
   OutsideQuadsInfo.h
+  OverwriteVelocityField.cpp
+  OverwriteVelocityField.h
   p4est_utils.h
   physical_constants.h
   Point.h
@@ -185,6 +187,7 @@ add_library(
   problems/AlfvenParams.h
   problems/BlastParams.h
   problems/BreakingWaveParams.h
+  problems/CircleAdvectionParams.h
   problems/DiamagCavityParams.h
   problems/DoubleMachReflectionParams.h
   problems/DropletAdvectionParams.h
