@@ -103,7 +103,7 @@ public:
     , m_offsets(compute_edge_flat_index_offsets<dim>(bSize))
     , m_num_quadrants(num_quadrants)
     , m_storage_data(Kokkos::view_alloc(Kokkos::WithoutInitializing, name),
-                     static_cast<size_t>(m_offsets[3] * num_quadrants))
+                     m_offsets[3] * static_cast<size_t>(num_quadrants))
   {} // EdgeDataArrayBlock
 
   /**
@@ -122,7 +122,7 @@ public:
     , m_offsets(compute_edge_flat_index_offsets<dim>(bSize + 2 * ghostwidth))
     , m_num_quadrants(num_quadrants)
     , m_storage_data(Kokkos::view_alloc(Kokkos::WithoutInitializing, name),
-                     static_cast<size_t>(m_offsets[3] * num_quadrants))
+                     m_offsets[3] * static_cast<size_t>(num_quadrants))
   {} // EdgeDataArrayBlock
 
   /**
@@ -293,7 +293,7 @@ public:
     // update number of quadrants
     m_num_quadrants = num_quads;
 
-    const size_t new_size = static_cast<size_t>(m_offsets[3] * num_quads);
+    const size_t new_size = m_offsets[3] * static_cast<size_t>(num_quads);
 
     Kokkos::resize(Kokkos::view_alloc(Kokkos::WithoutInitializing), m_storage_data, new_size);
 

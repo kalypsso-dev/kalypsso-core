@@ -69,7 +69,7 @@ public:
     , m_len_per_oct((max_mat / NUM_BITS_PER_BLOCK) + (max_mat % NUM_BITS_PER_BLOCK != 0))
     , m_num_octants(num_octs)
     , m_mat_pres(name,
-                 DataArrayUtils::allocated_capacity(static_cast<size_t>(m_len_per_oct * num_octs)))
+                 DataArrayUtils::allocated_capacity(m_len_per_oct * static_cast<size_t>(num_octs)))
   {}
 
   /**
@@ -150,7 +150,7 @@ public:
   auto
   logical_size_in_elements() const
   {
-    return static_cast<size_t>(m_len_per_oct * m_num_octants);
+    return m_len_per_oct * static_cast<size_t>(m_num_octants);
   }
 
   // ==================================================================================
@@ -195,7 +195,7 @@ public:
     if (logical_size_in_elements() > capacity())
     {
       size_t new_storage_capacity =
-        DataArrayUtils::allocated_capacity(static_cast<size_t>(m_len_per_oct * m_num_octants));
+        DataArrayUtils::allocated_capacity(m_len_per_oct * static_cast<size_t>(m_num_octants));
 
       Kokkos::resize(m_mat_pres, new_storage_capacity);
     }

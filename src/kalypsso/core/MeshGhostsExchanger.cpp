@@ -138,7 +138,9 @@ MeshGhostsExchanger<dim, T, device_t>::pack_mirror_data(DataArrayBlock_t   userd
   [[maybe_unused]] auto local_num_quadrants = m_amr_mesh.local_num_quadrants();
 
   // make sure m_send buffer was allocated with the right size
-  assertm(static_cast<size_t>(num_cells * num_vars * num_mirror_quad) == m_send.extent(0),
+  assertm(static_cast<size_t>(num_cells) * static_cast<size_t>(num_vars) *
+              static_cast<size_t>(num_mirror_quad) ==
+            m_send.extent(0),
           "[MeshGhostsExchanger::pack_mirror_data] send buffer has wrong size");
 
   auto mir_data = DataArrayBlockUnmanaged_t(m_send.data(), bSizes, num_vars, num_mirror_quad);
@@ -198,7 +200,8 @@ MeshGhostsExchanger<dim, T, device_t>::pack_mirror_data_multi_var(
   [[maybe_unused]] auto local_num_quadrants = m_amr_mesh.local_num_quadrants();
 
   // make sure m_send buffer was allocated with the right size
-  assertm(static_cast<size_t>(num_cells * num_block_mirrors) == m_send.extent(0),
+  assertm(static_cast<size_t>(num_cells) * static_cast<size_t>(num_block_mirrors) ==
+            m_send.extent(0),
           "[MeshGhostsExchanger::pack_mirror_data_multi_var] send buffer has wrong size");
 
   auto mir_data =
@@ -254,12 +257,13 @@ MeshGhostsExchanger<dim, T, device_t>::pack_mirror_data(FaceDataArrayBlock_t fac
   [[maybe_unused]] auto local_num_quadrants = m_amr_mesh.local_num_quadrants();
 
   // make sure m_send buffer was allocated with the right size
-  assertm(static_cast<size_t>(num_elts_per_octant * num_mirror_quad) == m_send.extent(0),
+  assertm(static_cast<size_t>(num_elts_per_octant) * static_cast<size_t>(num_mirror_quad) ==
+            m_send.extent(0),
           "[MeshGhostsExchanger::pack_mirror_data] send buffer has wrong size");
 
   // create an unmanaged 1D view of data to send
   FaceFlatArrayUnmanaged_t mir_data = FaceFlatArrayUnmanaged_t(
-    m_send.data(), static_cast<size_t>(num_elts_per_octant * num_mirror_quad));
+    m_send.data(), static_cast<size_t>(num_elts_per_octant) * static_cast<size_t>(num_mirror_quad));
 
   // get 1D view of face data
   auto userdata = face_userdata.logical_view();
@@ -350,7 +354,9 @@ MeshGhostsExchanger<dim, T, device_t>::unpack_ghost_data(DataArrayBlock_t userda
   const auto num_elts_per_quad = num_cells * num_vars;
 
   // make sure m_recv buffer was allocated with the right size
-  assertm(static_cast<size_t>(num_ghost_quad * num_vars * num_cells) == m_recv.extent(0),
+  assertm(static_cast<size_t>(num_ghost_quad) * static_cast<size_t>(num_vars) *
+              static_cast<size_t>(num_cells) ==
+            m_recv.extent(0),
           "[MeshGhostsExchanger::pack_mirror_data] receive buffer has wrong size");
 
   auto recv_data = DataArrayBlockUnmanaged_t(m_recv.data(), bSizes, num_vars, num_ghost_quad);
@@ -379,7 +385,8 @@ MeshGhostsExchanger<dim, T, device_t>::unpack_ghost_data_multi_var(
   const auto bSizes = userdata_block.block_size();
 
   // make sure m_recv buffer was allocated with the right size
-  assertm(static_cast<size_t>(num_block_ghosts * num_cells) == m_recv.extent(0),
+  assertm(static_cast<size_t>(num_block_ghosts) * static_cast<size_t>(num_cells) ==
+            m_recv.extent(0),
           "[MeshGhostsExchanger::unpack_ghost_data_multi_var] receive buffer has wrong size");
 
   auto recv_data =
@@ -410,11 +417,12 @@ MeshGhostsExchanger<dim, T, device_t>::unpack_ghost_data(FaceDataArrayBlock_t fa
   const auto num_elts_per_octant = face_userdata.num_elements_per_octant();
 
   // make sure m_recv buffer was allocated with the right size
-  assertm(static_cast<size_t>(num_elts_per_octant * num_ghost_quad) == m_recv.extent(0),
+  assertm(static_cast<size_t>(num_elts_per_octant) * static_cast<size_t>(num_ghost_quad) ==
+            m_recv.extent(0),
           "[MeshGhostsExchanger::pack_mirror_data] receive buffer has wrong size");
 
   FaceFlatArrayUnmanaged_t recv_data = FaceFlatArrayUnmanaged_t(
-    m_recv.data(), static_cast<size_t>(num_elts_per_octant * num_ghost_quad));
+    m_recv.data(), static_cast<size_t>(num_elts_per_octant) * static_cast<size_t>(num_ghost_quad));
 
   // get 1D view of face data
   auto userdata = face_userdata.logical_view();

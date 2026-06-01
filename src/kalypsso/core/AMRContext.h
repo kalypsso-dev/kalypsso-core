@@ -276,9 +276,9 @@ struct AMRContext : public AMRContextBase
                     num_refine_flags <= static_cast<int32_t>(forest->local_num_quadrants));
 
     // This allocation is optimistic when not all refine requests are honored
-    amrflags_view_host_t temp_flags(
-      "temp_flags",
-      static_cast<size_t>(forest->local_num_quadrants + (NB_CHILDREN - 1) * num_refine_flags));
+    amrflags_view_host_t temp_flags("temp_flags",
+                                    static_cast<size_t>(forest->local_num_quadrants) +
+                                      (NB_CHILDREN - 1) * num_refine_flags);
     Kokkos::deep_copy(temp_flags, AMRContextBase::KALYPSSO_DO_REFINE);
 
     // Create and initialize context data for running AMR cycle (p4est mesh adapt) on host

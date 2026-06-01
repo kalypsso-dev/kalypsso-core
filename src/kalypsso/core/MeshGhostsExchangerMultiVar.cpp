@@ -123,7 +123,8 @@ MeshGhostsExchangerMultiVar<dim, T, device_t>::pack_mirror_data_multi_var(
   [[maybe_unused]] auto local_num_quadrants = this->m_amr_mesh.local_num_quadrants();
 
   // make sure m_send buffer was allocated with the right size
-  assertm(static_cast<size_t>(num_cells * num_block_mirrors) == this->m_send.extent(0),
+  assertm(static_cast<size_t>(num_cells) * static_cast<size_t>(num_block_mirrors) ==
+            this->m_send.extent(0),
           "[MeshGhostsExchangerMultiVar::pack_mirror_data_multi_var] send buffer has wrong size");
 
   auto mir_data = DataArrayBlockUnmanaged_t(
@@ -178,7 +179,8 @@ MeshGhostsExchangerMultiVar<dim, T, device_t>::unpack_ghost_data_multi_var(
 
   // make sure m_recv buffer was allocated with the right size
   assertm(
-    static_cast<size_t>(num_block_ghosts * num_cells) == this->m_recv.extent(0),
+    static_cast<size_t>(num_block_ghosts) * static_cast<size_t>(num_cells) ==
+      this->m_recv.extent(0),
     "[MeshGhostsExchangerMultiVar::unpack_ghost_data_multi_var] receive buffer has wrong size");
 
   auto recv_data = DataArrayBlockUnmanaged_t(

@@ -125,7 +125,7 @@ public:
     , m_offsets(compute_face_flat_index_offsets<dim>(bSize))
     , m_num_quadrants(num_quadrants)
     , m_storage_capacity(
-        DataArrayUtils::allocated_capacity(static_cast<size_t>(m_offsets[3] * num_quadrants)))
+        DataArrayUtils::allocated_capacity(m_offsets[3] * static_cast<size_t>(num_quadrants)))
     , m_storage_data(Kokkos::view_alloc(Kokkos::WithoutInitializing, name), m_storage_capacity)
   {} // FaceDataArrayBlock
 
@@ -151,7 +151,7 @@ public:
     , m_offsets(compute_face_flat_index_offsets<dim>(bSize + 2 * ghostwidth))
     , m_num_quadrants(num_quadrants)
     , m_storage_capacity(
-        DataArrayUtils::allocated_capacity(static_cast<size_t>(m_offsets[3] * num_quadrants)))
+        DataArrayUtils::allocated_capacity(m_offsets[3] * static_cast<size_t>(num_quadrants)))
     , m_storage_data(Kokkos::view_alloc(Kokkos::WithoutInitializing, name), m_storage_capacity)
   {
     KOKKOS_ASSERT(ghostwidth >= 0 and
@@ -184,7 +184,7 @@ public:
     , m_offsets(compute_face_flat_index_offsets<dim>(bSize_total))
     , m_num_quadrants(num_quadrants)
     , m_storage_capacity(
-        DataArrayUtils::allocated_capacity(static_cast<size_t>(m_offsets[3] * num_quadrants)))
+        DataArrayUtils::allocated_capacity(m_offsets[3] * static_cast<size_t>(num_quadrants)))
     , m_storage_data(Kokkos::view_alloc(Kokkos::WithoutInitializing, name), m_storage_capacity)
   {} // FaceDataArrayBlock
 
@@ -455,7 +455,7 @@ public:
   auto
   logical_size_in_elements() const
   {
-    return static_cast<size_t>(m_offsets[3] * m_num_quadrants);
+    return m_offsets[3] * static_cast<size_t>(m_num_quadrants);
   }
 
   // ==================================================================================
@@ -478,14 +478,14 @@ public:
     // update number of quadrants
     m_num_quadrants = num_quads;
 
-    const size_t new_size = static_cast<size_t>(m_offsets[3] * m_num_quadrants);
+    const size_t new_size = m_offsets[3] * static_cast<size_t>(m_num_quadrants);
 
     // only resize when the requested new size is larger than capacity
     if (new_size > m_storage_capacity)
     {
       // new storage capacity
       size_t new_storage_capacity =
-        DataArrayUtils::allocated_capacity(static_cast<size_t>(m_offsets[3] * num_quads));
+        DataArrayUtils::allocated_capacity(m_offsets[3] * static_cast<size_t>(num_quads));
 
       Kokkos::resize(
         Kokkos::view_alloc(Kokkos::WithoutInitializing), m_storage_data, new_storage_capacity);

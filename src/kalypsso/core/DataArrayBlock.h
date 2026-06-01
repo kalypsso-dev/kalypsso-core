@@ -250,8 +250,8 @@ public:
     , m_num_cells(Kokkos::dim_prod(bSize))
     , m_num_vars(num_vars)
     , m_num_quadrants(num_quadrants)
-    , m_storage_capacity(DataArrayUtils::allocated_capacity(
-        static_cast<size_t>(Kokkos::dim_prod(bSize) * num_vars * num_quadrants)))
+    , m_storage_capacity(DataArrayUtils::allocated_capacity(Kokkos::dim_prod(bSize) * num_vars *
+                                                            static_cast<size_t>(num_quadrants)))
     , m_storage(Kokkos::view_alloc(Kokkos::WithoutInitializing, name), m_storage_capacity)
   {}
 
@@ -263,8 +263,8 @@ public:
     , m_num_cells(Kokkos::dim_prod(bSize))
     , m_num_vars(num_vars)
     , m_num_quadrants(num_quadrants)
-    , m_storage_capacity(DataArrayUtils::allocated_capacity(
-        static_cast<size_t>(Kokkos::dim_prod(bSize) * num_vars * num_quadrants)))
+    , m_storage_capacity(DataArrayUtils::allocated_capacity(Kokkos::dim_prod(bSize) * num_vars *
+                                                            static_cast<size_t>(num_quadrants)))
     , m_storage(ptr, m_storage_capacity)
   {}
 
@@ -606,7 +606,7 @@ public:
   auto
   logical_size_in_elements() const
   {
-    return static_cast<size_t>(m_num_cells * m_num_vars * m_num_quadrants);
+    return m_num_cells * m_num_vars * static_cast<size_t>(m_num_quadrants);
   }
 
   // ==================================================================================
@@ -634,7 +634,7 @@ public:
       if (logical_size_in_elements() > m_storage_capacity)
       {
         size_t new_storage_capacity = DataArrayUtils::allocated_capacity(
-          static_cast<size_t>(Kokkos::dim_prod(bSize) * num_vars * num_quadrants));
+          Kokkos::dim_prod(bSize) * num_vars * static_cast<size_t>(num_quadrants));
 
         Kokkos::resize(
           Kokkos::view_alloc(Kokkos::WithoutInitializing), m_storage, new_storage_capacity);
@@ -660,7 +660,7 @@ public:
     if (logical_size_in_elements() > m_storage_capacity)
     {
       size_t new_storage_capacity = DataArrayUtils::allocated_capacity(
-        static_cast<size_t>(m_num_cells * m_num_vars * num_quadrants));
+        m_num_cells * m_num_vars * static_cast<size_t>(num_quadrants));
 
       Kokkos::resize(
         Kokkos::view_alloc(Kokkos::WithoutInitializing), m_storage, new_storage_capacity);
