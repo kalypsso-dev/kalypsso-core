@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 /**
- * \file overwrite_velocity_field.cpp
+ * \file OverwriteVelocityField.cpp
  */
 #include <kalypsso/core/OverwriteVelocityField.h>
 
@@ -113,7 +113,7 @@ OverwriteVelocityField<dim, device_t>::run(ConfigMap const &          config_map
     const auto xyz_min = get_xyz_min<dim>(config_map);
 
     Kokkos::parallel_for(
-      "OverwriteVelocityFieldType::UNIFORM",
+      "OverwriteVelocityFieldType::VORTEX",
       Kokkos::RangePolicy<ExecutionSpace>(0, total_num_cells),
       KOKKOS_LAMBDA(const int64_t & global_index) {
     // the only reason of the following dummy code to be here, is that cuda nvcc compile

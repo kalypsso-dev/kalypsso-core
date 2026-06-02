@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 /**
- * \file overwrite_velocity_field.h
+ * \file OverwriteVelocityField.h
  */
 #ifndef KALYPSSO_CORE_OVERWRITE_VELOCITY_FIELD_H_
 #define KALYPSSO_CORE_OVERWRITE_VELOCITY_FIELD_H_
