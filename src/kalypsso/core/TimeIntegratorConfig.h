@@ -40,9 +40,10 @@ namespace kalypsso
  * An enum type to represent all implemented time integration methods.
  */
 BETTER_ENUM(TimeIntegrator, uint8_t,
-            HANCOCK = 0,
-            RK2_SSP = 1,
-            RK3_SSP = 2)
+            RK1 = 0,
+            HANCOCK = 1,
+            RK2_SSP = 2,
+            RK3_SSP = 3)
 // clang-format on
 
 /**
