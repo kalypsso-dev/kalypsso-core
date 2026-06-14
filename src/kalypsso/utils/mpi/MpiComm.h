@@ -23,6 +23,7 @@
 #include <memory> // for std::shared_ptr
 #include <vector>
 
+#include <cstdint>
 #include <cassert>
 #ifndef assertm
 #  define assertm(exp, msg) assert(((void)msg, exp))
