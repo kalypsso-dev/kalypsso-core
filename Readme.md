@@ -13,9 +13,9 @@ kalypsso-core is just another adaptive mesh refinement package mainly (but not o
 - AMR is delegated to library [p4est](https://github.com/cburstedde/p4est). p4est is written in C, and has about 40 kSLOC; it implements cell-based AMR; manage of a forest of octrees, i.e. the physical domain is made of a coarse mesh (p4est connectivity), and each cell of this coarse mesh serves as a root to an octree.
 - numerical schemes are designed on top of the p4est mesh, in a decoupled manner, using [kokkos](https://github.com/kokkos/kokkos) for shared memory parallelism.
 
-You will find more technical details about kalypsso in the following preprint:
+You will find more technical details about kalypsso in the following article:
 
-- Kestener, Pierre, Kalypsso: A Performance Portable Platform for Compressible Hydrodynamics Simulations using Adaptive Mesh Refinement (October 24, 2025). Available at SSRN: https://ssrn.com/abstract=5912463 or http://dx.doi.org/10.2139/ssrn.5912463
+- Kestener, Pierre, Kalypsso: A Performance Portable Platform for Compressible Hydrodynamics Simulations using Adaptive Mesh Refinement. https://doi.org/10.1016/j.cpc.2026.110275
 
 kalypso can be used on a laptop as well as largest parallel clusters of GPUs.
 
@@ -215,3 +215,19 @@ mkdocs build
 # this will create directory `site` that can directly be uploaded to
 # a web server
 ```
+
+# Citing kalypsso
+
+If you use this software, please cite it using the following reference.
+
+```
+@article{kalypsso_core_cpc26,
+  author={Kestener, Pierre},
+  journal={Computer Physics Communication},
+  title={kalypsso: a performance portable platform for compressible hydrodynamics simulations using adaptive mesh refinement},
+  year={2026},
+  volume={},
+  number={},
+  pages={},
+  doi={10.1016/j.cpc.2026.110275}}
+  ```

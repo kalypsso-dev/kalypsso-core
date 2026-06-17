@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+title: kalypsso-core
+message: >-
+  If you use this software, please cite the overview paper
+type: software
+authors:
+  - name: The Kalypsso authors
+identifiers:
+  - type: url
+    website: https://kalypsso-dev.github.io
+repository-code: 'https://github.com/kalypsso-dev/kalypsso-core'
+url: 'https://kokkos.org/'
+license: Apache-2.0
+preferred-citation:
+  type: article
+  authors:
+  - given-names: Pierre
+    family-names: Kestener
+  doi: 10.1016/j.cpc.2026.110275
+  journal: Computer Physics Communication
+  title: "kalypsso: a performance portable platform for compressible hydrodynamics simulations using adaptive mesh refinement"
+  year: 2026
