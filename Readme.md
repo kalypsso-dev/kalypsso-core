@@ -215,3 +215,19 @@ mkdocs build
 # this will create directory `site` that can directly be uploaded to
 # a web server
 ```
+
+# Citing kalypsso
+
+If you use this software, please cite it using the following reference.
+
+```
+@article{kalypsso_core_cpc26,
+  author={Kestener, Pierre},
+  journal={Computer Physics Communication},
+  title={kalypsso: a performance portable platform for compressible hydrodynamics simulations using adaptive mesh refinement},
+  year={2026},
+  volume={},
+  number={},
+  pages={},
+  doi={10.1016/j.cpc.2026.110275}}
+  ```
