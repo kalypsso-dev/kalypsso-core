@@ -50,8 +50,6 @@ These dependencies can either be :
 - built in a separate cmake sub-project (located in sub-directory `dependencies`); this third option is a bit cleaner, it additionally provides a modulefiles to ease the use of these dependencies
 - detected from your system's environment
 
-Note: [spack](https://spack.readthedocs.io/en/latest/) can be used to install all dependencies (except cnpy). We'll provide a recipe soon in user documentation.
-
 ## Build kalypsso-core
 
 ### build p4est, Kokkos and kalypsso all together
@@ -108,44 +106,6 @@ Use environment variable `CMAKE_PREFIX_PATH`.
 ```shell
 # P4EST_ROOT is assumed to be the root directory where p4est was installed
 export CMAKE_PREFIX_PATH={P4EST_ROOT}/cmake:$CMAKE_PREFIX_PATH
-```
-
-## Install requirements with spack (TODO: check if this is really working)
-
-If you don't know what [spack](https://spack.readthedocs.io/en/latest/index.html) is, take a look at [Spack tutorial 101](https://spack-tutorial.readthedocs.io/en/latest/index.html)
-
-- install spack
-``` shell
-wget https://github.com/spack/spack/releases/download/v1.1.1/spack-1.1.1.tar.gz
-tar zxf spack-1.1.1.tar.gz
-. spack-1.1.1/share/spack/setup-env.sh
-# you can source this script in your .bashrc if you plan to use it
-# regularly
-```
-- install hdf5 + mpi + p4est with spack
-``` shell
-# spack with automatically install parallel version of hdf5, and so
-# install also mpi as a dependance of hdf5
-spack install hdf5+hl
-spack install p4est
-```
-
-### Build kalypsso using dependencies provided by spack (TODO: check this is really working)
-
-``` shell
-# load modules created by spack
-# the following is an example on a Ubuntu-18.04 machine
-# use command `module avail` to list available module
-# created by spack
-module load openmpi-3.1.5-gcc-8.3.0-vshzyel
-module load hdf5-1.12.0-gcc-8.3.0-bngbam7
-module load p4est-2.2-gcc-8.3.0-shspwhi
-# build kalypsso
-mkdir build; cd build
-# you don't need to set env variable CMAKE_PREFIX_PATH, it is already
-# set by spack according to the loaded modules
-cmake ..
-make -j 4
 ```
 
 # More information

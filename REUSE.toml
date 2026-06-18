@@ -5,7 +5,7 @@ SPDX-PackageDownloadLocation = "https://github.com/kalypsso-dev/kalypsso-core"
 
 [[annotations]]
 path = [
-    ".github/**",  "doc/**", "test/AMRmesh/*.py", "tools/pvpython/*.py", "tools/ParaViewKalypssoPlugin/Readme.md", "tools/ParaViewKalypssoPlugin/src/Reader/KalypssoHDF5_Server.xml", "tools/ParaViewKalypssoPlugin/src/Reader/vtk.module", "tools/ParaViewKalypssoPlugin/src/paraview.plugin"
+    "CITATION.cff", ".github/**",  "doc/**", "test/AMRmesh/*.py", "tools/pvpython/*.py", "tools/ParaViewKalypssoPlugin/Readme.md", "tools/ParaViewKalypssoPlugin/src/Reader/KalypssoHDF5_Server.xml", "tools/ParaViewKalypssoPlugin/src/Reader/vtk.module", "tools/ParaViewKalypssoPlugin/src/paraview.plugin"
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2025 kalypsso-core authors"
