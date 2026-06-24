@@ -145,7 +145,7 @@ KOKKOS_FUNCTION Kokkos::Array<real_t, dim>
   else
     normal = normal / norm;
 
-  for (uint i = 0; i < dim; i++)
+  for (uint8_t i = 0; i < dim; i++)
   {
     if (abs(normal[i]) < FUZZY_THRESHOLD_F)
       normal[i] = 0.;
@@ -308,7 +308,7 @@ KOKKOS_FUNCTION Kokkos::Array<real_t, dim>
   else
     normal = normal / norm;
 
-  for (uint i = 0; i < dim; i++)
+  for (uint8_t i = 0; i < dim; i++)
   {
     if (abs(normal[i]) < FUZZY_THRESHOLD_F)
       normal[i] = 0.;

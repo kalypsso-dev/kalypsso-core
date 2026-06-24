@@ -306,12 +306,12 @@ compute_volume_fraction_of_rect_below_plane(Kokkos::Array<real_t, dim> normal,
 
   // We first translate it so that each coordinate c varies between -(c1 - c0)/2 and (c1 - c0)/2
   const auto translation = (p0 + p1) * 0.5;
-  for (uint i = 0; i < dim; i++)
+  for (uint8_t i = 0; i < dim; i++)
     alpha -= normal[i] * translation[i];
 
   // We then rescale the normal so that each coordinate varies between -0.5 and 0.5
   const auto scale = p1 - p0;
-  for (uint i = 0; i < dim; i++)
+  for (uint8_t i = 0; i < dim; i++)
     normal[i] *= scale[i];
 
   // Then we compute
