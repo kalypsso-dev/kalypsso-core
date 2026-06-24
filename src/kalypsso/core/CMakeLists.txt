@@ -81,6 +81,7 @@ add_library(
   EdgeDataArrayBlock_utils.h
   enums.h
   eos/eos_utils.h
+  eos/EosWrapperMonoFluid.h
   eos/IdealGasEos.h
   eos/IdealGasMixture.h
   eos/MieGruneisenEosArray.cpp
