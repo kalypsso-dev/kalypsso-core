@@ -23,7 +23,8 @@ HydroSettings::HydroSettings(ConfigMap const & config_map)
   , cIso(0)
   , niter_riemann(config_map.getInteger("hydro", "niter_riemann", 10))
   , riemannSolverType(get_riemann_solver_type(config_map))
-  , abort_when_negative_eint(config_map.getBool("hydro", "abort_when_negative_eint", true))
+  , abort_when_negative_eint(config_map.getBool("hydro", "abort_when_negative_eint", false))
+  , abort_when_negative_pressure(config_map.getBool("hydro", "abort_when_negative_pressure", true))
 {} // HydroSettings::HydroSettings
 
 // =======================================================

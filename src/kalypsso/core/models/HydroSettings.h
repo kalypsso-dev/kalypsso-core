@@ -37,7 +37,8 @@ struct HydroSettings
   real_t            cIso;              /*!< if non zero, isothermal */
   int               niter_riemann;     /*!< number of iteration used in quasi-exact Riemann solver*/
   RiemannSolverType riemannSolverType; /*!< type of Riemann solver (LLF, HLLC, ...) */
-  bool              abort_when_negative_eint; /*!< abort if negative internal energy */
+  bool              abort_when_negative_eint;     /*!< abort if negative internal energy */
+  bool              abort_when_negative_pressure; /*!< abort if negative pressure detected */
 
   KALYPSSO_STATIC_MATH_CONSTANT(ONE_DOT_FOUR, 1.400000000000000000000000000000000000L);
   KALYPSSO_STATIC_MATH_CONSTANT(SMALLR, 1e-8);
