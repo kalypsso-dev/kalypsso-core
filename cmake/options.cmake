@@ -23,6 +23,8 @@ option(KALYPSSO_CORE_DISABLE_DEPRECATED_WARNINGS
        "Disable deprecated declaration warnings (default OFF)" OFF)
 option(KALYPSSO_CORE_USE_CPPTRACE "Use cpptrace to print a stack trace upon failure (default OFF)."
        OFF)
+option(KALYPSSO_CORE_CONFIGMAP_VERBOSE
+       "Make ConfigMap verbose, i.e. log if a variable is set to default value (default OFF).")
 
 # the following option are only active when Kokkos::Cuda backend is selected, they are useful for
 # Nvidia profiling tools NCU

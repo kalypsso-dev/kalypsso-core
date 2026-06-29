@@ -39,6 +39,9 @@
 #cmakedefine KALYPSSO_CORE_USE_CPPTRACE 1
 #define KALYPSSO_CORE_STACK_PRINTER_FULLPATH "@CMAKE_CURRENT_BINARY_DIR@/src/kalypsso/core/kalypsso_stack_printer"
 
+/* kalypsso-core uses verbose log in ConfigMap */
+#cmakedefine KALYPSSO_CORE_CONFIGMAP_VERBOSE 1
+
 /* enforce instantiate some template on host */
 #cmakedefine KALYPSSO_CORE_INSTANTIATE_HOST_TEMPLATE 1
 

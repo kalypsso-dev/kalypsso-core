@@ -19,10 +19,6 @@
 
 #include <cctype> // for std::tolower
 
-#ifdef KALYPSSO_CORE_USE_MPI
-#  include <mpi.h>
-#endif
-
 namespace kalypsso
 {
 
@@ -99,6 +95,9 @@ ConfigMap::getStringVector(std::string              section,
     return tokenize(tmp, re);
   }
 
+#ifdef KALYPSSO_CORE_CONFIGMAP_VERBOSE
+  print_default_value_vector(section, name, default_value);
+#endif // KALYPSSO_CORE_CONFIGMAP_VERBOSE
   return default_value;
 
 } // ConfigMap::getStringVector
@@ -130,6 +129,9 @@ ConfigMap::getInteger(std::string section, std::string name, int default_value) 
 
   if (end_ptr == c_str)
   {
+#ifdef KALYPSSO_CORE_CONFIGMAP_VERBOSE
+    print_default_value_scalar(section, name, default_value);
+#endif // KALYPSSO_CORE_CONFIGMAP_VERBOSE
     return default_value;
   }
   else if (*end_ptr != '\0')
@@ -165,6 +167,9 @@ ConfigMap::getIntegerVector(std::string      section,
 
   if (str_vec.size() == 0)
   {
+#ifdef KALYPSSO_CORE_CONFIGMAP_VERBOSE
+    print_default_value_vector(section, name, default_value);
+#endif // KALYPSSO_CORE_CONFIGMAP_VERBOSE
     return default_value;
   }
 
@@ -225,6 +230,9 @@ ConfigMap::getInteger64(std::string section, std::string name, int64_t default_v
 
   if (end_ptr == c_str)
   {
+#ifdef KALYPSSO_CORE_CONFIGMAP_VERBOSE
+    print_default_value_scalar(section, name, default_value);
+#endif // KALYPSSO_CORE_CONFIGMAP_VERBOSE
     return default_value;
   }
   else if (*end_ptr != '\0')
@@ -260,6 +268,9 @@ ConfigMap::getInteger64Vector(std::string          section,
 
   if (str_vec.size() == 0)
   {
+#ifdef KALYPSSO_CORE_CONFIGMAP_VERBOSE
+    print_default_value_vector(section, name, default_value);
+#endif // KALYPSSO_CORE_CONFIGMAP_VERBOSE
     return default_value;
   }
 
@@ -282,7 +293,7 @@ ConfigMap::getInteger64Vector(std::string          section,
         std::cerr << "Unable to convert string \"" << str << "\" to 64 bits integer" << "\n";
         Kokkos::abort("Invalid config map.");
       }
-      return end_ptr > c_str ? n : default_value[0];
+      return n;
     });
 
   return result;
@@ -319,6 +330,9 @@ ConfigMap::getFloat(std::string section, std::string name, float default_value) 
 
   if (end_ptr == c_str)
   {
+#ifdef KALYPSSO_CORE_CONFIGMAP_VERBOSE
+    print_default_value_scalar(section, name, default_value);
+#endif // KALYPSSO_CORE_CONFIGMAP_VERBOSE
     return default_value;
   }
   else if (*end_ptr != '\0')
@@ -355,6 +369,9 @@ ConfigMap::getFloatVector(std::string        section,
 
   if (str_vec.size() == 0)
   {
+#ifdef KALYPSSO_CORE_CONFIGMAP_VERBOSE
+    print_default_value_vector(section, name, default_value);
+#endif // KALYPSSO_CORE_CONFIGMAP_VERBOSE
     return default_value;
   }
 
@@ -413,6 +430,9 @@ ConfigMap::getDouble(std::string section, std::string name, double default_value
 
   if (end_ptr == c_str)
   {
+#ifdef KALYPSSO_CORE_CONFIGMAP_VERBOSE
+    print_default_value_scalar(section, name, default_value);
+#endif // KALYPSSO_CORE_CONFIGMAP_VERBOSE
     return default_value;
   }
   else if (*end_ptr != '\0')
@@ -449,6 +469,9 @@ ConfigMap::getDoubleVector(std::string         section,
 
   if (str_vec.size() == 0)
   {
+#ifdef KALYPSSO_CORE_CONFIGMAP_VERBOSE
+    print_default_value_vector(section, name, default_value);
+#endif // KALYPSSO_CORE_CONFIGMAP_VERBOSE
     return default_value;
   }
 
@@ -553,7 +576,12 @@ ConfigMap::getBool(std::string section, std::string name, bool default_value) co
 
   // if valstr is empty, return the default value
   if (!valstr.size())
+  {
+#ifdef KALYPSSO_CORE_CONFIGMAP_VERBOSE
+    print_default_value_scalar(section, name, default_value);
+#endif // KALYPSSO_CORE_CONFIGMAP_VERBOSE
     val = default_value;
+  }
 
   return val;
 
@@ -583,6 +611,9 @@ ConfigMap::getBoolVector(std::string       section,
 
   if (str_vec.size() == 0)
   {
+#ifdef KALYPSSO_CORE_CONFIGMAP_VERBOSE
+    print_default_value_vector(section, name, default_value);
+#endif // KALYPSSO_CORE_CONFIGMAP_VERBOSE
     return default_value;
   }
 

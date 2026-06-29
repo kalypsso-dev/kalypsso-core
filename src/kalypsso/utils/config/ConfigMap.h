@@ -18,9 +18,14 @@
 #include <vector>
 #include <regex>
 #include <algorithm>
+#include <iostream>
 
 #include <Kokkos_Core.hpp>
 #include <Kokkos_Macros.hpp> // for KOKKOS_ENABLE_XXX
+
+#ifdef KALYPSSO_CORE_USE_MPI
+#  include <mpi.h>
+#endif
 
 namespace kalypsso
 {
@@ -381,6 +386,55 @@ private:
   std::vector<T>
   tokenize_as(const std::string str)
   {}
+
+  /**
+   * Print default value for a scalar parameter.
+   */
+  template <typename T>
+  void
+  print_default_value_scalar(std::string const & section,
+                             std::string const & name,
+                             T                   default_value) const
+  {
+    int myRank = 0;
+    int nTasks = 1;
+#ifdef KALYPSSO_CORE_USE_MPI
+    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+    MPI_Comm_size(MPI_COMM_WORLD, &nTasks);
+#endif
+
+    if (myRank == 0)
+    {
+      std::cout << "Using default value for parameter " << section << ":" << name << " = "
+                << default_value << "\n";
+    }
+  } // print_default_value_scalar
+
+  /**
+   * Print default value for a scalar parameter.
+   */
+  template <typename T>
+  void
+  print_default_value_vector(std::string const &    section,
+                             std::string const &    name,
+                             std::vector<T> const & default_value) const
+  {
+    int myRank = 0;
+    int nTasks = 1;
+#ifdef KALYPSSO_CORE_USE_MPI
+    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+    MPI_Comm_size(MPI_COMM_WORLD, &nTasks);
+#endif
+
+    if (myRank == 0)
+    {
+      for (size_t i = 0; i < default_value.size(); ++i)
+      {
+        std::cout << "Using default value for parameter " << section << ":" << name << "[" << i
+                  << "]" << " = " << default_value[i] << "\n";
+      }
+    }
+  } // print_default_value
 
 }; // class ConfigMap
 
