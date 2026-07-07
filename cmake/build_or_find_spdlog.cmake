@@ -105,11 +105,13 @@ else(KALYPSSO_CORE_BUILD_SPDLOG)
     set(KALYPSSO_CORE_USE_SPDLOG ON)
   else()
     message(
-      WARNING "#################################################################################\n"
-              "spdlog was not found in your system. Re-run cmake configuration with option "
-              "\"-DKALYPSSO_CORE_BUILD_SPDLOG=ON\" to enable building spdlog from source using  "
-              "git submodule.\n"
-              "#################################################################################")
+      FATAL_ERROR
+        "#################################################################################\n"
+        "spdlog was not found in your system. It is a required dependency."
+        "Re-run cmake configuration with option "
+        "\"-DKALYPSSO_CORE_BUILD_SPDLOG=ON\" to enable building spdlog from source using  "
+        "git submodule.\n"
+        "#################################################################################")
   endif()
 
   set(USE_SPDLOG_BUILTIN FALSE)

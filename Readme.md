@@ -71,6 +71,8 @@ cmake -B _build/openmp -S . \
 cmake --build _build/openmp -j 8
 ```
 
+Please note that library spdlog is a required dependency. If spdlog is not already installed on your system, you can ask kalypsso-core to build it for you by adding option `-DKALYPSSO_CORE_BUILD_SPDLOG=ON`
+
 The same for Kokkos/CUDA (target CUDA architecture will be detected during the build):
 ```bash
 cmake -B _build/cuda -S . \
