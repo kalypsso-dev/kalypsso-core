@@ -1794,7 +1794,7 @@ StencilHelper<dim, device_t>::compute_face_siblings_sum(CellLocation_t const &  
     {
       // data += userdata(cell_index0 + (ii & 0x1) + ((ii & 0x2) >> 1) * b[IX], ivar,
       // cell_loc.iOct);
-      data += userdata(coord0[IX] + ((ii & 0x1) << 0) + flux_offset[IX],
+      data += userdata(coord0[IX] + ((ii & 0x1) >> 0) + flux_offset[IX],
                        coord0[IY] + ((ii & 0x2) >> 1) + flux_offset[IY],
                        ivar,
                        cell_loc.iOct);
@@ -1889,7 +1889,7 @@ StencilHelper<dim, device_t>::compute_face_siblings_sum(CellLocation_t const &  
 
     if constexpr (dim == 2)
     {
-      data += userdata(coord0[IX] + ((ii & 0x1) << 0) + flux_offset[IX],
+      data += userdata(coord0[IX] + ((ii & 0x1) >> 0) + flux_offset[IX],
                        coord0[IY] + ((ii & 0x2) >> 1) + flux_offset[IY],
                        ivar,
                        cell_loc.iOct);
