@@ -202,6 +202,7 @@ add_library(
   problems/IsentropicVortexParams.h
   problems/KHParams.h
   problems/MHDShockTubeParams.h
+  problems/MultiFluidShockTubeParams.h
   problems/OrszagTangParams.h
   problems/RayleighTaylorParams.h
   problems/ShuOsherParams.h
