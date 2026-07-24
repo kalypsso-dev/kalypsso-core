@@ -170,6 +170,12 @@ public:
     return m_data.logical_view();
   }
 
+  auto
+  flat_view() const
+  {
+    return m_data.logical_view();
+  }
+
   auto &
   flat_view_ref()
   {

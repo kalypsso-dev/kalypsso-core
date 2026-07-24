@@ -62,8 +62,9 @@ MeshGhostsExchanger<dim, T, device_t>::allocated_size_in_bytes() const -> size_t
 // =========================================================================
 template <size_t dim, typename T, typename device_t>
 void
-MeshGhostsExchanger<dim, T, device_t>::pack_mirror_data(DataArrayLeaf_t    userdata_leaf,
-                                                        orchard_key_view_t mirror_keys_device)
+MeshGhostsExchanger<dim, T, device_t>::pack_mirror_data(
+  DataArrayLeaf_t const &    userdata_leaf,
+  orchard_key_view_t const & mirror_keys_device)
 {
 
   auto local_num_mirrors = m_amr_mesh.local_num_mirrors();
@@ -123,8 +124,9 @@ MeshGhostsExchanger<dim, T, device_t>::pack_mirror_data(DataArrayLeaf_t    userd
 // =========================================================================
 template <size_t dim, typename T, typename device_t>
 void
-MeshGhostsExchanger<dim, T, device_t>::pack_mirror_data(DataArrayBlock_t   userdata_block,
-                                                        orchard_key_view_t mirror_keys_device)
+MeshGhostsExchanger<dim, T, device_t>::pack_mirror_data(
+  DataArrayBlock_t const &   userdata_block,
+  orchard_key_view_t const & mirror_keys_device)
 {
 
   auto amr_hashmap = m_mesh_map.hashmap();
@@ -185,10 +187,10 @@ MeshGhostsExchanger<dim, T, device_t>::pack_mirror_data(DataArrayBlock_t   userd
 template <size_t dim, typename T, typename device_t>
 void
 MeshGhostsExchanger<dim, T, device_t>::pack_mirror_data_multi_var(
-  DataArrayBlockMultiVar_t           userdata_block,
-  int32_t                            num_block_mirrors,
-  orchard_key_view_t                 mirror_keys_device,
-  Kokkos::View<uint32_t *, device_t> mirror_offsets)
+  DataArrayBlockMultiVar_t const &           userdata_block,
+  int32_t                                    num_block_mirrors,
+  orchard_key_view_t const &                 mirror_keys_device,
+  Kokkos::View<uint32_t *, device_t> const & mirror_offsets)
 {
   auto amr_hashmap = m_mesh_map.hashmap();
   auto num_mirror_quad = m_amr_mesh.local_num_mirrors();
@@ -244,8 +246,9 @@ MeshGhostsExchanger<dim, T, device_t>::pack_mirror_data_multi_var(
 // =========================================================================
 template <size_t dim, typename T, typename device_t>
 void
-MeshGhostsExchanger<dim, T, device_t>::pack_mirror_data(FaceDataArrayBlock_t face_userdata,
-                                                        orchard_key_view_t   mirror_keys_device)
+MeshGhostsExchanger<dim, T, device_t>::pack_mirror_data(
+  FaceDataArrayBlock_t const & face_userdata,
+  orchard_key_view_t const &   mirror_keys_device)
 {
 
   auto amr_hashmap = m_mesh_map.hashmap();
@@ -307,7 +310,7 @@ MeshGhostsExchanger<dim, T, device_t>::pack_mirror_data(FaceDataArrayBlock_t fac
 // =========================================================================
 template <size_t dim, typename T, typename device_t>
 void
-MeshGhostsExchanger<dim, T, device_t>::unpack_ghost_data(DataArrayLeaf_t userdata_leaf)
+MeshGhostsExchanger<dim, T, device_t>::unpack_ghost_data(DataArrayLeaf_t const & userdata_leaf)
 {
   // get the number of owned quadrants in local MPI process
   auto num_owned_quad = m_amr_mesh.local_num_quadrants();
@@ -339,7 +342,7 @@ MeshGhostsExchanger<dim, T, device_t>::unpack_ghost_data(DataArrayLeaf_t userdat
 // =========================================================================
 template <size_t dim, typename T, typename device_t>
 void
-MeshGhostsExchanger<dim, T, device_t>::unpack_ghost_data(DataArrayBlock_t userdata_block)
+MeshGhostsExchanger<dim, T, device_t>::unpack_ghost_data(DataArrayBlock_t const & userdata_block)
 {
   // get the number of owned quadrants in local MPI process
   const auto num_owned_quad = m_amr_mesh.local_num_quadrants();
@@ -376,9 +379,9 @@ MeshGhostsExchanger<dim, T, device_t>::unpack_ghost_data(DataArrayBlock_t userda
 template <size_t dim, typename T, typename device_t>
 void
 MeshGhostsExchanger<dim, T, device_t>::unpack_ghost_data_multi_var(
-  DataArrayBlockMultiVar_t userdata_block,
-  int32_t                  num_block_owned,
-  int32_t                  num_block_ghosts)
+  DataArrayBlockMultiVar_t const & userdata_block,
+  int32_t                          num_block_owned,
+  int32_t                          num_block_ghosts)
 {
   // number of cells per block, and scalar values per cell
   const auto num_cells = userdata_block.num_cells();
@@ -405,7 +408,7 @@ MeshGhostsExchanger<dim, T, device_t>::unpack_ghost_data_multi_var(
 // =========================================================================
 template <size_t dim, typename T, typename device_t>
 void
-MeshGhostsExchanger<dim, T, device_t>::unpack_ghost_data(FaceDataArrayBlock_t face_userdata)
+MeshGhostsExchanger<dim, T, device_t>::unpack_ghost_data(FaceDataArrayBlock_t const & face_userdata)
 {
   // get the number of owned quadrants in local MPI process
   const auto num_owned_quad = m_amr_mesh.local_num_quadrants();
@@ -646,12 +649,12 @@ MeshGhostsExchanger<dim, T, device_t>::do_mpi_send_recv_multi_var(
 template <size_t dim, typename T, typename device_t>
 void
 MeshGhostsExchanger<dim, T, device_t>::do_mpi_send_recv_inplace(
-  DataArrayGhostedBlock_t userdata_ghosted_block)
+  DataArrayGhostedBlock_t const & userdata_ghosted_block)
 {
   const auto data_size_per_quad =
     userdata_ghosted_block.num_cells() * userdata_ghosted_block.num_vars();
 
-  auto userdata_view = userdata_ghosted_block.flat_view();
+  const auto userdata_view = userdata_ghosted_block.flat_view();
 
   // total number of MPI procs
   const auto num_procs = m_par_env.size();
@@ -756,7 +759,7 @@ MeshGhostsExchanger<dim, T, device_t>::do_mpi_send_recv_inplace(
 // =========================================================================
 template <size_t dim, typename T, typename device_t>
 void
-MeshGhostsExchanger<dim, T, device_t>::exchange(DataArrayLeaf_t userdata_leaf)
+MeshGhostsExchanger<dim, T, device_t>::exchange(DataArrayLeaf_t const & userdata_leaf)
 {
 
   resize(userdata_leaf.extent(1));
@@ -773,7 +776,7 @@ MeshGhostsExchanger<dim, T, device_t>::exchange(DataArrayLeaf_t userdata_leaf)
 // =========================================================================
 template <size_t dim, typename T, typename device_t>
 void
-MeshGhostsExchanger<dim, T, device_t>::exchange(DataArrayBlock_t userdata_block)
+MeshGhostsExchanger<dim, T, device_t>::exchange(DataArrayBlock_t const & userdata_block)
 {
 
   // check if (re-)allocation needed
@@ -794,7 +797,7 @@ MeshGhostsExchanger<dim, T, device_t>::exchange(DataArrayBlock_t userdata_block)
 // =========================================================================
 template <size_t dim, typename T, typename device_t>
 void
-MeshGhostsExchanger<dim, T, device_t>::exchange(FaceDataArrayBlock_t userdata_block_face)
+MeshGhostsExchanger<dim, T, device_t>::exchange(FaceDataArrayBlock_t const & userdata_block_face)
 {
 
   // check if (re-)allocation needed
@@ -814,7 +817,8 @@ MeshGhostsExchanger<dim, T, device_t>::exchange(FaceDataArrayBlock_t userdata_bl
 // =========================================================================
 template <size_t dim, typename T, typename device_t>
 void
-MeshGhostsExchanger<dim, T, device_t>::exchange_multi_var(DataArrayBlockMultiVar_t userdata_block)
+MeshGhostsExchanger<dim, T, device_t>::exchange_multi_var(
+  DataArrayBlockMultiVar_t const & userdata_block)
 {
   //! TODO: Would it be better to not copy the offsets to the host?
   using HostSpace = typename HostDevice::execution_space;

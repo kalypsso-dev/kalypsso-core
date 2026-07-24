@@ -149,7 +149,8 @@ public:
   //! (orchard keys, index) to be valid, i.e. calling MeshMap::fill_map is necessary after any mesh
   //! changes (p4est_balance, p4est_partition)
   void
-  pack_mirror_data(DataArrayLeaf_t userdata_leaf, orchard_key_view_t mirror_keys_device);
+  pack_mirror_data(DataArrayLeaf_t const &    userdata_leaf,
+                   orchard_key_view_t const & mirror_keys_device);
 
   // =========================================================================
   // =========================================================================
@@ -172,7 +173,8 @@ public:
   //! (orchard keys, index) to be valid, i.e. calling MeshMap::fill_map is necessary after any mesh
   //! changes (p4est_balance, p4est_partition)
   void
-  pack_mirror_data(DataArrayBlock_t userdata_block, orchard_key_view_t mirror_keys_device);
+  pack_mirror_data(DataArrayBlock_t const &   userdata_block,
+                   orchard_key_view_t const & mirror_keys_device);
 
   // =========================================================================
   // =========================================================================
@@ -184,10 +186,10 @@ public:
   //! \param[in] array or orchard keys of mirror quadrant
   //! \param[in] mirror_offsets mirror offset array on device
   void
-  pack_mirror_data_multi_var(DataArrayBlockMultiVar_t           userdata_block,
-                             int32_t                            num_block_mirrors,
-                             orchard_key_view_t                 mirror_keys_device,
-                             Kokkos::View<uint32_t *, device_t> mirror_offsets);
+  pack_mirror_data_multi_var(DataArrayBlockMultiVar_t const &           userdata_block,
+                             int32_t                                    num_block_mirrors,
+                             orchard_key_view_t const &                 mirror_keys_device,
+                             Kokkos::View<uint32_t *, device_t> const & mirror_offsets);
 
   // =========================================================================
   // =========================================================================
@@ -210,7 +212,8 @@ public:
   //! (orchard keys, index) to be valid, i.e. calling MeshMap::fill_map is necessary after any mesh
   //! changes (p4est_balance, p4est_partition)
   void
-  pack_mirror_data(FaceDataArrayBlock_t face_userdata, orchard_key_view_t mirror_keys_device);
+  pack_mirror_data(FaceDataArrayBlock_t const & face_userdata,
+                   orchard_key_view_t const &   mirror_keys_device);
 
   // =========================================================================
   // =========================================================================
@@ -223,7 +226,7 @@ public:
   //!            ghost->ghosts->elem_count)
   //!
   void
-  unpack_ghost_data(DataArrayLeaf_t userdata_leaf);
+  unpack_ghost_data(DataArrayLeaf_t const & userdata_leaf);
 
   // =========================================================================
   // =========================================================================
@@ -236,7 +239,7 @@ public:
   //!            ghost->ghosts->elem_count)
   //!
   void
-  unpack_ghost_data(DataArrayBlock_t userdata_block);
+  unpack_ghost_data(DataArrayBlock_t const & userdata_block);
 
   // =========================================================================
   // =========================================================================
@@ -248,9 +251,9 @@ public:
   //!            ghost->ghosts->elem_count)
   //!
   void
-  unpack_ghost_data_multi_var(DataArrayBlockMultiVar_t userdata_block,
-                              int32_t                  num_block_owned,
-                              int32_t                  num_block_ghosts);
+  unpack_ghost_data_multi_var(DataArrayBlockMultiVar_t const & userdata_block,
+                              int32_t                          num_block_owned,
+                              int32_t                          num_block_ghosts);
 
   // =========================================================================
   // =========================================================================
@@ -263,7 +266,7 @@ public:
   //!            ghost->ghosts->elem_count)
   //!
   void
-  unpack_ghost_data(FaceDataArrayBlock_t face_userdata);
+  unpack_ghost_data(FaceDataArrayBlock_t const & face_userdata);
 
   // =========================================================================
   // =========================================================================
@@ -292,7 +295,7 @@ public:
   //!                cell); must be sized upon the sum of number of mirror quads and number of
   //!                ghost quads.
   void
-  do_mpi_send_recv_inplace(DataArrayGhostedBlock_t userdata_ghosted_block);
+  do_mpi_send_recv_inplace(DataArrayGhostedBlock_t const & userdata_ghosted_block);
 
   // =========================================================================
   // =========================================================================
@@ -300,12 +303,8 @@ public:
   //!
   //! \param[in] userdata_leaf is a uaerdata array (at leaf, i.e. one value per leaf octant); must
   //!            be sized upon the total number of octant in current MPI process (owned + ghost)
-  //! \param[in] amr_hashmap_device is a device Kokkos::UnorderedMap of keys,value where value is
-  //!            the memory index to find userdata corresponding to a given key
-  //! \param[in] do_allocate is a boolean to tell if we want to allocate internal communication
-  //!            buffers (can be set to false, if you know that re-allocation is not needed)
   void
-  exchange(DataArrayLeaf_t userdata_leaf);
+  exchange(DataArrayLeaf_t const & userdata_leaf);
 
   // =========================================================================
   // =========================================================================
@@ -313,12 +312,8 @@ public:
   //!
   //! \param[in] userdata_block is a userdata block array (i.e. one value per cell); must
   //!            be sized upon the total number of octant in current MPI process (owned + ghost)
-  //! \param[in] amr_hashmap_device is a device Kokkos::UnorderedMap of keys,value where value is
-  //!            the memory index to find userdata corresponding to a given key
-  //! \param[in] do_allocate is a boolean to tell if we want to allocate internal communication
-  //!            buffers (can be set to false, if you know that re-allocation is not needed)
   void
-  exchange(DataArrayBlock_t userdata_block);
+  exchange(DataArrayBlock_t const & userdata_block);
 
   // =========================================================================
   // =========================================================================
@@ -326,12 +321,8 @@ public:
   //!
   //! \param[in] userdata_block is a userdata block array (i.e. one value per face); must
   //!            be sized upon the total number of octant in current MPI process (owned + ghost)
-  //! \param[in] amr_hashmap_device is a device Kokkos::UnorderedMap of keys,value where value is
-  //!            the memory index to find userdata corresponding to a given key
-  //! \param[in] do_allocate is a boolean to tell if we want to allocate internal communication
-  //!            buffers (can be set to false, if you know that re-allocation is not needed)
   void
-  exchange(FaceDataArrayBlock_t userdata_block_face);
+  exchange(FaceDataArrayBlock_t const & userdata_block_face);
 
   // =========================================================================
   // =========================================================================
@@ -340,7 +331,7 @@ public:
   //! \param[in] userdata_block is a userdata block array (i.e. one value per cell); must
   //!            be sized upon the total number of octant in current MPI process (owned + ghost)
   void
-  exchange_multi_var(DataArrayBlockMultiVar_t userdata_block);
+  exchange_multi_var(DataArrayBlockMultiVar_t const & userdata_block);
 
   // =========================================================================
   // =========================================================================
@@ -356,7 +347,7 @@ public:
   //!                cell); must be sized upon the sum of number of mirror quads and number of
   //!                ghost quads.
   void
-  exchange_inplace(DataArrayGhostedBlock_t userdata_ghosted_block)
+  exchange_inplace(DataArrayGhostedBlock_t const & userdata_ghosted_block)
   {
 
     // make sure m_send buffer was allocated with the right size
