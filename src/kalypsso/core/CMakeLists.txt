@@ -165,7 +165,6 @@ add_library(
   models/RiemannSolvers.h
   models/RiemannSolvers_MHD.h
   models/mhd_utils.h
-  models/utils_hydro.h
   morton_utils.h
   multimaterial_utils.h
   MultiMatFillBlockGhostCells.h
