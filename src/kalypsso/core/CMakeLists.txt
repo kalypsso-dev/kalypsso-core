@@ -153,18 +153,7 @@ add_library(
   misc_utils.h
   models/Hydro.cpp
   models/Hydro.h
-  models/HydroSettings.cpp
-  models/HydroSettings.h
   models/HydroState.h
-  models/MHD.cpp
-  models/MHD.h
-  models/MHDSettings.cpp
-  models/MHDSettings.h
-  models/MHDState.h
-  models/riemann_solver_types.h
-  models/RiemannSolvers.h
-  models/RiemannSolvers_MHD.h
-  models/mhd_utils.h
   morton_utils.h
   multimaterial_utils.h
   MultiMatFillBlockGhostCells.h

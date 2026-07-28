@@ -4,6 +4,10 @@
 
 /**
  * \file HydroState.h
+ *
+ * Important Note :
+ * this file should only be used inside kalypsso-core (not in
+ * any kalypsso apps). It is yet useful for testing.
  */
 #ifndef KALYPSSO_CORE_MODELS_HYDRO_STATE_H_
 #define KALYPSSO_CORE_MODELS_HYDRO_STATE_H_
