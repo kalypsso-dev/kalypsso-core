@@ -28,8 +28,6 @@
 
 #include <kalypsso/core/utils_block.h> // for definition of function cellindex_to_coord and coord_to_cellindex
 
-#include <kalypsso/core/models/Hydro.h>
-
 namespace kalypsso
 {
 

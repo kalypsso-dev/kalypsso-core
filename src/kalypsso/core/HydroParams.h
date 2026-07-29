@@ -12,8 +12,6 @@
 #include <kalypsso/core/kokkos_shared.h>
 #include <kalypsso/core/real_type.h>
 #include <kalypsso/utils/config/ConfigMap.h>
-#include <kalypsso/core/models/riemann_solver_types.h>
-
 
 #include <stdbool.h>
 
