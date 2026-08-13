@@ -41,7 +41,7 @@ jobs:
           sudo apt-get install -y libhwloc-dev cmake build-essential mpi-default-dev libhdf5-openmpi-dev libspdlog-dev
 
       - name: Install CUDA toolkit
-        uses: Jimver/cuda-toolkit@v0.2.35
+        uses: Jimver/cuda-toolkit@v0.2.36
         id: cuda-toolkit
         if: runner.os == 'Linux'
         with:
