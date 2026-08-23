@@ -227,7 +227,8 @@ add_library(
   utils_block.h
   vof/interface_tracking_utils.h
   vof/interface_tracking_utils.cpp
-  vof/youngs.h)
+  vof/youngs.h
+  volume_fraction_advection_source_term_type.h)
 
 if(KALYPSSO_CORE_USE_MPI)
   target_sources(
