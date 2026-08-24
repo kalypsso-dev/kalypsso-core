@@ -229,6 +229,21 @@ public:
 
 
   /**
+   * Material sound speed square.
+   *
+   * \param[in] i_mat material id
+   * \param[in] pressure mixture pressure
+   * \param[in] alpha0 volume fraction of given material
+   * \param[in] alpha_rho0 partial density of given material
+   */
+  KOKKOS_INLINE_FUNCTION
+  real_t
+  material_sound_speed_square(size_t i_mat,
+                              real_t pressure,
+                              real_t alpha0,
+                              real_t alpha_rho0) const;
+
+  /**
    * Compute mixture squared speed of sound (two materials).
    *
    * \param[in] rho mixture density
@@ -295,6 +310,18 @@ public:
                       real_t                                   pressure,
                       Kokkos::View<real_t *, device_t> const & alpha,
                       Kokkos::View<real_t *, device_t> const & alpha_rho) const;
+
+  /**
+   * Material bulk modulus.
+   *
+   * \param[in] i_mat material id
+   * \param[in] pressure mixture pressure
+   * \param[in] alpha0 volume fraction of given material
+   * \param[in] alpha_rho0 partial density of given material
+   */
+  KOKKOS_INLINE_FUNCTION
+  real_t
+  material_bulk_modulus(size_t i_mat, real_t pressure, real_t alpha0, real_t alpha_rho0) const;
 
   /**
    * Compute mixture isentropic bulk modulus (two materials).

@@ -263,6 +263,25 @@ MieGruneisenMixture<device_t>::mixture_specific_eint(
 // =====================================================================
 template <typename device_t>
 KOKKOS_INLINE_FUNCTION real_t
+MieGruneisenMixture<device_t>::material_sound_speed_square(size_t i_mat,
+                                                           real_t pressure,
+                                                           real_t alpha0,
+                                                           real_t alpha_rho0) const
+{
+  if (alpha0 > LOW_ALPHA)
+  {
+    const auto rho0 = alpha_rho0 / alpha0;
+    return m_eos_array.material_sound_speed_square(i_mat, pressure, rho0);
+  }
+
+  return ZERO_F;
+
+} // MieGruneisenMixture<device_t>::material_sound_speed_square
+
+// =====================================================================
+// =====================================================================
+template <typename device_t>
+KOKKOS_INLINE_FUNCTION real_t
 MieGruneisenMixture<device_t>::mixture_sound_speed_square(real_t rho,
                                                           real_t pressure,
                                                           real_t alpha0,
@@ -372,6 +391,26 @@ MieGruneisenMixture<device_t>::mixture_sound_speed(
   return sqrt(mixture_sound_speed_square(rho, pressure, alpha, alpha_rho));
 
 } // MieGruneisenMixture<device_t>::mixture_sound_speed
+
+// =====================================================================
+// =====================================================================
+template <typename device_t>
+KOKKOS_INLINE_FUNCTION real_t
+MieGruneisenMixture<device_t>::material_bulk_modulus(size_t i_mat,
+                                                     real_t pressure,
+                                                     real_t alpha0,
+                                                     real_t alpha_rho0) const
+{
+  if (alpha0 > LOW_ALPHA)
+  {
+    const auto rho0 = alpha_rho0 / alpha0;
+    return m_eos_array.material_bulk_modulus(i_mat, pressure, rho0);
+  }
+
+  constexpr auto HIGH_BULK_MODULUS = KALYPSSO_NUM(1e20);
+  return HIGH_BULK_MODULUS;
+
+} // MieGruneisenMixture<device_t>::material_bulk_modulus
 
 // =====================================================================
 // =====================================================================
