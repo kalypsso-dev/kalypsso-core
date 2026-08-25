@@ -29,6 +29,7 @@ namespace core
  *
  * References:
  *
+ * - Grégoire Allaire, Sébastien Clerc, Samuel Kokh, A Five-Equation Model for the Simulation of Interfaces between Compressible Fluids, Journal of Computational Physics, Volume 181, Issue 2, 2002, Pages 577-616, ISSN 0021-9991, https://doi.org/10.1006/jcph.2002.7143
  * - Gregory Hale Miller, Elbridge Gerry Puckett, A High-Order Godunov Method for Multiple Condensed Phases, Journal of Computational Physics, Volume 128, Issue 1, 1996, Pages 134-164, ISSN 0021-9991,https://doi.org/10.1006/jcph.1996.0200.
  * - Timothy R. Law, Philip T. Barton, A cell-centred Eulerian volume-of-fluid method for compressible multi-material flows, Journal of Computational Physics, Volume 497, 2024, 112592, ISSN 0021-9991, https://doi.org/10.1016/j.jcp.2023.112592
  *
