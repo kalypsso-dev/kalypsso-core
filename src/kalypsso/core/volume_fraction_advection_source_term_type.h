@@ -24,13 +24,19 @@ namespace core
  *
  * Valid values are:
  *
- * - ALLAIRE_KOKH : \f$ \frac{\partial \alpha}{\partial t} + u\dot\nabla \alpha = -\alpha \div u \f$
- * - KAPILA : \f$ \frac{\partial \alpha}{\partial t} + u\dot\nabla \alpha = -\alpha (1-\kappa/\kappa_0) \div u \f$ where \f$ \kappa \f$ is the mixture bulk modulus and \f$ \kappa_0 \f$ is the material bulk modulus which volume fraction is \f$ \alpha \f$
+ * - ALLAIRE_KOKH   : \f$ \frac{\partial \alpha}{\partial t} + u\cdot \nabla \alpha = -\alpha \nabla \cdot u \f$
+ * - MILLER_PUCKETT : \f$ \frac{\partial \alpha}{\partial t} + u\cdot \nabla \alpha = -\alpha (1-\kappa/\kappa_0) \nabla \cdot u \f$ where \f$ \kappa \f$ is the mixture bulk modulus and \f$ \kappa_0 \f$ is the material bulk modulus which volume fraction is \f$ \alpha \f$
+ *
+ * References:
+ *
+ * - Gregory Hale Miller, Elbridge Gerry Puckett, A High-Order Godunov Method for Multiple Condensed Phases, Journal of Computational Physics, Volume 128, Issue 1, 1996, Pages 134-164, ISSN 0021-9991,https://doi.org/10.1006/jcph.1996.0200.
+ * - Timothy R. Law, Philip T. Barton, A cell-centred Eulerian volume-of-fluid method for compressible multi-material flows, Journal of Computational Physics, Volume 497, 2024, 112592, ISSN 0021-9991, https://doi.org/10.1016/j.jcp.2023.112592
+ *
  */
 BETTER_ENUM(VolFracAdvectionSourceTermType, uint8_t,
             INVALID = 0,
             ALLAIRE_KOKH = 1,
-            KAPILA = 2)
+            MILLER_PUCKETT = 2)
 // clang-format on
 
 /**
