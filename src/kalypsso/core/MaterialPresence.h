@@ -249,6 +249,15 @@ public:
   }
 
   /**
+   * \brief Clears the material presence
+   */
+  void
+  clear() const
+  {
+    Kokkos::deep_copy(m_mat_pres, 0);
+  }
+
+  /**
    * \brief Returns true if the material number is considered present
    */
   KOKKOS_INLINE_FUNCTION bool
@@ -288,6 +297,34 @@ public:
 #endif
 
     m_mat_pres(var(i_oct, mat_num)) &= ~bit(mat_num);
+  }
+
+  /**
+   * \brief Atomically sets the material presence
+   */
+  KOKKOS_INLINE_FUNCTION void
+  atomic_set(int32_t i_oct, int32_t mat_num) const
+  {
+#ifdef KALYPSSO_CORE_DEBUG_BOUNDS_CHECK
+    KOKKOS_ASSERT((static_cast<uint32_t>(mat_num) < m_max_mat) && "Wrong value for mat_num");
+    KOKKOS_ASSERT((static_cast<uint32_t>(i_oct) < m_num_octants) && "Wrong value for i_oct");
+#endif
+
+    Kokkos::atomic_or(&m_mat_pres(var(i_oct, mat_num)), bit(mat_num));
+  }
+
+  /**
+   * \brief Atomically unsets the material presence
+   */
+  KOKKOS_INLINE_FUNCTION void
+  atomic_unset(int32_t i_oct, int32_t mat_num) const
+  {
+#ifdef KALYPSSO_CORE_DEBUG_BOUNDS_CHECK
+    KOKKOS_ASSERT((static_cast<uint32_t>(mat_num) < m_max_mat) && "Wrong value for mat_num");
+    KOKKOS_ASSERT((static_cast<uint32_t>(i_oct) < m_num_octants) && "Wrong value for i_oct");
+#endif
+
+    Kokkos::atomic_and(&m_mat_pres(var(i_oct, mat_num)), ~bit(mat_num));
   }
 
   /**
