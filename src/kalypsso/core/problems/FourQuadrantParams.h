@@ -15,19 +15,20 @@ namespace kalypsso
 {
 
 /**
- * Four-Quadrant problem test parameters
- **/
+ * Four-Quadrant problem test parameters.
+ */
 struct FourQuadrantParams
 {
 
-  real_t xt, yt;
-  int    configNumber;
+  Kokkos::Array<real_t, 3> pos;           //! Discontinutity locations
+  int                      config_number; //! Config number
 
   FourQuadrantParams(ConfigMap const & config_map)
   {
-    xt = config_map.getReal("four_quadrant", "x", KALYPSSO_NUM(0.8));
-    yt = config_map.getReal("four_quadrant", "y", KALYPSSO_NUM(0.8));
-    configNumber = config_map.getInteger("four_quadrant", "config_number", 0);
+    pos[0] = config_map.getReal("four_quadrant", "x", KALYPSSO_NUM(0.8));
+    pos[1] = config_map.getReal("four_quadrant", "y", KALYPSSO_NUM(0.8));
+    pos[2] = config_map.getReal("four_quadrant", "z", KALYPSSO_NUM(0.8));
+    config_number = config_map.getInteger("four_quadrant", "config_number", 0);
   }
 
 }; // struct FourQuadrantParameters
