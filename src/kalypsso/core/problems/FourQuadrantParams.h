@@ -15,6 +15,9 @@
 namespace kalypsso
 {
 
+namespace core
+{
+
 /**
  * Four-Quadrant problem test parameters.
  */
@@ -138,6 +141,8 @@ struct FourQuadrantParams
   }
 
 }; // struct FourQuadrantParameters
+
+} // namespace core
 
 } // namespace kalypsso
 
