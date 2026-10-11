@@ -21,8 +21,12 @@ add_library(
   AlternatingDirectionScheduler.h
   AMRContext.h
   AMRCycleDriver.h
+  amr_cycle_profiling.h
+  amr_cycle_types.h
   amr_hashmap.h
   amr_key.h
+  AMRManager.cpp
+  AMRManager.h
   AMRmesh.h
   AMRMeshInfo.h
   AMRMeshMonitoring.cpp

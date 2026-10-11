@@ -201,6 +201,24 @@ ProfilingManager::get_region(std::string const &               name,
 
 // ==============================================================================================
 // ==============================================================================================
+double
+ProfilingManager::get_total_time()
+{
+
+#ifdef KALYPSSO_CORE_TIMING_ENABLED
+  auto & whole_app_region = m_profiling_region_map.at(whole_kalypsso_region_name);
+  auto   total_time_sec = whole_app_region.host_timer().elapsed();
+  assertm(total_time_sec > 0, "Invalid value: total_time_sec <= 0 !");
+  return total_time_sec;
+#else
+  // invalid value
+  return -1;
+#endif
+
+} // ProfilingManager::get_total_time
+
+// ==============================================================================================
+// ==============================================================================================
 void
 ProfilingManager::print_timings()
 {
@@ -219,12 +237,50 @@ ProfilingManager::print_timings()
     printf("# ====================================\n");
 
     // get whole application time using the host timer
-    auto & whole_app_region = m_profiling_region_map.at(whole_kalypsso_region_name);
-    auto   total_time_sec = whole_app_region.host_timer().elapsed();
-    assertm(total_time_sec > 0, "Invalid value: total_time_sec <= 0 !");
+    const auto total_time_sec = get_total_time();
     std::cout << std::left << std::setw(40) << whole_kalypsso_region_name;
     printf(" time : %5.3f \ts (%5.2f%%)", total_time_sec, 100.0);
     std::cout << std::endl;
+
+    // for other timer display the fraction of time in each region with respect to
+    // the whole application time
+    // timer elapsed method is not const (when using CudaAsyncTimer)
+    for (auto & prof : m_profiling_region_map)
+    {
+      const std::string & name = prof.first;
+      if (name != whole_kalypsso_region_name)
+      {
+        double time_sec = prof.second.elapsed();
+        double percent = 100 * time_sec / total_time_sec;
+        std::cout << std::left << std::setw(40) << name;
+        printf(" time : %5.3f \ts (%5.2f%%)", time_sec, percent);
+        std::cout << std::endl;
+      }
+    }
+  }
+#else
+    KALYPSSO_INFO(("Timings are disabled. Please re-build with KALYPSSO_CORE_TIMING_ENABLED=ON.");
+#endif // KALYPSSO_CORE_TIMING_ENABLED
+} // ProfilingManager::print_timings
+
+// ==============================================================================================
+// ==============================================================================================
+void
+ProfilingManager::print_timings(double total_time_sec, std::string header)
+{
+#ifdef KALYPSSO_CORE_TIMING_ENABLED
+  if (!ProfilingData::timings_valid)
+  {
+    if (m_par_env.rank() == 0)
+      std::cerr << "You can't print timings before the whole application region is still open.\n";
+    return;
+  }
+
+  if (m_par_env.rank() == 0)
+  {
+    printf("# ====================================\n");
+    printf("# %s\n",header.c_str());
+    printf("# ====================================\n");
 
     // for other timer display the fraction of time in each region with respect to
     // the whole application time

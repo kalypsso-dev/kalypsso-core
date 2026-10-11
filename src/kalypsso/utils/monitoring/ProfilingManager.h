@@ -181,7 +181,7 @@ public:
   ~ProfilingManager() = default;
 
   /**
-   * Get or create a profiling region.
+   * \brief Get or create a profiling region.
    */
   ProfilingRegion &
   get_region(std::string const &               name,
@@ -194,7 +194,7 @@ public:
              ColorMap_t const &                colormap);
 
   /**
-   * Get or create a profiling region.
+   * \brief Get or create a profiling region.
    */
   ProfilingRegion &
   get_whole_region()
@@ -202,14 +202,27 @@ public:
     return m_profiling_region_map.at(whole_kalypsso_region_name);
   } // get_whole_region
 
+  //! get total time in seconds
+  double
+  get_total_time();
+
   /**
-   * print timing report.
+   * \brief Print timing report.
    *
    * TODO: we probably want to perform a MPI_Reduce (mean/max) over timings before reporting
    * currently we only use timing from MPI master rank (this is probably good enough for now)
    */
   void
   print_timings();
+
+  /**
+   * \brief Print timing report when total time is provided by another profiling manager.
+   *
+   * \param[in] total_time Total time used to compute percentage.
+   * \param[in] header A string to customize printing.
+   */
+  void
+  print_timings(double total_time, std::string header);
 
   //! return total time in seconds.
   std::optional<double>
