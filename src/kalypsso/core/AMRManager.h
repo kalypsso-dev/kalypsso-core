@@ -92,6 +92,17 @@ public:
   }
 
   /**
+   * \brief Gets the number of mirror octants
+   *
+   * \return The number of mirror octants
+   */
+  auto
+  get_nb_mirrors()
+  {
+    return m_mesh.local_num_mirrors();
+  }
+
+  /**
    * \brief Gets the number of MPI ghost octants
    *
    * \return The number of MPI ghost octants
