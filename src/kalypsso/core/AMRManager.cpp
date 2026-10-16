@@ -41,26 +41,6 @@ AMRManager<dim, device_t>::AMRManager(ParallelEnv const & par_env, ConfigMap con
 // ================================================================================================
 template <size_t dim, typename device_t>
 void
-AMRManager<dim, device_t>::rebuild(bool reset_ghosts)
-{
-  KALYPSSO_PROFILING_REGION_HOST(m_profiling_mgr, AMR_CYCLE_REBUILD);
-
-  if (reset_ghosts)
-  {
-    m_mesh.reset_ghost();
-  }
-  m_mesh_map->compute_outside_quad_info(m_mesh.forest(), m_mesh.ghost());
-  m_mesh_map->update_hashmap(m_mesh.forest(), m_mesh.ghost(), true);
-  m_mesh_map->update_mirror_orchard_keys(m_mesh.ghost());
-  m_mesh_map->update_amr_mesh_info(m_mesh.forest(), m_mesh.ghost());
-  m_mesh_map->update_orchard_keys(m_mesh.forest(), m_mesh.ghost());
-  m_mesh_map->update_conformal_status();
-}
-
-// ================================================================================================
-// ================================================================================================
-template <size_t dim, typename device_t>
-void
 AMRManager<dim, device_t>::reset_amr_flags()
 {
   m_amr_context.resize_amrflags(get_nb_owned());
@@ -81,6 +61,36 @@ AMRManager<dim, device_t>::amr_update(DataArrayBlock<dim, real_t, device_t> & so
   auto previous_keys = m_mesh_map->orchard_keys_clone();
   rebuild_from_context();
   remap_from_hashmap(solver_data, solver_data_aux, previous_hashmap, previous_keys, config_map);
+}
+
+// ================================================================================================
+// ================================================================================================
+template <size_t dim, typename device_t>
+void
+AMRManager<dim, device_t>::rebuild_from_context()
+{
+  const auto changed = m_amr_context.adapt_mesh(m_mesh.forest());
+  rebuild(changed);
+}
+
+// ================================================================================================
+// ================================================================================================
+template <size_t dim, typename device_t>
+void
+AMRManager<dim, device_t>::rebuild(bool reset_ghosts)
+{
+  KALYPSSO_PROFILING_REGION_HOST(m_profiling_mgr, AMR_CYCLE_REBUILD);
+
+  if (reset_ghosts)
+  {
+    m_mesh.reset_ghost();
+  }
+  m_mesh_map->compute_outside_quad_info(m_mesh.forest(), m_mesh.ghost());
+  m_mesh_map->update_hashmap(m_mesh.forest(), m_mesh.ghost(), true);
+  m_mesh_map->update_mirror_orchard_keys(m_mesh.ghost());
+  m_mesh_map->update_amr_mesh_info(m_mesh.forest(), m_mesh.ghost());
+  m_mesh_map->update_orchard_keys(m_mesh.forest(), m_mesh.ghost());
+  m_mesh_map->update_conformal_status();
 }
 
 // ================================================================================================
@@ -114,13 +124,33 @@ AMRManager<dim, device_t>::remap_from_hashmap(
 // ================================================================================================
 template <size_t dim, typename device_t>
 void
+AMRManager<dim, device_t>::repartition_mesh()
+{
+  m_mesh_partitioner.partition_mesh(m_mesh.forest());
+}
+
+// ================================================================================================
+// ================================================================================================
+template <size_t dim, typename device_t>
+void
+AMRManager<dim, device_t>::repartition_userdata(
+  [[maybe_unused]] DataArrayBlock<dim, real_t, device_t> & solver_data,
+  [[maybe_unused]] DataArrayBlock<dim, real_t, device_t> & solver_data_aux)
+{
+  m_mesh_partitioner.repartition_userdata(solver_data, solver_data_aux);
+}
+
+// ================================================================================================
+// ================================================================================================
+template <size_t dim, typename device_t>
+void
 AMRManager<dim, device_t>::load_balancing(
   [[maybe_unused]] DataArrayBlock<dim, real_t, device_t> & solver_data,
   [[maybe_unused]] DataArrayBlock<dim, real_t, device_t> & solver_data_aux)
 {
 #ifdef KALYPSSO_CORE_USE_MPI
-  m_mesh_partitioner.partition_mesh(m_mesh.forest());
-  m_mesh_partitioner.repartition_userdata(solver_data, solver_data_aux);
+  repartition_mesh();
+  repartition_userdata(solver_data, solver_data_aux);
   rebuild(true);
   solver_data_aux.resize(get_nb_total());
   my_swap(solver_data, solver_data_aux);
@@ -131,10 +161,12 @@ AMRManager<dim, device_t>::load_balancing(
 // ================================================================================================
 template <size_t dim, typename device_t>
 void
-AMRManager<dim, device_t>::rebuild_from_context()
+AMRManager<dim, device_t>::load_balancing_and_copy(
+  [[maybe_unused]] DataArrayBlock<dim, real_t, device_t> & solver_data,
+  [[maybe_unused]] DataArrayBlock<dim, real_t, device_t> & solver_data_aux)
 {
-  const auto changed = m_amr_context.adapt_mesh(m_mesh.forest());
-  rebuild(changed);
+  load_balancing(solver_data, solver_data_aux);
+  Kokkos::deep_copy(solver_data_aux.logical_view(), solver_data.logical_view());
 }
 
 // ================================================================================================
