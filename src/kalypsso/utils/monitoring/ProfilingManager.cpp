@@ -279,7 +279,7 @@ ProfilingManager::print_timings(double total_time_sec, std::string header)
   if (m_par_env.rank() == 0)
   {
     printf("# ====================================\n");
-    printf("# %s\n",header.c_str());
+    printf("# %s\n", header.c_str());
     printf("# ====================================\n");
 
     // for other timer display the fraction of time in each region with respect to

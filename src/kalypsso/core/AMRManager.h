@@ -147,6 +147,15 @@ public:
   }
 
   /**
+   *
+   */
+  auto
+  get_amr_mesh_info()
+  {
+    return m_mesh_map->get_amr_mesh_info();
+  }
+
+  /**
    * \brief Gets the Orchard keys.
    *
    * \return The array of Orchard keys.
@@ -155,6 +164,28 @@ public:
   get_orchard_keys()
   {
     return m_mesh_map->orchard_keys();
+  }
+
+  /**
+   * \brief Gets the mirror Orchard keys.
+   *
+   * \return The array of mirror Orchard keys.
+   */
+  core::OrchardKeys<device_t>
+  get_mirror_orchard_keys()
+  {
+    return m_mesh_map->mirror_orchard_keys();
+  }
+
+  /**
+   * \brief Gets a clone of Orchard keys.
+   *
+   * \return Array of Orchard keys.
+   */
+  core::OrchardKeys<device_t>
+  get_orchard_keys_clone()
+  {
+    return m_mesh_map->orchard_keys_clone();
   }
 
   /**
@@ -194,6 +225,20 @@ public:
     return m_amr_context.m_amrflags_h;
   }
 
+  //! get conformal status view on device
+  auto
+  get_conformal_status()
+  {
+    return m_mesh_map->conformal_status();
+  }
+
+  //! get conformal status view on device
+  auto
+  get_conformal_status_host()
+  {
+    return m_mesh_map->conformal_status_host();
+  }
+
 #ifdef KALYPSSO_CORE_USE_MPI
   /**
    * \brief Gets the mesh ghosts exchanger.
@@ -226,16 +271,6 @@ public:
              const ConfigMap &                       config_map);
 
   /**
-   * \brief Does the load balancing
-   *
-   * \param solver_data Solver data to repartition (usually the conservative variables).
-   * \param solver_data_aux Auxiliary solver data.
-   */
-  void
-  load_balancing(DataArrayBlock<dim, real_t, device_t> & solver_data,
-                 DataArrayBlock<dim, real_t, device_t> & solver_data_aux);
-
-  /**
    * \brief Recomputes the mesh from some context.
    *
    * \param amr_context The AMR context to recompute the mesh from.
@@ -250,6 +285,42 @@ public:
    */
   void
   rebuild(bool reset_ghosts);
+
+  /**
+   * \brief Repartition mesh
+   */
+  void
+  repartition_mesh();
+
+  /**
+   * \brief Repartition user data
+   *
+   * \param solver_data Solver data to repartition (usually the conservative variables).
+   * \param solver_data_aux Auxiliary solver data.
+   */
+  void
+  repartition_userdata(DataArrayBlock<dim, real_t, device_t> & solver_data,
+                       DataArrayBlock<dim, real_t, device_t> & solver_data_aux);
+
+  /**
+   * \brief Does the load balancing
+   *
+   * \param solver_data Solver data to repartition (usually the conservative variables).
+   * \param solver_data_aux Auxiliary solver data.
+   */
+  void
+  load_balancing(DataArrayBlock<dim, real_t, device_t> & solver_data,
+                 DataArrayBlock<dim, real_t, device_t> & solver_data_aux);
+
+  /**
+   * \brief Does the load balancing and copy data
+   *
+   * \param solver_data Solver data to repartition (usually the conservative variables).
+   * \param solver_data_aux Auxiliary solver data.
+   */
+  void
+  load_balancing_and_copy(DataArrayBlock<dim, real_t, device_t> & solver_data,
+                          DataArrayBlock<dim, real_t, device_t> & solver_data_aux);
 
   /**
    * \brief Print timings.
