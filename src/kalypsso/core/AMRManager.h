@@ -199,7 +199,6 @@ public:
     return m_mesh_map->orchard_keys_host();
   }
 
-
   /**
    * \brief Gets the AMR hashmap linking keys to indices.
    *
@@ -209,6 +208,17 @@ public:
   get_hashmap()
   {
     return m_mesh_map->hashmap();
+  }
+
+  /**
+   * \brief Gets a AMR hashmap clone.
+   *
+   * \return The AMR hashmap.
+   */
+  core::AMRHashmap<device_t>
+  get_hashmap_clone()
+  {
+    return m_mesh_map->hashmap_clone();
   }
 
   //! Get AMR flags on device
