@@ -14,8 +14,7 @@
 #include <kalypsso/core/kalypsso_core_config.h>
 #include <kalypsso/core/kalypsso_data_container.h> // for DataArrayBlock, FaceDataArrayBlock, ...
 #include <kalypsso/core/AMRMeshInfo.h>
-#include <kalypsso/core/AMRmesh.h>
-#include <kalypsso/core/MeshMap.h>
+#include <kalypsso/core/AMRManager.h>
 
 #include <kalypsso/core/config_utils.h> // for get_block_sizes
 #include <kalypsso/core/InterfaceNormalVectorAlgorithmParams.h>
@@ -68,10 +67,9 @@ public:
   // =========================================================================
   // =========================================================================
   //! constructor
-  SmoothInterfaceFunctionData([[maybe_unused]] ParallelEnv const &      par_env,
-                              ConfigMap const &                         config_map,
-                              [[maybe_unused]] AMRmesh<dim> &           amr_mesh,
-                              [[maybe_unused]] MeshMap<dim, device_t> & mesh_map)
+  SmoothInterfaceFunctionData([[maybe_unused]] ParallelEnv const &               par_env,
+                              ConfigMap const &                                  config_map,
+                              [[maybe_unused]] core::AMRManager<dim, device_t> & amr_mgr)
     : m_config_map(config_map)
     , m_enabled(config_map.getBool("smooth_interface_function", "enabled", false))
     , m_surface_tension_enabled(
@@ -82,9 +80,9 @@ public:
     , m_curvature_weights()
     , m_unfiltered_curvature()
     , m_curvature()
-    , m_mesh_map(mesh_map)
+    , m_mesh_map(*amr_mgr.get_mesh_map())
 #ifdef KALYPSSO_CORE_USE_MPI
-    , m_mesh_ghosts_exchanger(config_map, par_env, amr_mesh, mesh_map)
+    , m_mesh_ghosts_exchanger(config_map, par_env, amr_mgr.get_mesh(), m_mesh_map)
 #endif // KALYPSSO_CORE_USE_MPI
   {
 
