@@ -64,14 +64,15 @@ protected:
   std::string m_restart_run_filename;
 
   // iteration info
-  real_t m_t;              //!< the time at the current iteration
-  real_t m_dt;             //!< the time step at the current iteration
-  int    m_iteration;      //!< the current iteration (integer)
-  int    m_max_iterations; //!< user defined maximum iteration count
-  real_t m_tBegin;         //!< begin time (might be non-zero upon restart)
-  real_t m_tEnd;           //!< maximum time
-  real_t m_cfl;            //!< Courant number
-  int    m_nlog;           //!< number of steps between two monitoring print on screen
+  real_t m_t;                                   //!< the time at the current iteration
+  real_t m_dt;                                  //!< the time step at the current iteration
+  int    m_iteration;                           //!< the current iteration (integer)
+  int    m_max_iterations;                      //!< user defined maximum iteration count
+  real_t m_tBegin;                              //!< begin time (might be non-zero upon restart)
+  real_t m_tEnd;                                //!< maximum time
+  real_t m_cfl;                                 //!< Courant number
+  bool   m_compute_cfl_mpi_reduction_on_device; //!< Compute Courant number on device
+  int    m_nlog; //!< number of steps between two monitoring print on screen
 
   int  m_max_checkpoint_count;   //!< max number of checkpoint file written
   bool m_save_initial_condition; //!< true if you want to save initial condition

@@ -133,6 +133,8 @@ SolverBase::read_config()
 
   m_dt = m_tEnd;
   m_cfl = m_config_map.getReal("hydro", "cfl", KALYPSSO_NUM(1.0));
+  m_compute_cfl_mpi_reduction_on_device =
+    m_config_map.getBool("hydro", "compute_cfl_mpi_reduction_on_device", false);
   m_nlog = m_config_map.getInteger("run", "nlog", 10);
   m_iteration = 0;
 
