@@ -121,6 +121,17 @@ public:
   auto
   get_nb_outside()
   {
+    return m_mesh_map->get_amr_mesh_info().local_num_quadrants_outside();
+  }
+
+  /**
+   * \brief Gets the number of local total outside (including ghosts) octants
+   *
+   * \return The number of local outside and ghost octants
+   */
+  auto
+  get_nb_outside_ghost()
+  {
     return m_mesh_map->get_amr_mesh_info().total_local_number_of_outside_quads();
   }
 
