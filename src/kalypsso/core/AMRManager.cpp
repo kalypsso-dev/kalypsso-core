@@ -148,6 +148,19 @@ AMRManager<dim, device_t>::repartition_userdata(
 // ================================================================================================
 template <size_t dim, typename device_t>
 void
+AMRManager<dim, device_t>::repartition_userdata(
+  [[maybe_unused]] FaceDataArrayBlock<dim, real_t, device_t> & solver_data,
+  [[maybe_unused]] FaceDataArrayBlock<dim, real_t, device_t> & solver_data_aux)
+{
+#ifdef KALYPSSO_CORE_USE_MPI
+  m_mesh_partitioner.repartition_userdata(solver_data, solver_data_aux);
+#endif // KALYPSSO_CORE_USE_MPI
+}
+
+// ================================================================================================
+// ================================================================================================
+template <size_t dim, typename device_t>
+void
 AMRManager<dim, device_t>::load_balancing(
   [[maybe_unused]] DataArrayBlock<dim, real_t, device_t> & solver_data,
   [[maybe_unused]] DataArrayBlock<dim, real_t, device_t> & solver_data_aux)
