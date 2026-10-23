@@ -313,6 +313,16 @@ public:
                        DataArrayBlock<dim, real_t, device_t> & solver_data_aux);
 
   /**
+   * \brief Repartition face-staggered user data
+   *
+   * \param solver_data Solver data to repartition.
+   * \param solver_data_aux Auxiliary solver data.
+   */
+  void
+  repartition_userdata(FaceDataArrayBlock<dim, real_t, device_t> & solver_data,
+                       FaceDataArrayBlock<dim, real_t, device_t> & solver_data_aux);
+
+  /**
    * \brief Does the load balancing
    *
    * \param solver_data Solver data to repartition (usually the conservative variables).
