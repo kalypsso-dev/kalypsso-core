@@ -51,22 +51,6 @@ AMRManager<dim, device_t>::reset_amr_flags()
 // ================================================================================================
 template <size_t dim, typename device_t>
 void
-AMRManager<dim, device_t>::amr_update(DataArrayBlock<dim, real_t, device_t> & solver_data,
-                                      DataArrayBlock<dim, real_t, device_t> & solver_data_aux,
-                                      const ConfigMap &                       config_map)
-{
-  KALYPSSO_PROFILING_REGION_DEVICE(m_profiling_mgr, AMR_CYCLE_UPDATE);
-
-  auto previous_hashmap = m_mesh_map->hashmap_clone();
-  auto previous_keys = m_mesh_map->orchard_keys_clone();
-  rebuild_from_context();
-  remap_from_hashmap(solver_data, solver_data_aux, previous_hashmap, previous_keys, config_map);
-}
-
-// ================================================================================================
-// ================================================================================================
-template <size_t dim, typename device_t>
-void
 AMRManager<dim, device_t>::rebuild_from_context()
 {
   const auto changed = m_amr_context.adapt_mesh(m_mesh.forest());
@@ -91,33 +75,6 @@ AMRManager<dim, device_t>::rebuild(bool reset_ghosts)
   m_mesh_map->update_amr_mesh_info(m_mesh.forest(), m_mesh.ghost());
   m_mesh_map->update_orchard_keys(m_mesh.forest(), m_mesh.ghost());
   m_mesh_map->update_conformal_status();
-}
-
-// ================================================================================================
-// ================================================================================================
-template <size_t dim, typename device_t>
-void
-AMRManager<dim, device_t>::remap_from_hashmap(
-  DataArrayBlock<dim, real_t, device_t> & solver_data,
-  DataArrayBlock<dim, real_t, device_t> & solver_data_aux,
-  core::AMRHashmap<device_t>              old_hashmap,
-  core::OrchardKeys<device_t>             old_keys,
-  const ConfigMap &                       config_map)
-{
-  KALYPSSO_PROFILING_REGION_HOST(m_profiling_mgr, AMR_CYCLE_REMAP);
-
-  solver_data_aux.resize(get_nb_total());
-
-  UserDataRemapper<dim, device_t> remapper(old_hashmap,
-                                           get_orchard_keys(),
-                                           old_keys,
-                                           get_nb_owned(),
-                                           solver_data.block_size(),
-                                           config_map);
-
-  remapper.remap_block_data(ExecutionSpace{}, solver_data, solver_data_aux);
-
-  my_swap(solver_data, solver_data_aux);
 }
 
 // ================================================================================================
