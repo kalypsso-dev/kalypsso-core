@@ -54,6 +54,8 @@ public:
    */
   AMRManager(ParallelEnv const & par_env, ConfigMap const & config_map);
 
+  virtual ~AMRManager() = default;
+
   /**
    * \brief Gets the AMR mesh map in a shared pointer (used to initialize HDF5 Writer)
    *
@@ -353,7 +355,7 @@ public:
     m_profiling_mgr.print_timings(total_time, header);
   }
 
-private:
+protected:
   //! Kokkos execution space
   using ExecutionSpace = typename device_t::execution_space;
 
