@@ -280,18 +280,6 @@ public:
   reset_amr_flags();
 
   /**
-   * \brief Does the AMR update
-   *
-   * \param solver_data Solver user data to remap.
-   * \param solver_data Auxiliary solver user data.
-   * \param config_map Inputted config map.
-   */
-  void
-  amr_update(DataArrayBlock<dim, real_t, device_t> & solver_data,
-             DataArrayBlock<dim, real_t, device_t> & solver_data_aux,
-             const ConfigMap &                       config_map);
-
-  /**
    * \brief Recomputes the mesh from some context.
    *
    * \param amr_context The AMR context to recompute the mesh from.
@@ -368,22 +356,6 @@ public:
 private:
   //! Kokkos execution space
   using ExecutionSpace = typename device_t::execution_space;
-
-  /**
-   * \brief Remaps data from hashmap
-   *
-   * \param solver_data The data to remap
-   * \param solver_data_aux Auxiliary data used during remap
-   * \param old_hashmap The previous AMR hashmap
-   * \param old_keys The old Orchard key array
-   * \param config_map Inputted config map.
-   */
-  void
-  remap_from_hashmap(DataArrayBlock<dim, real_t, device_t> & solver_data,
-                     DataArrayBlock<dim, real_t, device_t> & solver_data_aux,
-                     core::AMRHashmap<device_t>              old_hashmap,
-                     core::OrchardKeys<device_t>             old_keys,
-                     const ConfigMap &                       config_map);
 
   //! AMR data
   AMRmesh<dim> m_mesh;
