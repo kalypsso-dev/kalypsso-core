@@ -45,7 +45,8 @@ BETTER_ENUM(AmrCycleProfilingZone, uint32_t,
   AMR_CYCLE,
     AMR_CYCLE_UPDATE,
     AMR_CYCLE_REBUILD,
-    AMR_CYCLE_REMAP
+    AMR_CYCLE_REMAP,
+    AMR_CYCLE_LOAD_BALANCING
 )
 // clang-format on
 
@@ -67,6 +68,7 @@ private:
       ADD_CASE(AMR_CYCLE_UPDATE,                  "Kalypsso::CORE::AMR_CYCLE::UPDATE                      ", Blue);
       ADD_CASE(AMR_CYCLE_REBUILD,                 "Kalypsso::CORE::AMR_CYCLE::REBUILD                     ", Blue);
       ADD_CASE(AMR_CYCLE_REMAP,                   "Kalypsso::CORE::AMR_CYCLE::REMAP                       ", Blue);
+      ADD_CASE(AMR_CYCLE_LOAD_BALANCING,          "Kalypsso::CORE::AMR_CYCLE::LOAD_BALANCING              ", Blue);
       // clang-format on
       default:
         return { zone._to_string(), Color_t::Default() };

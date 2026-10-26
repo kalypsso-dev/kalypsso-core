@@ -123,6 +123,7 @@ AMRManager<dim, device_t>::load_balancing(
   [[maybe_unused]] DataArrayBlock<dim, real_t, device_t> & solver_data_aux)
 {
 #ifdef KALYPSSO_CORE_USE_MPI
+  KALYPSSO_PROFILING_REGION_HOST(m_profiling_mgr, AMR_CYCLE_LOAD_BALANCING);
   repartition_mesh();
   repartition_userdata(solver_data, solver_data_aux);
   rebuild(true);
@@ -139,8 +140,11 @@ AMRManager<dim, device_t>::load_balancing_and_copy(
   [[maybe_unused]] DataArrayBlock<dim, real_t, device_t> & solver_data,
   [[maybe_unused]] DataArrayBlock<dim, real_t, device_t> & solver_data_aux)
 {
+#ifdef KALYPSSO_CORE_USE_MPI
+  KALYPSSO_PROFILING_REGION_HOST(m_profiling_mgr, AMR_CYCLE_LOAD_BALANCING);
   load_balancing(solver_data, solver_data_aux);
   Kokkos::deep_copy(solver_data_aux.logical_view(), solver_data.logical_view());
+#endif // KALYPSSO_CORE_USE_MPI
 }
 
 // ================================================================================================
