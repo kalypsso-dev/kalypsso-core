@@ -794,9 +794,10 @@ HDF5_Xdmf_Writer_legacy<dim, device_t>::write_quadrant_attribute(DataArrayBlockH
     // strangely, nvc++ is ok and don't need that
     // TODO: remove theses lines when nvcc will have support for this.
 #ifdef __NVCC__
-      [[maybe_unused]] int dummy = 0;
-      if (dataVar.extent(0) == 0 or datah.num_cells() == 0 or varIdx == 0 or istart[IX] == 0)
-        dummy++;
+      (void)dataVar;
+      (void)datah;
+      (void)varIdx;
+      (void)istart;
 #endif
       if constexpr (dim == 2)
       {

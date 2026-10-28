@@ -432,9 +432,8 @@ public:
       // strangely, nvc++ is ok and don't need that
       // TODO: remove theses lines when nvcc will have support for this.
 #ifdef __NVCC__
-        [[maybe_unused]] int dummy = 0;
-        if (edata.num_quadrants() == 0 or res.num_quadrants() == 0 or block_size[IX] == 0)
-          dummy++;
+        (void)res;
+        (void)block_size;
 #endif
 
         if constexpr (dim == 2)

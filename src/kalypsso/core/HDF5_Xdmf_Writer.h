@@ -1233,11 +1233,19 @@ HDF5_Xdmf_Writer<dim, device_t>::write_quadrant_attribute(DataArrayBlockHost_t d
     // support capturing variables inside the inner lambda inside a constexpr if
     // TODO: remove ASAP nvcc is fixed
 #ifdef __NVCC__
-        [[maybe_unused]] int dummy = 0;
-        if (gx == 0 or gy == 0 or gz == 0 or bx == 0 or by == 0 or bz == 0 or size_x == 0 or
-            size_y == 0 or size_z == 0 or datah.num_cells() == 0 or dataVar.extent(0) == 0 or
-            varIdx == -1 or iOct_begin == 0)
-          dummy++;
+        (void)gx;
+        (void)gy;
+        (void)gz;
+        (void)bx;
+        (void)by;
+        (void)bz;
+        (void)size_x;
+        (void)size_y;
+        (void)size_z;
+        (void)datah;
+        (void)dataVar;
+        (void)varIdx;
+        (void)iOct_begin;
 #endif
 
         for (int32_t iCell = 0; iCell < nbCellsPerOct; ++iCell)
@@ -1382,11 +1390,19 @@ HDF5_Xdmf_Writer<dim, device_t>::write_quadrant_multi_mat_attribute(
     // support capturing variables inside the inner lambda inside a constexpr if
     // TODO: remove ASAP nvcc is fixed
 #ifdef __NVCC__
-        [[maybe_unused]] int dummy = 0;
-        if (gx == 0 or gy == 0 or gz == 0 or bx == 0 or by == 0 or bz == 0 or size_x == 0 or
-            size_y == 0 or size_z == 0 or datah.num_cells() == 0 or dataVar.extent(0) == 0 or
-            ivar == -1 or iOct_begin == 0)
-          dummy++;
+        (void)gx;
+        (void)gy;
+        (void)gz;
+        (void)bx;
+        (void)by;
+        (void)bz;
+        (void)size_x;
+        (void)size_y;
+        (void)size_z;
+        (void)datah;
+        (void)dataVar;
+        (void)ivar;
+        (void)iOct_begin;
 #endif
 
         if (matph.get(iOct, imat))

@@ -30,9 +30,9 @@ UserDataRemapperImplBFC<dim, device_t>::operator()(TagComputeAllButInternalFaces
   // strangely, nvc++ is ok and don't need that
   // TODO: remove theses lines when nvcc will have support for this.
 #ifdef __NVCC__
-  [[maybe_unused]] int dummy = 0;
-  if (m_facedata_new.num_quadrants() == m_facedata_old.num_quadrants() or bx == 0)
-    dummy++;
+  (void)m_facedata_new;
+  (void)m_facedata_old;
+  (void)bx;
 #endif
 
   // compute ix,iy,iz,ivar of local face inside
@@ -234,9 +234,8 @@ UserDataRemapperImplBFC<dim, device_t>::operator()(TagComputeInternalFaces const
   // strangely, nvc++ is ok and don't need that
   // TODO: remove theses lines when nvcc will have support for this.
 #ifdef __NVCC__
-  [[maybe_unused]] int dummy = 0;
-  if (m_facedata_new.num_quadrants() == m_facedata_old.num_quadrants())
-    dummy++;
+  (void)m_facedata_new;
+  (void)m_facedata_old;
 #endif
 
   // compute ix,iy,iz,ivar of local face inside
