@@ -45,7 +45,7 @@ kalypsso_spdlog_config(int & argc, char **& argv, int mpi_rank, int mpi_size);
 #ifndef KALYPSSO_TRACE
 #  if defined(KALYPSSO_CORE_USE_SPDLOG) && (SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_TRACE)
 #    define KALYPSSO_LOGGER_TRACE(logger, ...)                         \
-      if (spdlog_mpi_rank == 0)                                        \
+      if (::kalypsso::spdlog_mpi_rank == 0)                            \
       {                                                                \
         SPDLOG_LOGGER_CALL(logger, spdlog::level::trace, __VA_ARGS__); \
       }
@@ -60,7 +60,7 @@ kalypsso_spdlog_config(int & argc, char **& argv, int mpi_rank, int mpi_size);
 #ifndef KALYPSSO_DEBUG
 #  if defined(KALYPSSO_CORE_USE_SPDLOG) && (SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_DEBUG)
 #    define KALYPSSO_LOGGER_DEBUG(logger, ...)                         \
-      if (spdlog_mpi_rank == 0)                                        \
+      if (::kalypsso::spdlog_mpi_rank == 0)                            \
       {                                                                \
         SPDLOG_LOGGER_CALL(logger, spdlog::level::debug, __VA_ARGS__); \
       }
@@ -75,7 +75,7 @@ kalypsso_spdlog_config(int & argc, char **& argv, int mpi_rank, int mpi_size);
 #ifndef KALYPSSO_INFO
 #  if defined(KALYPSSO_CORE_USE_SPDLOG) && (SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_INFO)
 #    define KALYPSSO_LOGGER_INFO(logger, ...)                         \
-      if (spdlog_mpi_rank == 0)                                       \
+      if (::kalypsso::spdlog_mpi_rank == 0)                           \
       {                                                               \
         SPDLOG_LOGGER_CALL(logger, spdlog::level::info, __VA_ARGS__); \
       }
@@ -89,7 +89,7 @@ kalypsso_spdlog_config(int & argc, char **& argv, int mpi_rank, int mpi_size);
 #ifndef KALYPSSO_WARN
 #  if defined(KALYPSSO_CORE_USE_SPDLOG) && (SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_WARN)
 #    define KALYPSSO_LOGGER_WARN(logger, ...)                         \
-      if (spdlog_mpi_rank == 0)                                       \
+      if (::kalypsso::spdlog_mpi_rank == 0)                           \
       {                                                               \
         SPDLOG_LOGGER_CALL(logger, spdlog::level::warn, __VA_ARGS__); \
       }
@@ -103,7 +103,7 @@ kalypsso_spdlog_config(int & argc, char **& argv, int mpi_rank, int mpi_size);
 #ifndef KALYPSSO_ERROR
 #  if defined(KALYPSSO_CORE_USE_SPDLOG) && (SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_ERROR)
 #    define KALYPSSO_LOGGER_ERROR(logger, ...)                       \
-      if (spdlog_mpi_rank == 0)                                      \
+      if (::kalypsso::spdlog_mpi_rank == 0)                          \
       {                                                              \
         SPDLOG_LOGGER_CALL(logger, spdlog::level::err, __VA_ARGS__); \
       }
@@ -118,7 +118,7 @@ kalypsso_spdlog_config(int & argc, char **& argv, int mpi_rank, int mpi_size);
 #ifndef KALYPSSO_CRITICAL
 #  if defined(KALYPSSO_CORE_USE_SPDLOG) && (SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_CRITICAL)
 #    define KALYPSSO_LOGGER_CRITICAL(logger, ...)                         \
-      if (spdlog_mpi_rank == 0)                                           \
+      if (::kalypsso::spdlog_mpi_rank == 0)                               \
       {                                                                   \
         SPDLOG_LOGGER_CALL(logger, spdlog::level::critical, __VA_ARGS__); \
       }
