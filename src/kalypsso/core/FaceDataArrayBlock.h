@@ -728,9 +728,8 @@ public:
       // strangely, nvc++ is ok and don't need that
       // TODO: remove theses lines when nvcc will have support for this.
 #ifdef __NVCC__
-        [[maybe_unused]] int dummy = 0;
-        if ((fdata.num_quadrants() == 0) or (res.num_cells() == 0))
-          dummy++;
+        (void)fdata;
+        (void)res;
 #endif
 
         if constexpr (dim == 2)
@@ -813,10 +812,10 @@ public:
       // strangely, nvc++ is ok and don't need that
       // TODO: remove theses lines when nvcc will have support for this.
 #ifdef __NVCC__
-        [[maybe_unused]] int dummy = 0;
-        if ((fdata.num_quadrants() == 0) or (res.num_cells() == 0) or dir != dir or
-            unit_vector[0] != unit_vector[0])
-          dummy++;
+        (void)fdata;
+        (void)res;
+        (void)dir;
+        (void)unit_vector;
 #endif
 
         if constexpr (dim == 2)
@@ -889,9 +888,8 @@ public:
       // strangely, nvc++ is ok and don't need that
       // TODO: remove theses lines when nvcc will have support for this.
 #ifdef __NVCC__
-        [[maybe_unused]] int dummy = 0;
-        if (fdata.num_quadrants() == 0 or res.num_cells() == 0)
-          dummy++;
+        (void)fdata;
+        (void)res;
 #endif
 
         if constexpr (dim == 2)

@@ -51,9 +51,7 @@ test(const ParallelEnv & par_env)
       const auto iCoord = cellindex_to_coord<dim>(cell_index, bsize);
 
 #ifdef __NVCC__
-      [[maybe_unused]] int dummy = 0;
-      if (fdata.num_quadrants() != fdata.num_quadrants())
-        dummy++;
+      (void)fdata;
 #endif
 
       if constexpr (dim == 2)
@@ -130,10 +128,10 @@ test(const ParallelEnv & par_env)
       const auto iCoord = cellindex_to_coord<dim>(cell_index, bsize);
 
 #ifdef __NVCC__
-      [[maybe_unused]] int dummy = 0;
-      if ((fdata.num_quadrants() == 0) or (res.num_cells() == 0) or (dir == 0) or
-          (unit_vector[0] == 0))
-        dummy++;
+      (void)fdata;
+      (void)res;
+      (void)unit_vector;
+      (void)dir;
 #endif
       if constexpr (dim == 2)
       {

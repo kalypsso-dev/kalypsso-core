@@ -69,9 +69,8 @@ OverwriteVelocityField<dim, device_t>::run(ConfigMap const &          config_map
     // strangely, nvc++ is ok and don't need that
     // TODO: remove theses lines when nvcc will have support for this.
 #ifdef __NVCC__
-        [[maybe_unused]] int dummy = 0;
-        if (i_w != i_w)
-          dummy++;
+        // force capture outside a constexpr region
+        (void)i_w;
 #endif
 
         // convert global index into
@@ -122,9 +121,8 @@ OverwriteVelocityField<dim, device_t>::run(ConfigMap const &          config_map
     // strangely, nvc++ is ok and don't need that
     // TODO: remove theses lines when nvcc will have support for this.
 #ifdef __NVCC__
-        [[maybe_unused]] int dummy = 0;
-        if (i_w != i_w)
-          dummy++;
+        // force capture outside a constexpr region
+        (void)i_w;
 #endif
 
         // convert global index into

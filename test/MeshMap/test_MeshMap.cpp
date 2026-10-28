@@ -205,9 +205,7 @@ setup_initial_data_leaf(typename MeshMap<dim, device_t>::orchard_key_view_t orch
       // strangely, nvc++ is ok and don't need that
       // TODO: remove theses lines when nvcc will have support for this.
 #ifdef __NVCC__
-        [[maybe_unused]] int dummy = 0;
-        if (userdataLeaf.extent(0) == 0)
-          dummy++;
+        (void)userdataLeaf;
 #endif
         if constexpr (dim == 2)
           userdataLeaf(iOct, 0) = xyz[IX] + xyz[IY];
@@ -311,9 +309,7 @@ setup_initial_data_block(typename MeshMap<dim, device_t>::orchard_key_view_t orc
       // strangely, nvc++ is ok and don't need that
       // TODO: remove theses lines when nvcc will have support for this.
 #ifdef __NVCC__
-        [[maybe_unused]] int dummy = 0;
-        if (userdataBlock.num_cells() == 0)
-          dummy++;
+        (void)userdataBlock;
 #endif
 
         // initialize cell id

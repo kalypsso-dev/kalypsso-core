@@ -53,9 +53,7 @@ test(const ParallelEnv & par_env)
       const auto iCoord = cellindex_to_coord<dim>(cell_index, bsize);
 
 #ifdef __NVCC__
-      [[maybe_unused]] int dummy = 0;
-      if (data.num_quadrants() != data.num_quadrants())
-        dummy++;
+      (void)data;
 #endif
 
       if constexpr (dim == 2)

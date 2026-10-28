@@ -277,9 +277,8 @@ InitialAMRSetup<dim, device_t, Function>::setup_initial_data_block_new(
       // strangely, nvc++ is ok and don't need that
       // TODO: remove theses lines when nvcc will have support for this.
 #ifdef __NVCC__
-        [[maybe_unused]] int dummy = 0;
-        if (f(0, 0, 0) != f(0, 0, 0) or userdataBlock(0, 0, 0) != userdataBlock(0, 0, 0))
-          dummy++;
+        (void)f;
+        (void)userdataBlock;
 #endif
 
         // initialize cell id
@@ -372,9 +371,7 @@ InitialAMRSetup<dim, device_t, Function>::setup_initial_data_block_flux(
       // strangely, nvc++ is ok and don't need that
       // TODO: remove theses lines when nvcc will have support for this.
 #ifdef __NVCC__
-        [[maybe_unused]] int dummy = 0;
-        if (f(0, 0, 0) == f(0, 0, 0))
-          dummy++;
+        (void)f;
 #endif
 
         // get orchard key of current block/octant
@@ -479,9 +476,7 @@ InitialAMRSetup<dim, device_t, Function>::setup_initial_data_block_face(
       // strangely, nvc++ is ok and don't need that
       // TODO: remove theses lines when nvcc will have support for this.
 #ifdef __NVCC__
-        [[maybe_unused]] int dummy = 0;
-        if (f(0, 0, 0) != f(0, 0, 0))
-          dummy++;
+        (void)f;
 #endif
 
         if constexpr (dim == 2)
@@ -657,13 +652,23 @@ InitialAMRSetup<dim, device_t, Function>::setup_initial_data_ghosted_block(
       // strangely, nvc++ is ok and don't need that
       // TODO: remove theses lines when nvcc will have support for this.
 #ifdef __NVCC__
-        [[maybe_unused]] int dummy = 0;
-        if (tx == 0 or ty == 0 or tz == 0 or gx == 0 or gy == 0 or gz == 0 or bx == 0 or by == 0 or
-            bz == 0 or userdata_ghosted_block.num_cells() == 0 or block_sizes[IX] == 0 or
-            fill_ghosts != fill_ghosts or f(0, 0, 0) != f(0, 0, 0) or brick_sizes[IX] == 0 or
-            is_brick_periodic[IX] == 0 or scaling_factor != scaling_factor or
-            xyz_min[0] != xyz_min[0])
-          dummy++;
+        (void)tx;
+        (void)ty;
+        (void)tz;
+        (void)gx;
+        (void)gy;
+        (void)gz;
+        (void)bx;
+        (void)by;
+        (void)bz;
+        (void)scaling_factor;
+        (void)xyz_min;
+        (void)brick_sizes;
+        (void)block_sizes;
+        (void)fill_ghosts;
+        (void)is_brick_periodic;
+        (void)f;
+        (void)userdata_ghosted_block;
 #endif
 
         // clang-format off
@@ -864,13 +869,21 @@ InitialAMRSetup<dim, device_t, Function>::compute_diff_ghosted_block(
     // strangely, nvc++ is ok and don't need that
     // TODO: remove theses lines when nvcc will have support for this.
 #ifdef __NVCC__
-      [[maybe_unused]] int dummy = 0;
-      if (tx == 0 or ty == 0 or tz == 0 or sx == 0 or sy == 0 or sz == 0 or
-          data1.num_cells() == 0 or data2.num_cells() == 0 or data_diff.num_cells() == 0 or
-          block_sizes[IX] == 0 or brick_sizes[IX] == 0 or tol < 0 or f(0, 0, 0) != f(0, 0, 0) or
-          is_brick_periodic[IX] == 0 or scaling_factor != scaling_factor or
-          xyz_min[0] != xyz_min[0])
-        dummy++;
+      (void)tx;
+      (void)ty;
+      (void)tz;
+      (void)sx;
+      (void)sy;
+      (void)sz;
+      (void)data1;
+      (void)data2;
+      (void)data_diff;
+      (void)block_sizes;
+      (void)tol;
+      (void)f;
+      (void)is_brick_periodic;
+      (void)scaling_factor;
+      (void)xyz_min;
 #endif
       if constexpr (dim == 2)
       {
