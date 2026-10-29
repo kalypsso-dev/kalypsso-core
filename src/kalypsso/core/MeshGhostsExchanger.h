@@ -176,21 +176,6 @@ public:
 
   // =========================================================================
   // =========================================================================
-  //! Does the same thing as pack_mirror_data but for multi variable data array blocks
-  //!
-  //! \param[in] userdata is supposed to be of size (forest->local_num_quadrants +
-  //!            ghost->ghosts>elem_count)
-  //! \param[in] num_block_mirrors number of mirror blocks
-  //! \param[in] array or orchard keys of mirror quadrant
-  //! \param[in] mirror_offsets mirror offset array on device
-  void
-  pack_mirror_data_multi_var(DataArrayBlockMultiVar_t           userdata_block,
-                             int32_t                            num_block_mirrors,
-                             orchard_key_view_t                 mirror_keys_device,
-                             Kokkos::View<uint32_t *, device_t> mirror_offsets);
-
-  // =========================================================================
-  // =========================================================================
   //! pack mirror data into send buffer (device function) - block (face-center) version.
   //!
   //! implementation use array of orchard key (mirror quads) to address userdata and copy data into
@@ -240,20 +225,6 @@ public:
 
   // =========================================================================
   // =========================================================================
-  //! Does the same thing as unpack_mirror_data but for multi variable data array blocks
-  //!
-  //! \param[in] num_block_ghosts number of owned blocks
-  //! \param[in] num_block_ghosts number of ghosts blocks
-  //! \param[in] userdata is supposed to be of size (forest->local_num_quadrants +
-  //!            ghost->ghosts->elem_count)
-  //!
-  void
-  unpack_ghost_data_multi_var(DataArrayBlockMultiVar_t userdata_block,
-                              int32_t                  num_block_owned,
-                              int32_t                  num_block_ghosts);
-
-  // =========================================================================
-  // =========================================================================
   //! unpack received data (recv buffer) into ghost data (face-center block).
   //!
   //! we will fill all ghost quadrant data, i.e. from index forest->local_num_quad
@@ -270,16 +241,6 @@ public:
   //! actually perform MPI comm to send and receive ghost quadrant userdata
   void
   do_mpi_send_recv();
-
-  // =========================================================================
-  // =========================================================================
-  //! actually perform MPI comm to send and receive ghost quadrant userdata with multi var
-  //!
-  //! \param[in] ghost_offsets Host view with the block offsets in m_recv
-  //! \param[in] mirror_offsets Host view with the block offsets in m_send
-  void
-  do_mpi_send_recv_multi_var(const Kokkos::View<uint32_t *, HostDevice> & ghost_offsets,
-                             const Kokkos::View<uint32_t *, HostDevice> & mirror_offsets);
 
   // =========================================================================
   // =========================================================================
@@ -332,15 +293,6 @@ public:
   //!            buffers (can be set to false, if you know that re-allocation is not needed)
   void
   exchange(FaceDataArrayBlock_t userdata_block_face);
-
-  // =========================================================================
-  // =========================================================================
-  //! do it all, pack, exchange, unpack.
-  //!
-  //! \param[in] userdata_block is a userdata block array (i.e. one value per cell); must
-  //!            be sized upon the total number of octant in current MPI process (owned + ghost)
-  void
-  exchange_multi_var(DataArrayBlockMultiVar_t userdata_block);
 
   // =========================================================================
   // =========================================================================
