@@ -229,6 +229,7 @@ add_library(
   UserDataRemapperImplMP.cpp
   UserDataRemapperImplMP.h
   utils_block.h
+  utils_direction.h
   vof/interface_tracking_utils.h
   vof/interface_tracking_utils.cpp
   vof/youngs.h

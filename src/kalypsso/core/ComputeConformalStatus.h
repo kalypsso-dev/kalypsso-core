@@ -20,6 +20,7 @@
 #include <kalypsso/core/amr_hashmap.h>
 #include <kalypsso/core/AMRMeshInfo.h>
 #include <kalypsso/core/mesh_utils.h> // for definition of Face::XMIN, etc...
+#include <kalypsso/core/utils_direction.h>
 
 namespace kalypsso
 {
@@ -121,68 +122,6 @@ public:
 
   // ==============================================================
   // ==============================================================
-  KOKKOS_INLINE_FUNCTION
-  auto
-  get_direction(Face::face_t face) const
-  {
-    if constexpr (dim == 2)
-    {
-      if (face == Face::XMIN)
-      {
-        return Kokkos::Array<int8_t, 2>{ -1, 0 };
-      }
-      else if (face == Face::XMAX)
-      {
-        return Kokkos::Array<int8_t, 2>{ 1, 0 };
-      }
-      else if (face == Face::YMIN)
-      {
-        return Kokkos::Array<int8_t, 2>{ 0, -1 };
-      }
-      else if (face == Face::YMAX)
-      {
-        return Kokkos::Array<int8_t, 2>{ 0, 1 };
-      }
-      else
-      {
-        return Kokkos::Array<int8_t, 2>{ 0, 0 };
-      }
-    }
-    else if constexpr (dim == 3)
-    {
-      if (face == Face::XMIN)
-      {
-        return Kokkos::Array<int8_t, 3>{ -1, 0, 0 };
-      }
-      else if (face == Face::XMAX)
-      {
-        return Kokkos::Array<int8_t, 3>{ 1, 0, 0 };
-      }
-      else if (face == Face::YMIN)
-      {
-        return Kokkos::Array<int8_t, 3>{ 0, -1, 0 };
-      }
-      else if (face == Face::YMAX)
-      {
-        return Kokkos::Array<int8_t, 3>{ 0, 1, 0 };
-      }
-      else if (face == Face::ZMIN)
-      {
-        return Kokkos::Array<int8_t, 3>{ 0, 0, -1 };
-      }
-      else if (face == Face::ZMAX)
-      {
-        return Kokkos::Array<int8_t, 3>{ 0, 0, 1 };
-      }
-      else
-      {
-        return Kokkos::Array<int8_t, 3>{ 0, 0, 0 };
-      }
-    }
-  } // get_direction
-
-  // ==============================================================
-  // ==============================================================
   /**
    * range policy functor
    */
@@ -197,7 +136,7 @@ public:
 
     for (Face::face_t face = 0; face < Face::num_faces<dim>(); ++face)
     {
-      const auto dir = get_direction(face);
+      const auto dir = core::get_direction<dim>(face);
 
       // get neighbor key at same level
       const auto key_neigh_same_level = orchard_key_t<dim>::get_neighbor_key_same_level(
