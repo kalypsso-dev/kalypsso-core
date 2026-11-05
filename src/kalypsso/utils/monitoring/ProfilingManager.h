@@ -58,15 +58,11 @@ using ColorMap_t = std::map<const std::string, const Color_t>;
 // ==============================================================================================
 // ==============================================================================================
 // ==============================================================================================
+//! \brief Name and color of the whole application profiling region.
 struct ProfilingData
 {
   static const std::string whole_kalypsso_region_name;
   static const Color_t     whole_kalypsso_region_color;
-
-  //! flag indicating when all timings can be reported
-  //! default is false
-  //! become true when stopping the whole application timer
-  static bool timings_valid;
 
 }; // struct ProfilingData
 
@@ -136,6 +132,14 @@ public:
     return m_device_timer;
   }
 
+  //! return true if the region is currently running, i.e. has been started
+  //! and not stopped yet
+  bool
+  is_running() const
+  {
+    return m_state == RUNNING;
+  }
+
   //! elapsed time in seconds
   double
   elapsed()
@@ -172,7 +176,7 @@ private:
  * Handle time measurement reporting and nvtx annotations for collecting runtime tracing information
  * with nsys.
  */
-class ProfilingManager : public ProfilingData
+class ProfilingManager
 {
 
 public:
@@ -199,7 +203,7 @@ public:
   ProfilingRegion &
   get_whole_region()
   {
-    return m_profiling_region_map.at(whole_kalypsso_region_name);
+    return m_profiling_region_map.at(ProfilingData::whole_kalypsso_region_name);
   } // get_whole_region
 
   //! get total time in seconds

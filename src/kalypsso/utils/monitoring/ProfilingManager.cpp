@@ -15,8 +15,6 @@ namespace kalypsso
 const std::string ProfilingData::whole_kalypsso_region_name = "Kalypsso::ALL";
 const Color_t     ProfilingData::whole_kalypsso_region_color = Color_t::Silver();
 
-bool ProfilingData::timings_valid = false;
-
 // ==============================================================================================
 // ==============================================================================================
 // ProfilingRegion
@@ -92,8 +90,6 @@ ProfilingRegion::stop()
     m_state = IDLE;
     m_host_timer.stop();
     m_device_timer.stop();
-    if (m_name == ProfilingData::whole_kalypsso_region_name)
-      ProfilingData::timings_valid = true;
   }
   else
   {
@@ -146,11 +142,11 @@ ProfilingManager::ProfilingManager(ParallelEnv const & par_env)
   // Note that start/stop for the whole application region should only be called once
   // or else the timing report will erroneous values
   m_profiling_region_map.emplace(std::piecewise_construct,
-                                 std::forward_as_tuple(whole_kalypsso_region_name),
+                                 std::forward_as_tuple(ProfilingData::whole_kalypsso_region_name),
                                  std::forward_as_tuple(par_env,
-                                                       whole_kalypsso_region_name,
+                                                       ProfilingData::whole_kalypsso_region_name,
                                                        ProfilingRegion::TIMER_HOST,
-                                                       whole_kalypsso_region_color));
+                                                       ProfilingData::whole_kalypsso_region_color));
 
 } // ProfilingManager::ProfilingManager
 
@@ -206,7 +202,7 @@ ProfilingManager::get_total_time()
 {
 
 #ifdef KALYPSSO_CORE_TIMING_ENABLED
-  auto & whole_app_region = m_profiling_region_map.at(whole_kalypsso_region_name);
+  auto & whole_app_region = get_whole_region();
   auto   total_time_sec = whole_app_region.host_timer().elapsed();
   assertm(total_time_sec > 0, "Invalid value: total_time_sec <= 0 !");
   return total_time_sec;
@@ -223,10 +219,10 @@ void
 ProfilingManager::print_timings()
 {
 #ifdef KALYPSSO_CORE_TIMING_ENABLED
-  if (!ProfilingData::timings_valid)
+  if (get_whole_region().is_running())
   {
     if (m_par_env.rank() == 0)
-      std::cerr << "You can't print timings before the whole application region is still open.\n";
+      std::cerr << "You can't print timings while the whole application region is still open.\n";
     return;
   }
 
@@ -238,7 +234,7 @@ ProfilingManager::print_timings()
 
     // get whole application time using the host timer
     const auto total_time_sec = get_total_time();
-    std::cout << std::left << std::setw(40) << whole_kalypsso_region_name;
+    std::cout << std::left << std::setw(40) << ProfilingData::whole_kalypsso_region_name;
     printf(" time : %5.3f \ts (%5.2f%%)", total_time_sec, 100.0);
     std::cout << std::endl;
 
@@ -248,7 +244,7 @@ ProfilingManager::print_timings()
     for (auto & prof : m_profiling_region_map)
     {
       const std::string & name = prof.first;
-      if (name != whole_kalypsso_region_name)
+      if (name != ProfilingData::whole_kalypsso_region_name)
       {
         double time_sec = prof.second.elapsed();
         double percent = 100 * time_sec / total_time_sec;
@@ -269,10 +265,10 @@ void
 ProfilingManager::print_timings(double total_time_sec, std::string header)
 {
 #ifdef KALYPSSO_CORE_TIMING_ENABLED
-  if (!ProfilingData::timings_valid)
+  if (get_whole_region().is_running())
   {
     if (m_par_env.rank() == 0)
-      std::cerr << "You can't print timings before the whole application region is still open.\n";
+      std::cerr << "You can't print timings while the whole application region is still open.\n";
     return;
   }
 
@@ -288,7 +284,7 @@ ProfilingManager::print_timings(double total_time_sec, std::string header)
     for (auto & prof : m_profiling_region_map)
     {
       const std::string & name = prof.first;
-      if (name != whole_kalypsso_region_name)
+      if (name != ProfilingData::whole_kalypsso_region_name)
       {
         double time_sec = prof.second.elapsed();
         double percent = 100 * time_sec / total_time_sec;
@@ -309,15 +305,15 @@ std::optional<double>
 ProfilingManager::total_time()
 {
 #ifdef KALYPSSO_CORE_TIMING_ENABLED
-  if (!ProfilingData::timings_valid)
+  if (get_whole_region().is_running())
   {
     if (m_par_env.rank() == 0)
-      std::cerr << "You can't get timings before the whole application region is still open.\n";
+      std::cerr << "You can't get timings while the whole application region is still open.\n";
     return std::nullopt;
   }
 
   // get whole application time
-  auto & whole_app_region = m_profiling_region_map.at(whole_kalypsso_region_name);
+  auto & whole_app_region = get_whole_region();
   return whole_app_region.host_timer().elapsed();
 #else
   // return invalid value
