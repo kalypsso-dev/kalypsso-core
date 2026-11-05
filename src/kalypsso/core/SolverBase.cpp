@@ -150,22 +150,43 @@ void
 SolverBase::compute_dt()
 {
 
+  const auto use_constant_dt = m_config_map.getBool("hydro", "use_constant_dt", false);
+
+  if (!use_constant_dt)
+  {
+
 #ifdef KALYPSSO_CORE_USE_MPI
 
-  // get local time step
-  real_t dt_local = compute_dt_local();
+    // get local time step
+    real_t dt_local = compute_dt_local();
 
-  // perform MPI_Allreduce to get global time step
-  real_t dt_global;
-  m_par_env.comm().MPI_Allreduce<MpiComm::MIN>(&dt_local, &dt_global, 1);
+    // perform MPI_Allreduce to get global time step
+    real_t dt_global;
+    m_par_env.comm().MPI_Allreduce<MpiComm::MIN>(&dt_local, &dt_global, 1);
 
-  m_dt = dt_global;
+    m_dt = dt_global;
 
 #else
 
-  m_dt = compute_dt_local();
+    m_dt = compute_dt_local();
 
 #endif // KALYPSSO_CORE_USE_MPI
+  }
+  else
+  {
+    const auto const_dt = m_config_map.getFloat("hydro", "constant_dt", -1.0);
+    if (const_dt <= 0)
+    {
+      const std::string err_str("Parameter [hydro/constant_dt] must be a positive floating-point "
+                                "value. Check your input parameter file.");
+      KALYPSSO_ERROR(err_str.c_str());
+      Kokkos::abort(err_str.c_str());
+    }
+    else
+    {
+      m_dt = const_dt;
+    }
+  }
 
   // correct m_dt if necessary
   if (m_t + m_dt > m_tEnd)
