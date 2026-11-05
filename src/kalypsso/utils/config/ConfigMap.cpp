@@ -707,9 +707,7 @@ broadcast_parameters(std::string filename)
 #ifdef KALYPSSO_CORE_USE_MPI
 
   int myRank;
-  int nTasks;
   MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
-  MPI_Comm_size(MPI_COMM_WORLD, &nTasks);
 
   char * buffer = nullptr;
   int    buffer_size = 0;
@@ -719,58 +717,53 @@ broadcast_parameters(std::string filename)
   {
 
     // open file and go to the end to get file size in bytes
-    std::ifstream filein(filename.c_str(), std::ifstream::ate);
-    if (filein.good() and filein.is_open())
+    // (binary mode so that tellg() matches exactly the number of bytes read() returns)
+    std::ifstream filein(filename, std::ios::binary | std::ios::ate);
+    if (!filein.is_open() or filein.tellg() == std::streampos(-1))
     {
-      // file size must be smaller than 2^32 bytes (should be ok for a config file)
-      int file_size = static_cast<int>(filein.tellg());
-
-      filein.seekg(0); // rewind
-
-      buffer_size = file_size;
-      buffer = new char[buffer_size];
-
-      filein.read(buffer, buffer_size);
+      std::cerr << "Error : can't read input parameter file \"" << filename
+                << "\"\nPlease check file actually exists !\n";
+      // abort the whole job, not only this rank (others are stuck in MPI_Bcast)
+      MPI_Abort(MPI_COMM_WORLD, 1);
     }
-    else
-    {
-      printf(
-        "Error : can't read input parameter file \"%s\"\nPlease check file actually exists !\n",
-        filename.c_str());
-      std::abort();
-    }
+
+    // file size must be smaller than 2^31 bytes (should be ok for a config file)
+    buffer_size = static_cast<int>(filein.tellg());
+
+    filein.seekg(0); // rewind
+
+    buffer = new char[buffer_size];
+
+    filein.read(buffer, buffer_size);
   }
 
   // broadcast buffer size (collective)
   MPI_Bcast(&buffer_size, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-  if (buffer_size > 0)
+  // an empty parameter file is an error, not a silently empty ConfigMap
+  if (buffer_size <= 0)
   {
-
-    // all other MPI task need to allocate buffer
-    if (myRank > 0)
-    {
-      // printf("I'm rank %d allocating buffer of size %d\n",myRank,buffer_size);
-      buffer = new char[buffer_size];
-    }
-
-    // broastcast buffer itself (collective)
-    MPI_Bcast(&buffer[0], buffer_size, MPI_CHAR, 0, MPI_COMM_WORLD);
-
-    // now all MPI rank should have buffer filled, try to build a ConfigMap
-    ConfigMap config_map(buffer, static_cast<size_t>(buffer_size));
-
-    if (buffer)
-      delete[] buffer;
-
-    return config_map;
+    delete[] buffer; // no-op on nullptr; frees rank 0 zero-size allocation
+    std::cerr << "Error : input parameter file \"" << filename << "\" is empty\n";
+    MPI_Abort(MPI_COMM_WORLD, 1);
   }
 
-  // return default config_map (surely not what we wanted)
-  char *    null_buffer = nullptr;
-  ConfigMap defaultConfig(null_buffer, 0);
+  // all other MPI task need to allocate buffer
+  if (myRank > 0)
+  {
+    // printf("I'm rank %d allocating buffer of size %d\n",myRank,buffer_size);
+    buffer = new char[buffer_size];
+  }
 
-  return defaultConfig;
+  // broastcast buffer itself (collective)
+  MPI_Bcast(buffer, buffer_size, MPI_CHAR, 0, MPI_COMM_WORLD);
+
+  // now all MPI rank should have buffer filled, try to build a ConfigMap
+  ConfigMap config_map(buffer, static_cast<size_t>(buffer_size));
+
+  delete[] buffer;
+
+  return config_map;
 
 #else
   ConfigMap config_map(filename);
