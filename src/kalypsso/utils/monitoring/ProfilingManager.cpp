@@ -259,7 +259,7 @@ ProfilingManager::print_timings()
     }
   }
 #else
-    KALYPSSO_INFO(("Timings are disabled. Please re-build with KALYPSSO_CORE_TIMING_ENABLED=ON.");
+  KALYPSSO_INFO("Timings are disabled. Please re-build with KALYPSSO_CORE_TIMING_ENABLED=ON.");
 #endif // KALYPSSO_CORE_TIMING_ENABLED
 } // ProfilingManager::print_timings
 
@@ -299,7 +299,7 @@ ProfilingManager::print_timings(double total_time_sec, std::string header)
     }
   }
 #else
-    KALYPSSO_INFO(("Timings are disabled. Please re-build with KALYPSSO_CORE_TIMING_ENABLED=ON.");
+  KALYPSSO_INFO("Timings are disabled. Please re-build with KALYPSSO_CORE_TIMING_ENABLED=ON.");
 #endif // KALYPSSO_CORE_TIMING_ENABLED
 } // ProfilingManager::print_timings
 
