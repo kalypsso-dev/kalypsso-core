@@ -275,8 +275,11 @@ public:
   /**
    * \brief Print timing report.
    *
-   * TODO: we probably want to perform a MPI_Reduce (mean/max) over timings before reporting
-   * currently we only use timing from MPI master rank (this is probably good enough for now)
+   * Timings are reduced over all MPI ranks (min / mean / max) before reporting; percentages
+   * are computed with respect to the whole application time of the slowest rank.
+   *
+   * \note collective operation: all MPI ranks must call it, with the same set of profiling
+   * regions.
    */
   void
   print_timings();
@@ -284,8 +287,15 @@ public:
   /**
    * \brief Print timing report when total time is provided by another profiling manager.
    *
+   * Timings, including the caller-provided total time (a per-rank value), are reduced over
+   * all MPI ranks (min / mean / max) before reporting; percentages are computed with respect
+   * to the slowest rank.
+   *
    * \param[in] total_time Total time used to compute percentage.
    * \param[in] header A string to customize printing.
+   *
+   * \note collective operation: all MPI ranks must call it, with the same set of profiling
+   * regions.
    */
   void
   print_timings(double total_time, std::string header);
@@ -295,6 +305,13 @@ public:
   total_time();
 
 private:
+#ifdef KALYPSSO_CORE_TIMING_ENABLED
+  //! Print min / mean / max timing of each region (except the whole application region) as a
+  //! fraction of total_max. Collective: all MPI ranks must call it.
+  void
+  report_region_timings(double total_max);
+#endif // KALYPSSO_CORE_TIMING_ENABLED
+
   ParallelEnv const &                    m_par_env;
   std::map<std::string, ProfilingRegion> m_profiling_region_map;
 
