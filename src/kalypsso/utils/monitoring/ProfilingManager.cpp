@@ -6,7 +6,6 @@
 
 #include <kalypsso/utils/log/kalypsso_log.h>
 
-#include <iomanip>  // for std::setw
 #include <iostream> // for std::cerr
 
 namespace kalypsso
@@ -122,6 +121,52 @@ ProfilingRegion::reset()
 // ==============================================================================================
 // ==============================================================================================
 
+#ifdef KALYPSSO_CORE_TIMING_ENABLED
+namespace
+{
+
+//! \brief min / mean / max of a timing over MPI ranks
+struct TimingStats_t
+{
+  double min;
+  double mean;
+  double max;
+};
+
+//! \brief Reduce local_time into min / mean / max over all MPI ranks (collective).
+//!
+//! Reduced values are only meaningful on the root rank (rank 0), the only rank allowed to
+//! report timings.
+TimingStats_t
+reduce_min_mean_max(double local_time, ParallelEnv const & par_env)
+{
+#ifdef KALYPSSO_CORE_USE_MPI
+  double t_min = 0.0;
+  double t_sum = 0.0;
+  double t_max = 0.0;
+  par_env.comm().MPI_Reduce<MpiComm::MIN>(&local_time, &t_min, 1, 0);
+  par_env.comm().MPI_Reduce<MpiComm::SUM>(&local_time, &t_sum, 1, 0);
+  par_env.comm().MPI_Reduce<MpiComm::MAX>(&local_time, &t_max, 1, 0);
+  return { t_min, t_sum / par_env.size(), t_max };
+#else
+  return { local_time, local_time, local_time };
+#endif // KALYPSSO_CORE_USE_MPI
+}
+
+//! \brief Print one line of the timing report (to be called on the root rank only).
+//!
+//! Percentages are computed with respect to total_max, the whole application time of the
+//! slowest rank.
+void
+print_timings_line(std::string const & name, TimingStats_t const & t, double total_max)
+{
+  printf("%-40s time : %8.3f /%8.3f /%8.3f s (%6.2f%% of max)\n",
+         name.c_str(), t.min, t.mean, t.max, 100.0 * t.max / total_max);
+}
+
+} // namespace
+#endif // KALYPSSO_CORE_TIMING_ENABLED
+
 // ==============================================================================================
 // ==============================================================================================
 ProfilingManager::ProfilingManager(ParallelEnv const & par_env)
@@ -221,34 +266,19 @@ ProfilingManager::print_timings()
     return;
   }
 
+  // whole application time, reduced over all MPI ranks (collective)
+  const TimingStats_t total_stats = reduce_min_mean_max(get_total_time(), m_par_env);
+
   if (m_par_env.rank() == 0)
   {
     printf("# ====================================\n");
-    printf("# Kalypsso timings\n");
+    printf("# Kalypsso timings (min/mean/max over %d ranks)\n", m_par_env.size());
     printf("# ====================================\n");
 
-    // get whole application time using the host timer
-    const auto total_time_sec = get_total_time();
-    std::cout << std::left << std::setw(40) << ProfilingData::whole_kalypsso_region_name;
-    printf(" time : %5.3f \ts (%5.2f%%)", total_time_sec, 100.0);
-    std::cout << std::endl;
-
-    // for other timer display the fraction of time in each region with respect to
-    // the whole application time
-    // timer elapsed method is not const (when using CudaAsyncTimer)
-    for (auto & prof : m_profiling_region_map)
-    {
-      const std::string & name = prof.first;
-      if (name != ProfilingData::whole_kalypsso_region_name)
-      {
-        double time_sec = prof.second.elapsed();
-        double percent = 100 * time_sec / total_time_sec;
-        std::cout << std::left << std::setw(40) << name;
-        printf(" time : %5.3f \ts (%5.2f%%)", time_sec, percent);
-        std::cout << std::endl;
-      }
-    }
+    print_timings_line(ProfilingData::whole_kalypsso_region_name, total_stats, total_stats.max);
   }
+
+  report_region_timings(total_stats.max);
 #else
   KALYPSSO_INFO("Timings are disabled. Please re-build with KALYPSSO_CORE_TIMING_ENABLED=ON.");
 #endif // KALYPSSO_CORE_TIMING_ENABLED
@@ -267,32 +297,46 @@ ProfilingManager::print_timings(double total_time_sec, std::string header)
     return;
   }
 
+  // the caller-provided total time is a per-rank value; reduce it over all MPI ranks
+  // (collective) so that percentages refer to the slowest rank
+  const TimingStats_t total_stats = reduce_min_mean_max(total_time_sec, m_par_env);
+
   if (m_par_env.rank() == 0)
   {
     printf("# ====================================\n");
-    printf("# %s\n", header.c_str());
+    printf("# %s (min/mean/max over %d ranks)\n", header.c_str(), m_par_env.size());
     printf("# ====================================\n");
-
-    // for other timer display the fraction of time in each region with respect to
-    // the whole application time
-    // timer elapsed method is not const (when using CudaAsyncTimer)
-    for (auto & prof : m_profiling_region_map)
-    {
-      const std::string & name = prof.first;
-      if (name != ProfilingData::whole_kalypsso_region_name)
-      {
-        double time_sec = prof.second.elapsed();
-        double percent = 100 * time_sec / total_time_sec;
-        std::cout << std::left << std::setw(40) << name;
-        printf(" time : %5.3f \ts (%5.2f%%)", time_sec, percent);
-        std::cout << std::endl;
-      }
-    }
   }
+
+  report_region_timings(total_stats.max);
 #else
   KALYPSSO_INFO("Timings are disabled. Please re-build with KALYPSSO_CORE_TIMING_ENABLED=ON.");
 #endif // KALYPSSO_CORE_TIMING_ENABLED
 } // ProfilingManager::print_timings
+
+// ==============================================================================================
+// ==============================================================================================
+#ifdef KALYPSSO_CORE_TIMING_ENABLED
+void
+ProfilingManager::report_region_timings(double total_max)
+{
+  // This loop is collective: all MPI ranks must iterate over the same set of regions,
+  // i.e. profiling regions are expected to be created uniformly on all ranks.
+  // Note that elapsed() may flush pending device events (CudaAsyncTimer).
+  for (auto & prof : m_profiling_region_map)
+  {
+    const std::string & name = prof.first;
+    if (name == ProfilingData::whole_kalypsso_region_name)
+      continue;
+
+    const TimingStats_t stats = reduce_min_mean_max(prof.second.elapsed(), m_par_env);
+
+    if (m_par_env.rank() == 0)
+      print_timings_line(name, stats, total_max);
+  }
+
+} // ProfilingManager::report_region_timings
+#endif // KALYPSSO_CORE_TIMING_ENABLED
 
 // ==============================================================================================
 // ==============================================================================================
