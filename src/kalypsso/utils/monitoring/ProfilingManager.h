@@ -21,6 +21,7 @@
 #include <string>
 #include <cassert>
 #include <optional>
+#include <utility> // for std::exchange
 
 #include <kalypsso/core/kalypsso_core_config.h>
 #include <kalypsso/utils/config/ConfigMap.h>
@@ -103,11 +104,11 @@ public:
 
   ~ProfilingRegion() = default;
 
-  //! start timing
+  //! start timing (no-op if the region is already running)
   void
   start();
 
-  //! stop timing
+  //! stop timing (no-op if the region is not running)
   void
   stop();
 
@@ -171,6 +172,51 @@ private:
 // ==============================================================================================
 // ==============================================================================================
 /**
+ * \class ScopedRegion
+ * \brief Scoped helper that times a profiling region from construction to destruction.
+ *
+ * The wrapped region is started at construction and stopped at destruction, making the
+ * start/stop pair robust against early returns and exceptions. Ownership can be transferred
+ * by move; copying and assignment are disabled.
+ *
+ * \note distinct from Kokkos::Profiling::ScopedRegion which only pushes/pops a Kokkos
+ * profiling region; this helper also drives nvtx annotations and timers.
+ */
+class ScopedRegion
+{
+
+public:
+  explicit ScopedRegion(ProfilingRegion & region)
+    : m_region(&region)
+  {
+    m_region->start();
+  }
+
+  ~ScopedRegion()
+  {
+    if (m_region != nullptr)
+      m_region->stop();
+  }
+
+  ScopedRegion(ScopedRegion && other) noexcept
+    : m_region(std::exchange(other.m_region, nullptr))
+  {
+  }
+
+  ScopedRegion(ScopedRegion const &) = delete;
+  ScopedRegion & operator=(ScopedRegion const &) = delete;
+  ScopedRegion & operator=(ScopedRegion &&) = delete;
+
+private:
+  //! wrapped profiling region (null once ownership has been moved away)
+  ProfilingRegion * m_region;
+
+}; // class ScopedRegion
+
+// ==============================================================================================
+// ==============================================================================================
+// ==============================================================================================
+/**
  * \class ProfilingManager
  *
  * Handle time measurement reporting and nvtx annotations for collecting runtime tracing information
@@ -196,6 +242,22 @@ public:
   get_region(std::string const &               name,
              ProfilingRegion::timer_location_t timer_location,
              ColorMap_t const &                colormap);
+
+  /**
+   * \brief Get or create a profiling region, start it right away and return a scoped
+   * helper stopping it at end of scope.
+   *
+   * \param[in] name Region name.
+   * \param[in] timer_location Preferred timer location.
+   * \param[in] color Region color used for nvtx annotation.
+   */
+  [[nodiscard]] ScopedRegion
+  make_scoped_region(std::string const &               name,
+                     ProfilingRegion::timer_location_t timer_location,
+                     Color_t                           color = Color_t::Default())
+  {
+    return ScopedRegion(get_region(name, timer_location, color));
+  } // make_scoped_region
 
   /**
    * \brief Get or create a profiling region.

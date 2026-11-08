@@ -43,12 +43,12 @@ run_test(ParallelEnv const & par_env)
     });
   timer2.stop();
 
-  auto & timer3 = profiling_mgr.get_region(
-    "Kalypsso::Result", ProfilingRegion::TIMER_DEVICE, Color_t::FullGreen());
-  timer3.start();
-  auto data_host = Kokkos::create_mirror_view(data);
-  printf("data(%d)=%f\n", 42, data_host(42));
-  timer3.stop();
+  {
+    auto result_region = profiling_mgr.make_scoped_region(
+      "Kalypsso::Result", ProfilingRegion::TIMER_DEVICE, Color_t::FullGreen());
+    auto data_host = Kokkos::create_mirror_view(data);
+    printf("data(%d)=%f\n", 42, data_host(42));
+  } // 'Kalypsso::Result' region stopped here
 
   profiling_mgr.get_whole_region().stop();
 

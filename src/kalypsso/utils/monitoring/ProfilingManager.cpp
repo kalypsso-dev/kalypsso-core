@@ -56,6 +56,13 @@ ProfilingRegion::ProfilingRegion(ParallelEnv const & par_env,
 void
 ProfilingRegion::start()
 {
+  if (m_state == RUNNING)
+  {
+    KALYPSSO_WARN("Can't start profiling region '{}', it is already RUNNING", m_name);
+    return;
+  }
+  m_state = RUNNING;
+
   // add profiling hook for kokkos tools
   Kokkos::Profiling::pushRegion(m_name);
 
@@ -64,17 +71,8 @@ ProfilingRegion::start()
 #endif // KALYPSSO_CORE_NVTX_ANNOTATION_ENABLED
 
 #ifdef KALYPSSO_CORE_TIMING_ENABLED
-  if (m_state == IDLE)
-  {
-    m_state = RUNNING;
-    m_host_timer.start();
-    m_device_timer.start();
-  }
-  else
-  {
-    if (m_par_env.rank() == 0)
-      printf("Can't start timer, timer is already RUNNING");
-  }
+  m_host_timer.start();
+  m_device_timer.start();
 #endif // KALYPSSO_CORE_TIMING_ENABLED
 
 } // ProfilingRegion::start
@@ -84,19 +82,16 @@ ProfilingRegion::start()
 void
 ProfilingRegion::stop()
 {
-#ifdef KALYPSSO_CORE_TIMING_ENABLED
-  if (m_state == RUNNING)
+  if (m_state != RUNNING)
   {
-    m_state = IDLE;
-    m_host_timer.stop();
-    m_device_timer.stop();
+    KALYPSSO_WARN("Can't stop profiling region '{}', it is not RUNNING", m_name);
+    return;
   }
-  else
-  {
-    if (m_par_env.rank() == 0)
-      printf("Can't stop timer, timer is not RUNNING");
-  }
+  m_state = IDLE;
 
+#ifdef KALYPSSO_CORE_TIMING_ENABLED
+  m_host_timer.stop();
+  m_device_timer.stop();
 #endif // KALYPSSO_CORE_TIMING_ENABLED
 
 #ifdef KALYPSSO_CORE_NVTX_ANNOTATION_ENABLED
