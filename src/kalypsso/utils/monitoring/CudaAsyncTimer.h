@@ -79,8 +79,8 @@ protected:
   using idx_t = uint64_t;
 
   CUDAEvent startEv[NUM_EVENTS], stopEv[NUM_EVENTS];
-  idx_t     readIdx, writeIdx;
-  double    total_time;
+  mutable idx_t  readIdx, writeIdx;
+  mutable double total_time;
 
 public:
   // =======================================================
@@ -139,10 +139,13 @@ public:
   // =======================================================
   // =======================================================
   /**
-   * return elapsed time in seconds (as record in total_time)
+   * return elapsed time in seconds (as recorded in total_time)
+   *
+   * const method: reading the elapsed time may lazily process completed device events,
+   * hence the mutable internal counters.
    */
   double
-  elapsed()
+  elapsed() const
   {
     // flush events to process
     [[maybe_unused]] const auto processed_events = process_events(true);
@@ -161,7 +164,7 @@ private:
    * When stop even is satisfied, total_time is updated, and the read index incremented.
    */
   void
-  process_event(bool enforce_synchronize = true)
+  process_event(bool enforce_synchronize = true) const
   {
 
     float gpuTime;
@@ -186,7 +189,7 @@ private:
    * \return the number of events processed, i.e. events for which cudaEventQuery was successful.
    */
   int
-  process_events(bool flush = false)
+  process_events(bool flush = false) const
   {
 
     int            processed = 0;

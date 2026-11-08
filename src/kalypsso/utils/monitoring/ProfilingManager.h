@@ -97,12 +97,15 @@ public:
     TIMER_DEVICE
   };
 
-  ProfilingRegion(ParallelEnv const & par_env,
-                  std::string const & name,
+  ProfilingRegion(std::string const & name,
                   timer_location_t    timer_location,
                   Color_t             color);
 
   ~ProfilingRegion() = default;
+
+  //! non-copyable: the nvtx event attribute stores a pointer into m_name of this instance
+  ProfilingRegion(ProfilingRegion const &) = delete;
+  ProfilingRegion & operator=(ProfilingRegion const &) = delete;
 
   //! start timing (no-op if the region is already running)
   void
@@ -112,7 +115,7 @@ public:
   void
   stop();
 
-  //! reset timer
+  //! reset accumulated timings (no-op if the region is running)
   void
   reset();
 
@@ -142,8 +145,8 @@ public:
   }
 
   //! elapsed time in seconds
-  double
-  elapsed()
+  [[nodiscard]] double
+  elapsed() const
   {
     return m_timer_location == TIMER_HOST ? m_host_timer.elapsed() : m_device_timer.elapsed();
   }
@@ -151,11 +154,10 @@ public:
 #endif
 
 private:
-  ParallelEnv const & m_par_env;
-  const std::string   m_name;
-  timer_location_t    m_timer_location; //<! preferred timer
-  const Color_t       m_color;
-  State_t             m_state;
+  const std::string m_name;
+  timer_location_t  m_timer_location; //<! preferred timer
+  const Color_t     m_color;
+  State_t           m_state;
 
 #ifdef KALYPSSO_CORE_NVTX_ANNOTATION_ENABLED
   nvtxEventAttributes_t m_eventAttrib;
@@ -230,6 +232,10 @@ public:
 
   ~ProfilingManager() = default;
 
+  //! non-copyable, non-movable
+  ProfilingManager(ProfilingManager const &) = delete;
+  ProfilingManager & operator=(ProfilingManager const &) = delete;
+
   /**
    * \brief Get or create a profiling region.
    */
@@ -268,10 +274,6 @@ public:
     return m_profiling_region_map.at(ProfilingData::whole_kalypsso_region_name);
   } // get_whole_region
 
-  //! get total time in seconds
-  double
-  get_total_time();
-
   /**
    * \brief Print timing report.
    *
@@ -291,17 +293,18 @@ public:
    * all MPI ranks (min / mean / max) before reporting; percentages are computed with respect
    * to the slowest rank.
    *
-   * \param[in] total_time Total time used to compute percentage.
+   * \param[in] total_time Total time (per-rank value) used to compute percentage; may be
+   * empty when timing is disabled at compile time (in which case nothing is reported).
    * \param[in] header A string to customize printing.
    *
    * \note collective operation: all MPI ranks must call it, with the same set of profiling
    * regions.
    */
   void
-  print_timings(double total_time, std::string header);
+  print_timings(std::optional<double> total_time, std::string const & header);
 
   //! return total time in seconds.
-  std::optional<double>
+  [[nodiscard]] std::optional<double>
   total_time();
 
 private:

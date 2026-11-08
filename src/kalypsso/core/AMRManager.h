@@ -346,11 +346,12 @@ public:
   /**
    * \brief Print timings.
    *
-   * \param[in] total_time Total time used to compute percentage.
+   * \param[in] total_time Total time (per-rank value) used to compute percentage; may be
+   * empty when timing is disabled at compile time (in which case nothing is reported).
    * \param[in] header A string to customize printing.
    */
   void
-  print_timings(double total_time, std::string header)
+  print_timings(std::optional<double> total_time, std::string const & header)
   {
     m_profiling_mgr.print_timings(total_time, header);
   }
