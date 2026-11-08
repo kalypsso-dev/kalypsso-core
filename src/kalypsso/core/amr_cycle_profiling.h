@@ -86,23 +86,19 @@ public:
   }
 
   ProfilingTimer(ProfilingManager & profiling_mgr, const AmrCycleProfilingZone zone)
-    : m_timer(get_profiling_region(profiling_mgr, zone, ProfilingRegion::TIMER_HOST))
+    : ProfilingTimer(profiling_mgr, zone, ProfilingRegion::TIMER_HOST)
   {
-    m_timer.start();
   }
 
   ProfilingTimer(ProfilingManager &                profiling_mgr,
                  const AmrCycleProfilingZone       zone,
                  ProfilingRegion::timer_location_t timer_location)
-    : m_timer(get_profiling_region(profiling_mgr, zone, timer_location))
+    : m_region(get_profiling_region(profiling_mgr, zone, timer_location))
   {
-    m_timer.start();
   }
 
-  ~ProfilingTimer() { m_timer.stop(); }
-
 private:
-  ProfilingRegion & m_timer;
+  ScopedRegion m_region;
 };
 
 } // namespace core
