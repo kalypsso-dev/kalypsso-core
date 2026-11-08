@@ -12,6 +12,8 @@
 
 #include <cuda_runtime.h>
 
+#include <Kokkos_Core.hpp> // for Kokkos::Cuda::cuda_stream()
+
 #include <cassert>
 
 #ifndef assertm
@@ -26,6 +28,9 @@ namespace kalypsso
  *
  * cudaEventSynchronize is called with some delay (asynchronously) to avoid too much synchronization
  * between CPU and GPU, and allow the CPU to perform useful stuff while the GPU is computing.
+ *
+ * Events are recorded on the Kokkos Cuda execution stream, so that they bracket exactly the
+ * kernels Kokkos enqueues between start() and stop() calls.
  *
  * The way to achieve this is to use an array of cuda events (start/stop), and use two indexes one
  * to write/record events, and the other to read/synchronize then and compute accumulated time.
@@ -47,9 +52,9 @@ protected:
     ~CUDAEvent() { cudaEventDestroy(m_event); }
 
     void
-    record()
+    record(cudaStream_t stream)
     {
-      auto res = cudaEventRecord(m_event, 0);
+      auto res = cudaEventRecord(m_event, stream);
       assertm(res == cudaSuccess, "Recording cuda event failed");
     }
 
@@ -106,7 +111,7 @@ public:
   {
     [[maybe_unused]] const auto processed_events = process_events(false);
 
-    startEv[writeIdx % NUM_EVENTS].record();
+    startEv[writeIdx % NUM_EVENTS].record(kokkos_stream());
   }
 
   // =======================================================
@@ -117,7 +122,7 @@ public:
   void
   stop()
   {
-    stopEv[writeIdx % NUM_EVENTS].record();
+    stopEv[writeIdx % NUM_EVENTS].record(kokkos_stream());
     assertm(writeIdx < std::numeric_limits<idx_t>::max(), "writeIdx is definitely too large");
 
     writeIdx++;
@@ -154,6 +159,22 @@ public:
   }
 
 private:
+  // =======================================================
+  // =======================================================
+  /**
+   * \brief Return the stream the Kokkos Cuda execution space enqueues kernels on.
+   *
+   * Profiling events must be recorded on the very stream the measured kernels run on:
+   * recording them on another stream (e.g. the legacy default stream 0) gives no ordering
+   * guarantee between events and kernels, and the legacy stream adds implicit device-wide
+   * synchronization.
+   */
+  static cudaStream_t
+  kokkos_stream()
+  {
+    return Kokkos::Cuda().cuda_stream();
+  }
+
   // =======================================================
   // =======================================================
   /**
