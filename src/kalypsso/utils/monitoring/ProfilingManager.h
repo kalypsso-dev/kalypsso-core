@@ -178,8 +178,9 @@ private:
  * \brief Scoped helper that times a profiling region from construction to destruction.
  *
  * The wrapped region is started at construction and stopped at destruction, making the
- * start/stop pair robust against early returns and exceptions. Ownership can be transferred
- * by move; copying and assignment are disabled.
+ * start/stop pair robust against early returns and exceptions. The region can also be
+ * stopped early by calling stop(). Ownership can be transferred by move; copying and
+ * assignment are disabled.
  *
  * \note distinct from Kokkos::Profiling::ScopedRegion which only pushes/pops a Kokkos
  * profiling region; this helper also drives nvtx annotations and timers.
@@ -205,12 +206,32 @@ public:
   {
   }
 
+  //! stop the wrapped region now and release ownership (no-op if already stopped or
+  //! moved-from)
+  void
+  stop()
+  {
+    if (m_region != nullptr)
+    {
+      m_region->stop();
+      m_region = nullptr;
+    }
+  }
+
+  //! return true while this helper owns a region, i.e. until stop() is called or ownership
+  //! is moved away
+  bool
+  active() const
+  {
+    return m_region != nullptr;
+  }
+
   ScopedRegion(ScopedRegion const &) = delete;
   ScopedRegion & operator=(ScopedRegion const &) = delete;
   ScopedRegion & operator=(ScopedRegion &&) = delete;
 
 private:
-  //! wrapped profiling region (null once ownership has been moved away)
+  //! wrapped profiling region (null once stopped or moved away)
   ProfilingRegion * m_region;
 
 }; // class ScopedRegion
