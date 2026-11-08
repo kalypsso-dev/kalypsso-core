@@ -22,12 +22,10 @@ const Color_t     ProfilingData::whole_kalypsso_region_color = Color_t::Silver()
 //
 // ==============================================================================================
 // ==============================================================================================
-ProfilingRegion::ProfilingRegion(ParallelEnv const & par_env,
-                                 std::string const & name,
+ProfilingRegion::ProfilingRegion(std::string const & name,
                                  timer_location_t    timer_location,
                                  Color_t             color)
-  : m_par_env(par_env)
-  , m_name(name)
+  : m_name(name)
   , m_timer_location(timer_location)
   , m_color(color)
   , m_state(IDLE)
@@ -107,6 +105,11 @@ ProfilingRegion::stop()
 void
 ProfilingRegion::reset()
 {
+  if (m_state == RUNNING)
+  {
+    KALYPSSO_WARN("Can't reset profiling region '{}', it is RUNNING; stop it first", m_name);
+    return;
+  }
 
 #ifdef KALYPSSO_CORE_TIMING_ENABLED
   m_host_timer.reset();
@@ -183,8 +186,7 @@ ProfilingManager::ProfilingManager(ParallelEnv const & par_env)
   // or else the timing report will erroneous values
   m_profiling_region_map.emplace(std::piecewise_construct,
                                  std::forward_as_tuple(ProfilingData::whole_kalypsso_region_name),
-                                 std::forward_as_tuple(par_env,
-                                                       ProfilingData::whole_kalypsso_region_name,
+                                 std::forward_as_tuple(ProfilingData::whole_kalypsso_region_name,
                                                        ProfilingRegion::TIMER_HOST,
                                                        ProfilingData::whole_kalypsso_region_color));
 
@@ -204,7 +206,7 @@ ProfilingManager::get_region(std::string const &               name,
     it = m_profiling_region_map
            .emplace(std::piecewise_construct,
                     std::forward_as_tuple(name),
-                    std::forward_as_tuple(m_par_env, name, timer_location, color))
+                    std::forward_as_tuple(name, timer_location, color))
            .first;
   return it->second;
 
@@ -237,24 +239,6 @@ ProfilingManager::get_region(std::string const &               name,
 
 // ==============================================================================================
 // ==============================================================================================
-double
-ProfilingManager::get_total_time()
-{
-
-#ifdef KALYPSSO_CORE_TIMING_ENABLED
-  auto & whole_app_region = get_whole_region();
-  auto   total_time_sec = whole_app_region.host_timer().elapsed();
-  assertm(total_time_sec > 0, "Invalid value: total_time_sec <= 0 !");
-  return total_time_sec;
-#else
-  // invalid value
-  return -1;
-#endif
-
-} // ProfilingManager::get_total_time
-
-// ==============================================================================================
-// ==============================================================================================
 void
 ProfilingManager::print_timings()
 {
@@ -267,7 +251,7 @@ ProfilingManager::print_timings()
   }
 
   // whole application time, reduced over all MPI ranks (collective)
-  const TimingStats_t total_stats = reduce_min_mean_max(get_total_time(), m_par_env);
+  const TimingStats_t total_stats = reduce_min_mean_max(total_time().value(), m_par_env);
 
   if (m_par_env.rank() == 0)
   {
@@ -287,7 +271,7 @@ ProfilingManager::print_timings()
 // ==============================================================================================
 // ==============================================================================================
 void
-ProfilingManager::print_timings(double total_time_sec, std::string header)
+ProfilingManager::print_timings(std::optional<double> total_time, std::string const & header)
 {
 #ifdef KALYPSSO_CORE_TIMING_ENABLED
   if (get_whole_region().is_running())
@@ -299,7 +283,7 @@ ProfilingManager::print_timings(double total_time_sec, std::string header)
 
   // the caller-provided total time is a per-rank value; reduce it over all MPI ranks
   // (collective) so that percentages refer to the slowest rank
-  const TimingStats_t total_stats = reduce_min_mean_max(total_time_sec, m_par_env);
+  const TimingStats_t total_stats = reduce_min_mean_max(total_time.value(), m_par_env);
 
   if (m_par_env.rank() == 0)
   {
@@ -323,7 +307,7 @@ ProfilingManager::report_region_timings(double total_max)
   // This loop is collective: all MPI ranks must iterate over the same set of regions,
   // i.e. profiling regions are expected to be created uniformly on all ranks.
   // Note that elapsed() may flush pending device events (CudaAsyncTimer).
-  for (auto & prof : m_profiling_region_map)
+  for (auto const & prof : m_profiling_region_map)
   {
     const std::string & name = prof.first;
     if (name == ProfilingData::whole_kalypsso_region_name)
