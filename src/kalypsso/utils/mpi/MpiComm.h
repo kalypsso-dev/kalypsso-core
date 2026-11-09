@@ -327,13 +327,6 @@ public:
     return size_;
   }
 
-#ifdef barrier
-  // Linux defines a function-like macro named "barrier". So, we need
-  // to avoid expanding the macro when we define our barrier()
-  // function. However, some C++ parsers (Doxygen, for instance) can't
-  // handle this syntax, so we only use it when necessary.
-  void(barrier)() const;
-#else
   /**
    * @brief Wait for all processes within a communicator to reach the
    * barrier.
@@ -344,7 +337,6 @@ public:
    */
   void
   MPI_Barrier() const;
-#endif
 
   /** Abort all tasks in the group of this communicator.
    *
@@ -360,7 +352,7 @@ public:
    *  @returns Will not return.
    */
   void
-  abort(int errcode) const;
+  MPI_Abort(int errcode) const;
 
 protected:
   /**

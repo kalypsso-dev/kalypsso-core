@@ -65,7 +65,7 @@ MpiComm::MPI_Barrier() const
 // ============================================================
 // ============================================================
 void
-MpiComm::abort(int errcode) const
+MpiComm::MPI_Abort(int errcode) const
 {
   CHECK_MPI_ERR(::MPI_Abort(MPI_Comm(*this), errcode));
   std::abort();
