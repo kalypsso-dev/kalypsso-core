@@ -97,15 +97,14 @@ public:
     TIMER_DEVICE
   };
 
-  ProfilingRegion(std::string const & name,
-                  timer_location_t    timer_location,
-                  Color_t             color);
+  ProfilingRegion(std::string const & name, timer_location_t timer_location, Color_t color);
 
   ~ProfilingRegion() = default;
 
   //! non-copyable: the nvtx event attribute stores a pointer into m_name of this instance
   ProfilingRegion(ProfilingRegion const &) = delete;
-  ProfilingRegion & operator=(ProfilingRegion const &) = delete;
+  ProfilingRegion &
+  operator=(ProfilingRegion const &) = delete;
 
   //! start timing (no-op if the region is already running)
   void
@@ -203,8 +202,7 @@ public:
 
   ScopedRegion(ScopedRegion && other) noexcept
     : m_region(std::exchange(other.m_region, nullptr))
-  {
-  }
+  {}
 
   //! stop the wrapped region now and release ownership (no-op if already stopped or
   //! moved-from)
@@ -227,8 +225,10 @@ public:
   }
 
   ScopedRegion(ScopedRegion const &) = delete;
-  ScopedRegion & operator=(ScopedRegion const &) = delete;
-  ScopedRegion & operator=(ScopedRegion &&) = delete;
+  ScopedRegion &
+  operator=(ScopedRegion const &) = delete;
+  ScopedRegion &
+  operator=(ScopedRegion &&) = delete;
 
 private:
   //! wrapped profiling region (null once stopped or moved away)
@@ -255,7 +255,8 @@ public:
 
   //! non-copyable, non-movable
   ProfilingManager(ProfilingManager const &) = delete;
-  ProfilingManager & operator=(ProfilingManager const &) = delete;
+  ProfilingManager &
+  operator=(ProfilingManager const &) = delete;
 
   /**
    * \brief Get or create a profiling region.
