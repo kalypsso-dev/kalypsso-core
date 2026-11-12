@@ -143,7 +143,7 @@ struct TimingStats_t
 TimingStats_t
 reduce_min_mean_max(double local_time, ParallelEnv const & par_env)
 {
-#ifdef KALYPSSO_CORE_USE_MPI
+#  ifdef KALYPSSO_CORE_USE_MPI
   double t_min = 0.0;
   double t_sum = 0.0;
   double t_max = 0.0;
@@ -151,9 +151,9 @@ reduce_min_mean_max(double local_time, ParallelEnv const & par_env)
   par_env.comm().MPI_Reduce<MpiComm::SUM>(&local_time, &t_sum, 1, 0);
   par_env.comm().MPI_Reduce<MpiComm::MAX>(&local_time, &t_max, 1, 0);
   return { t_min, t_sum / par_env.size(), t_max };
-#else
+#  else
   return { local_time, local_time, local_time };
-#endif // KALYPSSO_CORE_USE_MPI
+#  endif // KALYPSSO_CORE_USE_MPI
 }
 
 //! \brief Print one line of the timing report (to be called on the root rank only).
@@ -164,7 +164,11 @@ void
 print_timings_line(std::string const & name, TimingStats_t const & t, double total_max)
 {
   printf("%-40s time : %8.3f /%8.3f /%8.3f s (%6.2f%% of max)\n",
-         name.c_str(), t.min, t.mean, t.max, 100.0 * t.max / total_max);
+         name.c_str(),
+         t.min,
+         t.mean,
+         t.max,
+         100.0 * t.max / total_max);
 }
 
 } // namespace

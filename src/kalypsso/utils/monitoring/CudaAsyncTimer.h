@@ -83,7 +83,7 @@ protected:
   static constexpr int NUM_EVENTS = 32;
   using idx_t = uint64_t;
 
-  CUDAEvent startEv[NUM_EVENTS], stopEv[NUM_EVENTS];
+  CUDAEvent      startEv[NUM_EVENTS], stopEv[NUM_EVENTS];
   mutable idx_t  readIdx, writeIdx;
   mutable double total_time;
 

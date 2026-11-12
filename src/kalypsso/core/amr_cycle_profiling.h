@@ -87,15 +87,13 @@ public:
 
   ProfilingTimer(ProfilingManager & profiling_mgr, const AmrCycleProfilingZone zone)
     : ProfilingTimer(profiling_mgr, zone, ProfilingRegion::TIMER_HOST)
-  {
-  }
+  {}
 
   ProfilingTimer(ProfilingManager &                profiling_mgr,
                  const AmrCycleProfilingZone       zone,
                  ProfilingRegion::timer_location_t timer_location)
     : m_region(get_profiling_region(profiling_mgr, zone, timer_location))
-  {
-  }
+  {}
 
 private:
   ScopedRegion m_region;
