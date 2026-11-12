@@ -255,9 +255,9 @@ ProfilingManager::print_timings()
 
   if (m_par_env.rank() == 0)
   {
-    printf("# ====================================\n");
+    printf("# ===============================================\n");
     printf("# Kalypsso timings (min/mean/max over %d ranks)\n", m_par_env.size());
-    printf("# ====================================\n");
+    printf("# ===============================================\n");
 
     print_timings_line(ProfilingData::whole_kalypsso_region_name, total_stats, total_stats.max);
   }
@@ -287,9 +287,9 @@ ProfilingManager::print_timings(std::optional<double> total_time, std::string co
 
   if (m_par_env.rank() == 0)
   {
-    printf("# ====================================\n");
+    printf("# ===============================================\n");
     printf("# %s (min/mean/max over %d ranks)\n", header.c_str(), m_par_env.size());
-    printf("# ====================================\n");
+    printf("# ===============================================\n");
   }
 
   report_region_timings(total_stats.max);
