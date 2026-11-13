@@ -153,6 +153,8 @@ add_library(
   MeshPartitioner.h
   MeshPartitioner_helper.h
   mesh_utils.h
+  MirrorQuadrantUtilsMetadata.cpp
+  MirrorQuadrantUtilsMetadata.h
   misc_utils.cpp
   misc_utils.h
   models/Hydro.cpp
