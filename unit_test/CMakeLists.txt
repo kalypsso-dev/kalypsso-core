@@ -109,6 +109,8 @@ configure_file(${PROJECT_SOURCE_DIR}/test/AMRmesh/test_AMRmesh_brick_2d.ini Sten
 # COPYONLY)
 configure_file(StencilHelper_3d.ini StencilHelper_3d.ini COPYONLY)
 
+kalypsso_add_test(MirrorQuadrantUtilsMetadata_test TEST_USE_MPI_OFF core/MirrorQuadrantUtilsMetadata_test.cpp main.cpp)
+
 kalypsso_add_test(DataArrayBlockMultiVar_test TEST_USE_MPI_OFF core/DataArrayBlockMultiVar_test.cpp
                   main.cpp)
 
