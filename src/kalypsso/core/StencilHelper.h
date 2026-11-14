@@ -184,7 +184,10 @@ public:
                 brick_size_t<dim>        brick_sizes,
                 Kokkos::Array<bool, dim> is_brick_periodic);
 
-  virtual ~StencilHelper() = default;
+  KOKKOS_DEFAULTED_FUNCTION ~StencilHelper() = default;
+
+  KOKKOS_DEFAULTED_FUNCTION
+  StencilHelper(const StencilHelper &) = default;
 
   KOKKOS_INLINE_FUNCTION
   auto
