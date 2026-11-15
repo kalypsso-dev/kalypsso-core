@@ -35,6 +35,7 @@ add_library(
   BinomialCoef.h
   BitFieldHelper.h
   BitFieldInteger.h
+  Box.h
   brick_base.h
   brick_connectivity_utils.h
   brick_utils.h
