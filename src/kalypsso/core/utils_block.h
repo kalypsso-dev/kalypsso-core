@@ -165,6 +165,20 @@ get_block_size(int32_t value)
 template <size_t dim, typename T = int32_t>
 using coord_t = Kokkos::Array<T, dim>;
 
+template <size_t dim, typename T>
+KOKKOS_INLINE_FUNCTION auto
+make_coord(T value)
+{
+  if constexpr (dim == 2)
+  {
+    return coord_t<2, T>{ value, value };
+  }
+  else if constexpr (dim == 3)
+  {
+    return coord_t<3, T>{ value, value, value };
+  }
+};
+
 //! a type alias used in StencilHelper interface
 template <size_t dim>
 using shift_t = coord_t<dim, int32_t>;
