@@ -12,7 +12,6 @@
 
 #include <kalypsso/core/kalypsso_core_config.h>
 #include <kalypsso/core/kokkos_shared.h>
-#include <kalypsso/core/BitFieldInteger.h>
 #include <kalypsso/core/MeshMap.h>          // for orchard_key_view_t and amr_map_t
 #include <kalypsso/core/AMRmesh.h>          // for p4est interface
 #include <kalypsso/core/orchard_key_base.h> // for iOct_t
@@ -34,6 +33,12 @@ namespace core
 // ====================================================================
 /**
  * \class MirrorQuadrantUtilsMetadata
+ *
+ * \brief Provide a way to store all mirror quadrant metadata related to their neighborhood.
+ *
+ * More precisely we store as a cache memory all the Morton key in a 3x3 neighborhood, as well as
+ * the MPI ranks of the neighbor octants in order to identify to which MPI process current mirror
+ * octant should send data to.
  */
 template <size_t dim, typename device_t>
 class MirrorQuadrantUtilsMetadata
@@ -74,10 +79,10 @@ private:
   KOKKOS_INLINE_FUNCTION auto
   direction_to_flat_index(int32_t dir_x, int32_t dir_y) const -> size_t
   {
-    KOKKOS_ASSERT(dir_x >= -1);
-    KOKKOS_ASSERT(dir_x <= 1);
-    KOKKOS_ASSERT(dir_y >= -1);
-    KOKKOS_ASSERT(dir_y <= 1);
+    KOKKOS_ASSERT((dir_x >= -1) && "Invalid value for dir_x");
+    KOKKOS_ASSERT((dir_x <= 1) && "Invalid value for dir_x");
+    KOKKOS_ASSERT((dir_y >= -1) && "Invalid value for dir_y");
+    KOKKOS_ASSERT((dir_y <= 1) && "Invalid value for dir_y");
 
     return static_cast<size_t>((dir_x + 1) + 3 * (dir_y + 1));
   }
@@ -87,12 +92,12 @@ private:
   KOKKOS_INLINE_FUNCTION auto
   direction_to_flat_index(int32_t dir_x, int32_t dir_y, int32_t dir_z) const -> size_t
   {
-    KOKKOS_ASSERT(dir_x >= -1);
-    KOKKOS_ASSERT(dir_x <= 1);
-    KOKKOS_ASSERT(dir_y >= -1);
-    KOKKOS_ASSERT(dir_y <= 1);
-    KOKKOS_ASSERT(dir_z >= -1);
-    KOKKOS_ASSERT(dir_z <= 1);
+    KOKKOS_ASSERT((dir_x >= -1) && "Invalid value for dir_x");
+    KOKKOS_ASSERT((dir_x <= 1) && "Invalid value for dir_x");
+    KOKKOS_ASSERT((dir_y >= -1) && "Invalid value for dir_y");
+    KOKKOS_ASSERT((dir_y <= 1) && "Invalid value for dir_y");
+    KOKKOS_ASSERT((dir_z >= -1) && "Invalid value for dir_z");
+    KOKKOS_ASSERT((dir_z <= 1) && "Invalid value for dir_z");
 
     return static_cast<size_t>((dir_x + 1) + 3 * (dir_y + 1) + 9 * (dir_z + 1));
   }
@@ -116,8 +121,8 @@ private:
   KOKKOS_INLINE_FUNCTION void
   flat_index_to_direction(int32_t flatindex, int32_t & dir_x, int32_t & dir_y) const
   {
-    KOKKOS_ASSERT(flatindex >= 0);
-    KOKKOS_ASSERT(flatindex < NEIGHBOR_STENCIL_SIZE);
+    KOKKOS_ASSERT((flatindex >= 0) && "Invalid value for flatindex");
+    KOKKOS_ASSERT((flatindex < NEIGHBOR_STENCIL_SIZE) && "Invalid value for flatindex");
 
     dir_y = flatindex / 3;
     dir_x = flatindex - 3 * dir_y;
@@ -134,8 +139,8 @@ private:
                           int32_t & dir_y,
                           int32_t & dir_z) const
   {
-    KOKKOS_ASSERT(flatindex >= 0);
-    KOKKOS_ASSERT(flatindex < NEIGHBOR_STENCIL_SIZE);
+    KOKKOS_ASSERT((flatindex >= 0) && "Invalid value for flatindex");
+    KOKKOS_ASSERT((flatindex < NEIGHBOR_STENCIL_SIZE) && "Invalid value for flatindex");
 
     dir_z = flatindex / 9;
     int32_t tmp = flatindex - 9 * dir_z;
