@@ -154,6 +154,8 @@ add_library(
   MeshPartitioner.h
   MeshPartitioner_helper.h
   mesh_utils.h
+  MirrorBitMaskArray.cpp
+  MirrorBitMaskArray.h
   MirrorQuadrantUtilsMetadata.cpp
   MirrorQuadrantUtilsMetadata.h
   misc_utils.cpp

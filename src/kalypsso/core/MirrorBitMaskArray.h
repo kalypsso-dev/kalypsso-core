@@ -10,11 +10,13 @@
 #ifndef KALYPSSO_CORE_MIRRORBITMASKARRAY_H_
 #define KALYPSSO_CORE_MIRRORBITMASKARRAY_H_
 
+#include <Kokkos_Macros.hpp>
 #include <kalypsso/core/kalypsso_core_config.h>
 #include <kalypsso/core/kokkos_shared.h>
 #include <kalypsso/core/kalypsso_data_container.h> // for DataArray, DataArrayHost, DataArrayGhostedBlock<dim, device_t>
 #include <kalypsso/core/utils_block.h> // for definition of type block_size_t and shift_t
 #include <kalypsso/core/MeshMap.h> // for orchard_key_view_t, amr_map_t and access to mirror keys
+#include <kalypsso/core/MirrorQuadrantUtilsMetadata.h>
 
 #include <../better-enums/enum.h>
 
@@ -45,13 +47,70 @@ namespace core
 /**
  * Configuration of a mirror bit mask type.
  */
+template <size_t dim>
 struct MirrorBitMaskConfig
 {
-  size_t                 mirror_bit_mask_id;
-  shift_t<dim>           shift;
-  block_size_t<dim>      ghost_sizes;
+  MirrorBitMaskConfig(size_t                    mirror_bit_mask_id_,
+                      block_size_t<dim> const & block_sizes_,
+                      shift_t<dim> const &      shift_,
+                      block_size_t<dim> const & ghost_sizes_,
+                      MirrorBitMaskArrayType    mirror_bit_mask_type_)
+    : mirror_bit_mask_id(mirror_bit_mask_id_)
+    , block_sizes(block_sizes_)
+    , shift(shift_)
+    , ghost_sizes(ghost_sizes_)
+    , mirror_bit_mask_type(mirror_bit_mask_type_)
+  {}
+
+  //! bit mask id (key to retrieve a given mask among others)
+  size_t mirror_bit_mask_id;
+
+  //! block sizes (same as in DataArrayGhostedBlock)
+  block_size_t<dim> block_sizes;
+
+  //! ghost cell pattern shift (same as in DataArrayGhostedBlock)
+  shift_t<dim> shift;
+
+  //! ghost cell pattern sizes (same as in DataArrayGhostedBlock)
+  block_size_t<dim> ghost_sizes;
+
+  //! type of bit mask array
   MirrorBitMaskArrayType mirror_bit_mask_type;
-};
+
+  //! number of elements (equal to the number of cells when dealing with cell-centered data) per
+  //! mirror octant
+  KOKKOS_INLINE_FUNCTION
+  size_t
+  num_elements() const
+  {
+    return static_cast<size_t>(Kokkos::dim_prod(block_sizes));
+  }
+
+  //! number of bytes per mirror octant
+  KOKKOS_INLINE_FUNCTION
+  size_t
+  num_bytes_per_mirror() const
+  {
+    return ((num_elements() + 7) / 8) * 8;
+  }
+
+  //! bit mask size in number of elements
+  KOKKOS_INLINE_FUNCTION
+  size_t
+  bit_mask_size(size_t num_mirror_quadrants) const
+  {
+    return num_elements() * num_mirror_quadrants;
+  }
+
+  //! bit mask size in bytes (for memory allocation)
+  KOKKOS_INLINE_FUNCTION
+  size_t
+  bit_mask_size_in_bytes(size_t num_mirror_quadrants) const
+  {
+    return num_bytes_per_mirror() * num_mirror_quadrants;
+  }
+
+}; // struct MirrorBitMaskConfig
 
 // ====================================================================
 // ====================================================================
@@ -102,47 +161,58 @@ private:
   //! number of bit mask
   size_t m_num_mirror_bit_mask;
 
-  //! block size (number of cells per direction)
-  block_size_t<dim> m_block_sizes;
-
-  //! array of MirrorBitMaskConfig
-  DataArray<MirrorBitMaskConfig *, device_t> m_mirror_bit_mask_configs;
+  //! array of MirrorBitMaskConfig (should be rare to have more than 8 configs)
+  DataArray<MirrorBitMaskConfig<dim>, device_t> m_mirror_bit_mask_configs;
 
 public:
+  //! constructor
   MirrorBitMaskArray()
     : m_storage("MirrorBitMaskArray_storage", 0)
-    , m_num_mirror_bit_mask(0) {};
+    , m_num_mirror_bit_mask(0)
+    , m_mirror_bit_mask_configs("MirrorBitMaskConfigs", 8) {};
+
+  //! destructor
   ~MirrorBitMaskArray() = default;
 
   /**
    * Register a cell-center mirror bit mask associated to a given ghost pattern.
    *
-   * \param[in] mirror_bit_mask_id
+   * \param[in] block size
    * \param[in] shift ghost pattern origin (lower left corner in cell coordinates)
    * \param[in] ghost_sizes ghost pattern sizes
    */
-  void
-  register_mirror_bit_mask(size_t                    mirror_bit_mask_id,
+  size_t
+  register_mirror_bit_mask(block_size_t<dim> const & block_sizes,
                            shift_t<dim> const &      shift,
-                           block_size_t<dim> const & ghost_sizes);
+                           block_size_t<dim> const & ghost_sizes,
+                           MirrorBitMaskArrayType    mirror_bit_mask_type);
 
   /**
    * Register a mirror bit mask associated to a type of mask (e.g. FLUX_X).
    *
-   * \param[in] mirror_bit_mask_id
+   * \param[in] block size
    * \param[in] mirror_bit_mask_type
    *
    * \todo resize config, resize storage
    */
-  void
-  register_mirror_bit_mask(size_t mirror_bit_mask_id, MirrorBitMaskArrayType mirror_bit_mask_type);
+  size_t
+  register_mirror_bit_mask(block_size_t<dim> const &      block_sizes,
+                           MirrorBitMaskArrayType const & mirror_bit_mask_type);
 
   /**
    * Recompute a mirror bit mask (after AMR cycle, the list of mirror octant changed)
    */
   void
-  update_all_masks(MeshMap<dim, device_t> &             mesh_map,
-                   MirrorQuadrantsUtilsMetadata const & mirror_quad_metadata);
+  update_mask(MeshMap<dim, device_t> &                           mesh_map,
+              MirrorQuadrantUtilsMetadata<dim, device_t> const & mirror_quad_metadata,
+              size_t                                             mirror_bit_mask_id);
+
+  /**
+   * Recompute all mirror bit mask (after AMR cycle, the list of mirror octant changed)
+   */
+  void
+  update_all_masks(MeshMap<dim, device_t> &                           mesh_map,
+                   MirrorQuadrantUtilsMetadata<dim, device_t> const & mirror_quad_metadata);
 
   /**
    * Return a valid mirror bit mask array
