@@ -20,6 +20,20 @@ namespace kalypsso
 template <size_t dim>
 using block_size_t = Kokkos::Array<int32_t, dim>;
 
+template <size_t dim, typename T>
+KOKKOS_INLINE_FUNCTION auto
+make_kokkos_array(T value)
+{
+  if constexpr (dim == 2)
+  {
+    return Kokkos::Array<T, 2>{ value, value };
+  }
+  else if constexpr (dim == 3)
+  {
+    return Kokkos::Array<T, 3>{ value, value, value };
+  }
+}
+
 /**
  * Type alias to hold
  * - (i, j, ivar, iOct) in 2d,
@@ -165,6 +179,7 @@ get_block_size(int32_t value)
 template <size_t dim, typename T = int32_t>
 using coord_t = Kokkos::Array<T, dim>;
 
+//! Create coordinates from a single value (all components equal)
 template <size_t dim, typename T>
 KOKKOS_INLINE_FUNCTION auto
 make_coord(T value)
@@ -176,6 +191,22 @@ make_coord(T value)
   else if constexpr (dim == 3)
   {
     return coord_t<3, T>{ value, value, value };
+  }
+};
+
+template <size_t dim, typename T, typename T2>
+KOKKOS_INLINE_FUNCTION auto
+convert_coord(coord_t<dim, T> const & coord)
+{
+  if constexpr (dim == 2)
+  {
+    return coord_t<2, T2>{ static_cast<T2>(coord[0]), static_cast<T2>(coord[1]) };
+  }
+  else if constexpr (dim == 3)
+  {
+    return coord_t<3, T2>{ static_cast<T2>(coord[0]),
+                           static_cast<T2>(coord[1]),
+                           static_cast<T2>(coord[2]) };
   }
 };
 
