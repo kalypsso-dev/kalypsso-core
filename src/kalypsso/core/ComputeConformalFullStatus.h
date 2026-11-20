@@ -21,8 +21,21 @@
 #include <kalypsso/core/AMRMeshInfo.h>
 #include <kalypsso/core/mesh_utils.h> // for definition of Face::XMIN, etc...
 
+#include <../better-enums/enum.h>
+
 namespace kalypsso
 {
+
+// clang-format off
+/**
+ * An enum type to tell where full conformal status should be computed.
+ *
+ */
+BETTER_ENUM(FullConformalStatusQuadrantType, uint8_t,
+            OWNED_AND_GHOST = 0,
+            MIRROR = 1)
+// clang-format on
+
 
 /**
  * \class ComputeConformalFullStatusFunctor
@@ -84,25 +97,67 @@ public:
     , m_brick_sizes(brick_sizes)
     , m_is_brick_periodic(is_brick_periodic)
     , m_conformal_full_status_view(conformal_full_status_view)
-  {
-    // make sure conformal_status_view has the right size
-    KOKKOS_ASSERT(conformal_full_status_view.extent(0) ==
-                    static_cast<size_t>(
-                      (amr_mesh_info.local_num_quadrants() + amr_mesh_info.local_num_ghosts())) &&
-                  "conformal status view has wrong size");
-  }
+  {}
 
   // ==============================================================
   // ==============================================================
-  //! static method which does it all: create and execute functor with range policy
-  static void
+  //! Launch computation
+  static auto
   apply(amr_hashmap_t                   amr_hashmap,
         orchard_key_view_t              orchard_keys,
         AMRMeshInfo                     amr_mesh_info,
         brick_size_t<dim>               brick_sizes,
         Kokkos::Array<bool, dim>        is_brick_periodic,
-        conformal_full_status_view_type conformal_full_status_view)
+        FullConformalStatusQuadrantType type) -> conformal_full_status_view_type
   {
+
+    const auto num_quadrants = [&]() -> size_t {
+      if (type == +FullConformalStatusQuadrantType::OWNED_AND_GHOST)
+      {
+        // make sure orchard_keys and conformal_status_view has the right size
+        KOKKOS_ASSERT(orchard_keys.extent(0) ==
+                        static_cast<size_t>((amr_mesh_info.local_num_quadrants() +
+                                             amr_mesh_info.local_num_ghosts())) &&
+                      "orchard keys has wrong size");
+        KOKKOS_ASSERT(conformal_full_status_view.extent(0) ==
+                        static_cast<size_t>((amr_mesh_info.local_num_quadrants() +
+                                             amr_mesh_info.local_num_ghosts())) &&
+                      "conformal status view has wrong size");
+
+        return static_cast<size_t>(amr_mesh_info.local_num_quadrants() +
+                                   amr_mesh_info.local_num_ghosts());
+      }
+      else if (type == +FullConformalStatusQuadrantType::MIRROR)
+      {
+        // make sure orchard_keys and conformal_status_view has the right size
+        KOKKOS_ASSERT(orchard_keys.extent(0) ==
+                        static_cast<size_t>((amr_mesh_info.local_num_mirrors())) &&
+                      "orchard keys has wrong size");
+        KOKKOS_ASSERT(conformal_full_status_view.extent(0) ==
+                        static_cast<size_t>((amr_mesh_info.local_num_mirrors())) &&
+                      "conformal status view has wrong size");
+
+        return static_cast<size_t>(amr_mesh_info.local_num_mirrors());
+      }
+      KALYPSSO_ERROR("Unknown value for FullConformalStatusQuadrantType.");
+      return static_cast<size_t>(0);
+    }();
+
+    const auto data_name = [&]() {
+      if (type == +FullConformalStatusQuadrantType::OWNED_AND_GHOST)
+      {
+        return std::string("conformal full status view in owned and ghost");
+      }
+      else if (type == +FullConformalStatusQuadrantType::MIRROR)
+      {
+        return std::string("conformal full status view in mirror");
+      }
+      KALYPSSO_ERROR("Unknown value for FullConformalStatusQuadrantType.");
+      return std::string("");
+    }();
+
+    auto conformal_full_status_view = conformal_full_status_view_type(data_name, num_quadrants);
+
     ComputeConformalFullStatusFunctor<dim, device_t> functor(amr_hashmap,
                                                              orchard_keys,
                                                              amr_mesh_info,
@@ -110,12 +165,11 @@ public:
                                                              is_brick_periodic,
                                                              conformal_full_status_view);
 
-    const auto num_iterations =
-      amr_mesh_info.local_num_quadrants() + amr_mesh_info.local_num_ghosts();
-
     Kokkos::parallel_for("kalypsso::core::ComputeConformalFullStatusFunctor",
-                         Kokkos::RangePolicy<exec_space>(0, num_iterations),
+                         Kokkos::RangePolicy<exec_space>(0, num_quadrants),
                          functor);
+
+    return conformal_full_status_view;
 
   } // apply
 

@@ -456,10 +456,19 @@ run_test(const ParallelEnv & par_env, int argc, char * argv[])
   mesh_map->update_orchard_keys(forest, ghost);
   auto orchard_keys_host = mesh_map->orchard_keys_host();
   auto orchard_keys_device = mesh_map->orchard_keys_clone();
+  mesh_map->update_mirror_orchard_keys(ghost);
 
-  auto conformal_full_status = mesh_map->update_conformal_full_status();
+  auto orchard_keys_mirror_host = mesh_map->mirror_orchard_keys_host();
+
+  auto conformal_full_status =
+    mesh_map->update_conformal_full_status(FullConformalStatusQuadrantType::OWNED_AND_GHOST);
   auto conformal_full_status_h =
     Kokkos::create_mirror_view_and_copy(Kokkos::HostSpace{}, conformal_full_status);
+
+  auto conformal_full_status_mirror =
+    mesh_map->update_conformal_full_status(FullConformalStatusQuadrantType::MIRROR);
+  auto conformal_full_status_mirror_h =
+    Kokkos::create_mirror_view_and_copy(Kokkos::HostSpace{}, conformal_full_status_mirror);
 
 
   if (par_env.rank() == 0)
@@ -472,6 +481,26 @@ run_test(const ParallelEnv & par_env, int argc, char * argv[])
              par_env.rank(),
              qid,
              orchard_keys_host(qid),
+             static_cast<uint64_t>(status),
+             conformal_full_status_t<dim>::face_xmin(status),
+             conformal_full_status_t<dim>::face_xmax(status),
+             conformal_full_status_t<dim>::face_ymin(status),
+             conformal_full_status_t<dim>::face_ymax(status),
+             conformal_full_status_t<dim>::edge_xmin_ymin(status),
+             conformal_full_status_t<dim>::edge_xmax_ymin(status),
+             conformal_full_status_t<dim>::edge_xmin_ymax(status),
+             conformal_full_status_t<dim>::edge_xmax_ymax(status));
+    }
+
+    for (size_t qid = 0; qid < orchard_keys_mirror_host.extent(0); ++qid)
+    {
+      const auto status = conformal_full_status_mirror_h(qid);
+      printf("[rank = %d] mirror_orchard_key[%lu] = %zu conformal_full_status=%ld (face %d %d %d "
+             "%d edge "
+             "%d %d %d %d)\n",
+             par_env.rank(),
+             qid,
+             orchard_keys_mirror_host(qid),
              static_cast<uint64_t>(status),
              conformal_full_status_t<dim>::face_xmin(status),
              conformal_full_status_t<dim>::face_xmax(status),
