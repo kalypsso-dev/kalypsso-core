@@ -55,6 +55,36 @@ TEST(kalypsso_core_box, test_constructor)
   EXPECT_REAL_EQ(box3.origin()[IY], -4.0);
 }
 
+TEST(kalypsso_core_box, test_homthety)
+{
+
+  {
+    auto origin = coord_t<2, real_t>{ -1.0, -1.0 };
+    auto shape = coord_t<2, real_t>{ 8.0, 8.0 };
+
+    auto box = Box(origin, shape);
+
+    box.homothety(2.0);
+    EXPECT_REAL_EQ(box.origin()[IX], -2.0);
+    EXPECT_REAL_EQ(box.origin()[IY], -2.0);
+    EXPECT_REAL_EQ(box.shape()[IX], 16.0);
+    EXPECT_REAL_EQ(box.shape()[IY], 16.0);
+  }
+
+  {
+    auto origin = coord_t<2, real_t>{ 0.0, -2.0 };
+    auto shape = coord_t<2, real_t>{ 5.0, 3.0 };
+
+    auto box = Box(origin, shape);
+
+    box.homothety(2.0);
+    EXPECT_REAL_EQ(box.origin()[IX], 0.0);
+    EXPECT_REAL_EQ(box.origin()[IY], -4.0);
+    EXPECT_REAL_EQ(box.shape()[IX], 10.0);
+    EXPECT_REAL_EQ(box.shape()[IY], 6.0);
+  }
+}
+
 TEST(kalypsso_core_box, test_intersection)
 {
 

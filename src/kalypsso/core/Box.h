@@ -174,6 +174,23 @@ public:
       m_origin[IZ] += shift[IZ];
   }
 
+  //! Apply homothety using origin (0,0,0) as center.
+  //!
+  //! \param[in] scale_factor
+  KOKKOS_INLINE_FUNCTION
+  void
+  homothety(real_t scale_factor)
+  {
+    KOKKOS_ASSERT((scale_factor >= 0) && "Box: scale_factor must be non negative");
+
+    scale(scale_factor);
+
+    m_origin[IX] *= scale_factor;
+    m_origin[IY] *= scale_factor;
+    if constexpr (dim == 3)
+      m_origin[IZ] *= scale_factor;
+  }
+
   //! Create an new box s the intersection of current box with another
   //!
   //! \param[in] other another box
