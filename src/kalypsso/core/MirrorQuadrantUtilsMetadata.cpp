@@ -117,7 +117,8 @@ MirrorQuadrantUtilsMetadata<dim, device_t>::update(MeshMap<dim, device_t> & mesh
       const auto mirror_id = index / NEIGHBOR_STENCIL_SIZE;
       const auto neighbor_index = index - mirror_id * NEIGHBOR_STENCIL_SIZE;
 
-      const auto direction = flat_index_to_direction(static_cast<int32_t>(neighbor_index));
+      const auto direction =
+        utils::flat_index_to_direction<dim>(static_cast<int32_t>(neighbor_index));
 
       const auto coord = []() {
         if constexpr (dim == 2)
@@ -178,9 +179,9 @@ MirrorQuadrantUtilsMetadata<dim, device_t>::update(MeshMap<dim, device_t> & mesh
         m_mirror_index_to_neighbor_global_index(index) = cell_loc_neigh.iOct;
 
         auto is_active = false;
-        // active neighbor are neighbor that are ghost, and the mpi rank is equal to the rank
+        // active neighbors are neighbors that are ghost, and the mpi rank is equal to the rank
         // attached to current mirror.
-        if (cell_loc_neigh.iOct >= local_num_quadrants)
+        if (cell_loc_neigh.iOct >= local_num_quadrants and !cell_loc_neigh.is_outside_domain)
         {
           auto ighost = cell_loc_neigh.iOct - local_num_quadrants;
           if (m_ghost_quadrant_mpi_ranks(ighost) == m_mirror_quadrant_mpi_ranks(mirror_id))
