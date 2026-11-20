@@ -28,6 +28,103 @@ namespace kalypsso
 namespace core
 {
 
+namespace utils
+{
+
+//! convert direction to flat index (between 0 and NEIGHBOR_STENCIL_SIZE-1). 2d version
+KOKKOS_INLINE_FUNCTION auto
+direction_to_flat_index(int32_t dir_x, int32_t dir_y) -> size_t
+{
+  KOKKOS_ASSERT((dir_x >= -1) && "Invalid value for dir_x");
+  KOKKOS_ASSERT((dir_x <= 1) && "Invalid value for dir_x");
+  KOKKOS_ASSERT((dir_y >= -1) && "Invalid value for dir_y");
+  KOKKOS_ASSERT((dir_y <= 1) && "Invalid value for dir_y");
+
+  return static_cast<size_t>((dir_x + 1) + 3 * (dir_y + 1));
+}
+
+//! convert direction to flat index (between 0 and NEIGHBOR_STENCIL_SIZE-1). 3d version
+KOKKOS_INLINE_FUNCTION auto
+direction_to_flat_index(int32_t dir_x, int32_t dir_y, int32_t dir_z) -> size_t
+{
+  KOKKOS_ASSERT((dir_x >= -1) && "Invalid value for dir_x");
+  KOKKOS_ASSERT((dir_x <= 1) && "Invalid value for dir_x");
+  KOKKOS_ASSERT((dir_y >= -1) && "Invalid value for dir_y");
+  KOKKOS_ASSERT((dir_y <= 1) && "Invalid value for dir_y");
+  KOKKOS_ASSERT((dir_z >= -1) && "Invalid value for dir_z");
+  KOKKOS_ASSERT((dir_z <= 1) && "Invalid value for dir_z");
+
+  return static_cast<size_t>((dir_x + 1) + 3 * (dir_y + 1) + 9 * (dir_z + 1));
+}
+
+//! convert direction to flat index (between 0 and NEIGHBOR_STENCIL_SIZE-1)
+template <size_t dim>
+KOKKOS_INLINE_FUNCTION auto
+direction_to_flat_index(shift_t<dim> const & dir) -> size_t
+{
+  if constexpr (dim == 2)
+  {
+    return direction_to_flat_index(dir[IX], dir[IY]);
+  }
+  else if constexpr (dim == 3)
+  {
+    return direction_to_flat_index(dir[IX], dir[IY], dir[IZ]);
+  }
+}
+
+//! convert flat index to direction. 2d version
+KOKKOS_INLINE_FUNCTION void
+flat_index_to_direction(int32_t flatindex, int32_t & dir_x, int32_t & dir_y)
+{
+  KOKKOS_ASSERT((flatindex >= 0) && "Invalid value for flatindex");
+  KOKKOS_ASSERT((flatindex < NEIGHBOR_STENCIL_SIZE) && "Invalid value for flatindex");
+
+  dir_y = flatindex / 3;
+  dir_x = flatindex - 3 * dir_y;
+
+  dir_x -= 1;
+  dir_y -= 1;
+}
+
+//! convert flat index to direction. 3d version
+KOKKOS_INLINE_FUNCTION void
+flat_index_to_direction(int32_t flatindex, int32_t & dir_x, int32_t & dir_y, int32_t & dir_z)
+{
+  KOKKOS_ASSERT((flatindex >= 0) && "Invalid value for flatindex");
+  KOKKOS_ASSERT((flatindex < NEIGHBOR_STENCIL_SIZE) && "Invalid value for flatindex");
+
+  dir_z = flatindex / 9;
+  int32_t tmp = flatindex - 9 * dir_z;
+
+  dir_y = tmp / 3;
+  dir_x = tmp - 3 * dir_y;
+
+  dir_x -= 1;
+  dir_y -= 1;
+  dir_z -= 1;
+}
+
+//! convert flat index to direction
+template <size_t dim>
+KOKKOS_INLINE_FUNCTION auto
+flat_index_to_direction(int32_t flatindex) -> shift_t<dim>
+{
+  auto dir = get_shift<dim>(0);
+
+  if constexpr (dim == 2)
+  {
+    flat_index_to_direction(flatindex, dir[IX], dir[IY]);
+  }
+  else if constexpr (dim == 3)
+  {
+    flat_index_to_direction(flatindex, dir[IX], dir[IY], dir[IZ]);
+  }
+
+  return dir;
+}
+
+} // namespace details
+
 // ====================================================================
 // ====================================================================
 // ====================================================================
@@ -73,102 +170,6 @@ private:
   //! the mpi rank is the rank to which we must send data
   //! its size should be local_num_mirrors
   DataArray<int32_t, device_t> m_mirror_quadrant_mpi_ranks;
-
-  //! convert direction to flat index (between 0 and NEIGHBOR_STENCIL_SIZE-1). 2d version
-  template <size_t dim_ = dim, std::enable_if_t<(dim_ == 2), bool> = true>
-  KOKKOS_INLINE_FUNCTION auto
-  direction_to_flat_index(int32_t dir_x, int32_t dir_y) const -> size_t
-  {
-    KOKKOS_ASSERT((dir_x >= -1) && "Invalid value for dir_x");
-    KOKKOS_ASSERT((dir_x <= 1) && "Invalid value for dir_x");
-    KOKKOS_ASSERT((dir_y >= -1) && "Invalid value for dir_y");
-    KOKKOS_ASSERT((dir_y <= 1) && "Invalid value for dir_y");
-
-    return static_cast<size_t>((dir_x + 1) + 3 * (dir_y + 1));
-  }
-
-  //! convert direction to flat index (between 0 and NEIGHBOR_STENCIL_SIZE-1). 3d version
-  template <size_t dim_ = dim, std::enable_if_t<(dim_ == 3), bool> = true>
-  KOKKOS_INLINE_FUNCTION auto
-  direction_to_flat_index(int32_t dir_x, int32_t dir_y, int32_t dir_z) const -> size_t
-  {
-    KOKKOS_ASSERT((dir_x >= -1) && "Invalid value for dir_x");
-    KOKKOS_ASSERT((dir_x <= 1) && "Invalid value for dir_x");
-    KOKKOS_ASSERT((dir_y >= -1) && "Invalid value for dir_y");
-    KOKKOS_ASSERT((dir_y <= 1) && "Invalid value for dir_y");
-    KOKKOS_ASSERT((dir_z >= -1) && "Invalid value for dir_z");
-    KOKKOS_ASSERT((dir_z <= 1) && "Invalid value for dir_z");
-
-    return static_cast<size_t>((dir_x + 1) + 3 * (dir_y + 1) + 9 * (dir_z + 1));
-  }
-
-  //! convert direction to flat index (between 0 and NEIGHBOR_STENCIL_SIZE-1)
-  KOKKOS_INLINE_FUNCTION auto
-  direction_to_flat_index(shift_t<dim> const & dir) const -> size_t
-  {
-    if constexpr (dim == 2)
-    {
-      return direction_to_flat_index(dir[IX], dir[IY]);
-    }
-    else if constexpr (dim == 3)
-    {
-      return direction_to_flat_index(dir[IX], dir[IY], dir[IZ]);
-    }
-  }
-
-  //! convert flat index to direction. 2d version
-  template <size_t dim_ = dim, std::enable_if_t<(dim_ == 2), bool> = true>
-  KOKKOS_INLINE_FUNCTION void
-  flat_index_to_direction(int32_t flatindex, int32_t & dir_x, int32_t & dir_y) const
-  {
-    KOKKOS_ASSERT((flatindex >= 0) && "Invalid value for flatindex");
-    KOKKOS_ASSERT((flatindex < NEIGHBOR_STENCIL_SIZE) && "Invalid value for flatindex");
-
-    dir_y = flatindex / 3;
-    dir_x = flatindex - 3 * dir_y;
-
-    dir_x -= 1;
-    dir_y -= 1;
-  }
-
-  //! convert flat index to direction. 2d version
-  template <size_t dim_ = dim, std::enable_if_t<(dim_ == 3), bool> = true>
-  KOKKOS_INLINE_FUNCTION void
-  flat_index_to_direction(int32_t   flatindex,
-                          int32_t & dir_x,
-                          int32_t & dir_y,
-                          int32_t & dir_z) const
-  {
-    KOKKOS_ASSERT((flatindex >= 0) && "Invalid value for flatindex");
-    KOKKOS_ASSERT((flatindex < NEIGHBOR_STENCIL_SIZE) && "Invalid value for flatindex");
-
-    dir_z = flatindex / 9;
-    int32_t tmp = flatindex - 9 * dir_z;
-
-    dir_y = tmp / 3;
-    dir_x = tmp - 3 * dir_y;
-
-    dir_x -= 1;
-    dir_y -= 1;
-    dir_z -= 1;
-  }
-
-  KOKKOS_INLINE_FUNCTION auto
-  flat_index_to_direction(int32_t flatindex) const -> shift_t<dim>
-  {
-    auto dir = shift_t<dim>{ 0, 0 };
-
-    if constexpr (dim == 2)
-    {
-      flat_index_to_direction(flatindex, dir[IX], dir[IY]);
-    }
-    else if constexpr (dim == 3)
-    {
-      flat_index_to_direction(flatindex, dir[IX], dir[IY], dir[IZ]);
-    }
-
-    return dir;
-  }
 
   //! After AMR cycle, mesh changed, i.e. ghosts changed, so here we update
   //! the array of MPI ranks associated
@@ -220,51 +221,107 @@ public:
 
   // ====================================================================
   // ====================================================================
-  //! \brief Update all mirror metadata.
-  //!
-  //! Must be called after AMR cycle to refresh mirror metadata
-  //!
-  //! \param[in] mesh_map Unordered map of AMR keys
-  //! \param[in] config_map input parameter config
+  /**
+   * \brief Update all mirror metadata.
+   *
+   * Must be called after AMR cycle to refresh mirror metadata
+   *
+   * \param[in] mesh_map Unordered map of AMR keys
+   * \param[in] config_map input parameter config
+   */
   void
   update(MeshMap<dim, device_t> & mesh_map, AMRmesh<dim> & amr_mesh, ConfigMap const & config_map);
 
 
-  //! return index of neighbor quadrant to a given mirror in a given direction
+  /**
+   * \brief Return index of neighbor quadrant to a given mirror in a given direction
+   *
+   * \param[in] mirror_id
+   * \param[in] dir_x direction along X pointing to neighbor quadrant
+   * \param[in] dir_y direction along Y pointing to neighbor quadrant
+   *
+   */
   template <size_t dim_ = dim, std::enable_if_t<(dim_ == 2), bool> = true>
   KOKKOS_FUNCTION auto
   mirror_neighbor_index(iOct_t mirror_id, int32_t dir_x, int32_t dir_y) const -> iOct_t
   {
     return m_mirror_index_to_neighbor_global_index(mirror_id * NEIGHBOR_STENCIL_SIZE +
-                                                   direction_to_flat_index(dir_x, dir_y));
+                                                   utils::direction_to_flat_index(dir_x, dir_y));
   }
 
-  //! return index of neighbor quadrant to a given mirror in a given direction
+  /**
+   * \brief Return index of neighbor quadrant to a given mirror in a given direction
+   *
+   * \param[in] mirror_id
+   * \param[in] dir_x direction along X pointing to neighbor quadrant
+   * \param[in] dir_y direction along Y pointing to neighbor quadrant
+   * \param[in] dir_z direction along Z pointing to neighbor quadrant
+   *
+   */
   template <size_t dim_ = dim, std::enable_if_t<(dim_ == 3), bool> = true>
   KOKKOS_FUNCTION auto
   mirror_neighbor_index(iOct_t mirror_id, int32_t dir_x, int32_t dir_y, int32_t dir_z) const
     -> iOct_t
   {
-    return m_mirror_index_to_neighbor_global_index(mirror_id * NEIGHBOR_STENCIL_SIZE +
-                                                   direction_to_flat_index(dir_x, dir_y, dir_z));
+    return m_mirror_index_to_neighbor_global_index(
+      mirror_id * NEIGHBOR_STENCIL_SIZE + utils::direction_to_flat_index(dir_x, dir_y, dir_z));
   }
 
-  //! return index of neighbor quadrant to a given mirror in a given direction
+  /**
+   * \brief Return index of neighbor quadrant to a given mirror in a given direction
+   *
+   * \param[in] mirror_id
+   * \param[in] dir direction pointing to neighbor quadrant
+   *
+   */
+  KOKKOS_FUNCTION auto
+  mirror_neighbor_index(iOct_t mirror_id, shift_t<dim> const & dir) const -> iOct_t
+  {
+    return m_mirror_index_to_neighbor_global_index(mirror_id * NEIGHBOR_STENCIL_SIZE +
+                                                   utils::direction_to_flat_index(dir));
+  }
+
+  /**
+   * \brief Return boolean value indicating if the neighbor octant in a given direction is active
+   * (i.e. we need to send data to).
+   *
+   * \param[in] mirror_id
+   * \param[in] dir_x direction along X pointing to neighbor quadrant
+   * \param[in] dir_y direction along Y pointing to neighbor quadrant
+   */
   template <size_t dim_ = dim, std::enable_if_t<(dim_ == 2), bool> = true>
   KOKKOS_FUNCTION auto
   active_neigbor(iOct_t mirror_id, int32_t dir_x, int32_t dir_y) const -> bool
   {
     return m_active_neighbors(mirror_id * NEIGHBOR_STENCIL_SIZE +
-                              direction_to_flat_index(dir_x, dir_y));
+                              utils::direction_to_flat_index(dir_x, dir_y));
   }
 
-  //! return index of neighbor quadrant to a given mirror in a given direction
+  /**
+   * \brief Return boolean value indicating if the neighbor octant in a given direction is active
+   * (i.e. we need to send data to).
+   *
+   * \param[in] mirror_id
+   * \param[in] dir_x direction along X pointing to neighbor quadrant
+   * \param[in] dir_y direction along Y pointing to neighbor quadrant
+   * \param[in] dir_z direction along Z pointing to neighbor quadrant
+   */
   template <size_t dim_ = dim, std::enable_if_t<(dim_ == 3), bool> = true>
   KOKKOS_FUNCTION auto
   active_neighbor(iOct_t mirror_id, int32_t dir_x, int32_t dir_y, int32_t dir_z) const -> bool
   {
     return m_active_neighbors(mirror_id * NEIGHBOR_STENCIL_SIZE +
-                              direction_to_flat_index(dir_x, dir_y, dir_z));
+                              utils::direction_to_flat_index(dir_x, dir_y, dir_z));
+  }
+
+  /**
+   * \brief Return boolean value indicating if the neighbor octant in a given direction is active
+   * (i.e. we need to send data to).
+   */
+  KOKKOS_FUNCTION auto
+  active_neighbor(size_t index) const
+  {
+    return m_active_neighbors(index);
   }
 
 }; // class MirrorQuadrantUtilsMetadata
