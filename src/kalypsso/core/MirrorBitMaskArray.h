@@ -54,12 +54,14 @@ struct MirrorBitMaskConfig
                       block_size_t<dim> const & block_sizes_,
                       shift_t<dim> const &      shift_,
                       block_size_t<dim> const & ghost_sizes_,
-                      MirrorBitMaskArrayType    mirror_bit_mask_type_)
+                      MirrorBitMaskArrayType    type_)
     : mirror_bit_mask_id(mirror_bit_mask_id_)
     , block_sizes(block_sizes_)
     , shift(shift_)
     , ghost_sizes(ghost_sizes_)
-    , mirror_bit_mask_type(mirror_bit_mask_type_)
+    , type(type_)
+    , offset(0)
+    , size(0)
   {}
 
   //! bit mask id (key to retrieve a given mask among others)
@@ -75,13 +77,19 @@ struct MirrorBitMaskConfig
   block_size_t<dim> ghost_sizes;
 
   //! type of bit mask array
-  MirrorBitMaskArrayType mirror_bit_mask_type;
+  MirrorBitMaskArrayType type;
+
+  //! offset within storage at which the bit mask array starts
+  size_t offset;
+
+  //! size (in bytes)
+  size_t size;
 
   //! number of elements (equal to the number of cells when dealing with cell-centered data) per
   //! mirror octant
   KOKKOS_INLINE_FUNCTION
   size_t
-  num_elements() const
+  num_elements_per_mirror() const
   {
     return static_cast<size_t>(Kokkos::dim_prod(block_sizes));
   }
@@ -91,7 +99,7 @@ struct MirrorBitMaskConfig
   size_t
   num_bytes_per_mirror() const
   {
-    return ((num_elements() + 7) / 8) * 8;
+    return ((num_elements_per_mirror() + 7) / 8);
   }
 
   //! bit mask size in number of elements
@@ -99,7 +107,7 @@ struct MirrorBitMaskConfig
   size_t
   bit_mask_size(size_t num_mirror_quadrants) const
   {
-    return num_elements() * num_mirror_quadrants;
+    return num_elements_per_mirror() * num_mirror_quadrants;
   }
 
   //! bit mask size in bytes (for memory allocation)
@@ -154,9 +162,17 @@ struct MirrorBitMaskConfig
 template <size_t dim, typename device_t>
 class MirrorBitMaskArray
 {
+public:
+  using exec_space = typename device_t::execution_space;
+
+  using storage_t = uint8_t;
+
+  using bit_mask_view_t =
+    Kokkos::View<storage_t *, device_t, Kokkos::MemoryTraits<Kokkos::Unmanaged>>;
+
 private:
   //! raw storage for all mirror bit mask
-  DataArray<uint8_t, device_t> m_storage;
+  DataArray<storage_t, device_t> m_storage;
 
   //! number of bit mask
   size_t m_num_mirror_bit_mask;
@@ -164,12 +180,42 @@ private:
   //! array of MirrorBitMaskConfig (should be rare to have more than 8 configs)
   DataArray<MirrorBitMaskConfig<dim>, device_t> m_mirror_bit_mask_configs;
 
+  //! host mirror of the bit mask configs
+  DataArray<MirrorBitMaskConfig<dim>, kalypsso::HostDevice> m_mirror_bit_mask_configs_host;
+
+  /**
+   * Recompute a mirror bit mask (after AMR cycle, the list of mirror octant changed)
+   *
+   * This member is intended to be called inside update_all_masks, which is responsible for resizing
+   * storage.
+   *
+   * \param[in] mesh_map to get access to orchard keys (as kokkos view) and amr_mesh_info
+   * \param[in] mirror_quad_metadata mirror quad neighborhood connectivity information
+   * \param[in] mirror_bit_mask_id identifies the bit mask array to update
+   */
+  void
+  update_mask(MeshMap<dim, device_t> &                           mesh_map,
+              MirrorQuadrantUtilsMetadata<dim, device_t> const & mirror_quad_metadata,
+              size_t                                             mirror_bit_mask_id);
+
+  /**
+   * Reset configuration and memory.
+   *
+   * Here we do multiple things:
+   * - recompute mask's offset and mask's size for all masks, update mask configuration on host
+   * - copy mask configurations on device
+   * - resize storage
+   */
+  void
+  reset(size_t num_mirrors);
+
 public:
   //! constructor
   MirrorBitMaskArray()
     : m_storage("MirrorBitMaskArray_storage", 0)
     , m_num_mirror_bit_mask(0)
-    , m_mirror_bit_mask_configs("MirrorBitMaskConfigs", 8) {};
+    , m_mirror_bit_mask_configs("MirrorBitMaskConfigs", 8)
+    , m_mirror_bit_mask_configs_host("MirrorBitMaskConfigs_host", 8) {};
 
   //! destructor
   ~MirrorBitMaskArray() = default;
@@ -177,9 +223,13 @@ public:
   /**
    * Register a cell-center mirror bit mask associated to a given ghost pattern.
    *
+   * Here we all register a bit mask array (i.e. create a new entry in array of configurations).
+   * Memory allocation for storage is done in reset.
+   *
    * \param[in] block size
    * \param[in] shift ghost pattern origin (lower left corner in cell coordinates)
    * \param[in] ghost_sizes ghost pattern sizes
+   * \param[in] mirror_bit_mask_type
    */
   size_t
   register_mirror_bit_mask(block_size_t<dim> const & block_sizes,
@@ -192,36 +242,36 @@ public:
    *
    * \param[in] block size
    * \param[in] mirror_bit_mask_type
-   *
-   * \todo resize config, resize storage
    */
   size_t
   register_mirror_bit_mask(block_size_t<dim> const &      block_sizes,
                            MirrorBitMaskArrayType const & mirror_bit_mask_type);
 
   /**
-   * Recompute a mirror bit mask (after AMR cycle, the list of mirror octant changed)
-   */
-  void
-  update_mask(MeshMap<dim, device_t> &                           mesh_map,
-              MirrorQuadrantUtilsMetadata<dim, device_t> const & mirror_quad_metadata,
-              size_t                                             mirror_bit_mask_id);
-
-  /**
    * Recompute all mirror bit mask (after AMR cycle, the list of mirror octant changed)
+   *
+   * \param[in] mesh_map to get access to orchard keys (as kokkos view) and amr_mesh_info
+   * \param[in] mirror_quad_metadata mirror quad neighborhood connectivity information
+   *
    */
   void
   update_all_masks(MeshMap<dim, device_t> &                           mesh_map,
                    MirrorQuadrantUtilsMetadata<dim, device_t> const & mirror_quad_metadata);
 
   /**
-   * Return a valid mirror bit mask array
+   * Return a valid mirror bit mask array (unmanaged kokkos view on device)
+   *
+   * \param[in] mirror_bit_mask_id identifies the bit mask array to update
    */
   auto
-  get_mirror_bit_mask(size_t mirror_bit_mask_id)
+  get_mirror_bit_mask(size_t mirror_bit_mask_id) -> bit_mask_view_t
   {
     KOKKOS_ASSERT((mirror_bit_mask_id < m_num_mirror_bit_mask) &&
                   "Invalid value for mirror_bit_mask_id");
+
+    return bit_mask_view_t(m_storage.data() +
+                             m_mirror_bit_mask_configs_host(mirror_bit_mask_id).offset,
+                           m_mirror_bit_mask_configs_host(mirror_bit_mask_id).size);
   }
 
 }; // class MirrorBitMaskArray
