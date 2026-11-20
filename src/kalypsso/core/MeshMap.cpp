@@ -345,22 +345,22 @@ MeshMap<dim, device_t>::update_conformal_status()
 // =========================================================================
 template <size_t dim, typename device_t>
 auto
-MeshMap<dim, device_t>::update_conformal_full_status()
+MeshMap<dim, device_t>::update_conformal_full_status(FullConformalStatusQuadrantType type)
   -> conformal_full_status_view_t<dim, device_t>
 {
-  auto conformal_full_status_view = conformal_full_status_view_t<dim, device_t>(
-    "conformal full status view",
-    static_cast<size_t>(m_amr_mesh_info.local_num_quadrants() +
-                        m_amr_mesh_info.local_num_ghosts()));
 
-  ComputeConformalFullStatusFunctor<dim, device_t>::apply(m_amr_hashmap,
-                                                          m_orchard_keys,
-                                                          m_amr_mesh_info,
-                                                          m_brick_sizes,
-                                                          m_is_brick_periodic,
-                                                          conformal_full_status_view);
+  if (type == +FullConformalStatusQuadrantType::MIRROR)
+  {
+    return ComputeConformalFullStatusFunctor<dim, device_t>::apply(m_amr_hashmap,
+                                                                   m_mirror_orchard_keys,
+                                                                   m_amr_mesh_info,
+                                                                   m_brick_sizes,
+                                                                   m_is_brick_periodic,
+                                                                   type);
+  }
 
-  return conformal_full_status_view;
+  return ComputeConformalFullStatusFunctor<dim, device_t>::apply(
+    m_amr_hashmap, m_orchard_keys, m_amr_mesh_info, m_brick_sizes, m_is_brick_periodic, type);
 
 } // MeshMap<dim, device_t>::update_conformal_full_status
 
