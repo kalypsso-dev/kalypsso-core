@@ -29,7 +29,7 @@ template <size_t dim, typename device_t>
 class AMRMeshMonitoring
 {
 public:
-  using exec_space = typename device_t::execution_space;
+  using exec_space_t = typename device_t::execution_space;
 
   using level_histo_view_t = Kokkos::View<int *, device_t>;
   using MeshMap_t = MeshMap<dim, device_t>;

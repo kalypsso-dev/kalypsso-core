@@ -85,9 +85,11 @@ AMRMeshMonitoring<dim, device_t>::compute_level_histogram(
   const auto                  level_min = m_level_min;
   [[maybe_unused]] const auto level_max = m_level_max;
 
+  exec_space_t exec_space;
+
   Kokkos::parallel_for(
     "compute_level_histogram",
-    Kokkos::RangePolicy<exec_space>(0, num_octants),
+    Kokkos::RangePolicy<exec_space_t>(exec_space, 0, num_octants),
     KOKKOS_LAMBDA(const int iOct) {
       // get AMR level
       const auto level = orchard_key_t<dim>::level(orchard_keys(iOct));
@@ -96,6 +98,8 @@ AMRMeshMonitoring<dim, device_t>::compute_level_histogram(
 
       Kokkos::atomic_add(&level_histo(level - level_min), 1);
     });
+
+  exec_space.fence();
 
 // gather information from all MPI processes
 #ifdef KALYPSSO_CORE_USE_MPI
