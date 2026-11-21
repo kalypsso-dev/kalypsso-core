@@ -39,8 +39,8 @@ namespace kalypsso
 
 template <class amr_map_t>
 KOKKOS_INLINE_FUNCTION auto
-key_to_value(uint64_t const & key, amr_map_t const & amr_map)
-  -> Kokkos::pair<bool, typename amr_map_t::value_type>
+key_to_value(uint64_t const &  key,
+             amr_map_t const & amr_map) -> Kokkos::pair<bool, typename amr_map_t::value_type>
 {
   using value_t = typename amr_map_t::value_type;
 
