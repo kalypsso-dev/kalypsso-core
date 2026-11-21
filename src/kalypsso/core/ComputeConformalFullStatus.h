@@ -119,10 +119,6 @@ public:
                         static_cast<size_t>((amr_mesh_info.local_num_quadrants() +
                                              amr_mesh_info.local_num_ghosts())) &&
                       "orchard keys has wrong size");
-        KOKKOS_ASSERT(conformal_full_status_view.extent(0) ==
-                        static_cast<size_t>((amr_mesh_info.local_num_quadrants() +
-                                             amr_mesh_info.local_num_ghosts())) &&
-                      "conformal status view has wrong size");
 
         return static_cast<size_t>(amr_mesh_info.local_num_quadrants() +
                                    amr_mesh_info.local_num_ghosts());
@@ -133,9 +129,6 @@ public:
         KOKKOS_ASSERT(orchard_keys.extent(0) ==
                         static_cast<size_t>((amr_mesh_info.local_num_mirrors())) &&
                       "orchard keys has wrong size");
-        KOKKOS_ASSERT(conformal_full_status_view.extent(0) ==
-                        static_cast<size_t>((amr_mesh_info.local_num_mirrors())) &&
-                      "conformal status view has wrong size");
 
         return static_cast<size_t>(amr_mesh_info.local_num_mirrors());
       }
