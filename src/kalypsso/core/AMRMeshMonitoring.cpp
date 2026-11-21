@@ -103,12 +103,30 @@ AMRMeshMonitoring<dim, device_t>::compute_level_histogram(
 
 // gather information from all MPI processes
 #ifdef KALYPSSO_CORE_USE_MPI
-  auto level_histo_global =
-    level_histo_view_t("level_histo_global", static_cast<size_t>(m_num_levels));
-  par_env.comm().MPI_Reduce<MpiComm::SUM>(
-    level_histo.data(), level_histo_global.data(), m_num_levels, 0);
+  auto reduce_level_histogram_on_host =
+    m_config_map.getBool("run", "reduce_level_histogram_on_host", false);
+  if (reduce_level_histogram_on_host)
+  {
+    const auto level_histo_host =
+      Kokkos::create_mirror_view_and_copy(Kokkos::HostSpace{}, level_histo);
+    auto level_histo_global =
+      level_histo_view_t("level_histo_global", static_cast<size_t>(m_num_levels));
+    const auto level_histo_global_host =
+      Kokkos::create_mirror_view(Kokkos::HostSpace{}, level_histo_global);
+    par_env.comm().MPI_Reduce<MpiComm::SUM>(
+      level_histo_host.data(), level_histo_global_host.data(), m_num_levels, 0);
+    Kokkos::deep_copy(level_histo_global, level_histo_global_host);
+    return level_histo_global;
+  }
+  else
+  {
+    auto level_histo_global =
+      level_histo_view_t("level_histo_global", static_cast<size_t>(m_num_levels));
+    par_env.comm().MPI_Reduce<MpiComm::SUM>(
+      level_histo.data(), level_histo_global.data(), m_num_levels, 0);
+    return level_histo_global;
+  }
 
-  return level_histo_global;
 #else
   return level_histo;
 #endif // KALYPSSO_CORE_USE_MPI

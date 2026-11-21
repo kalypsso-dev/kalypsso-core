@@ -36,7 +36,8 @@ public:
   using orchard_key_view_t = typename orchard_key_base_t<device_t>::view_t;
 
   AMRMeshMonitoring(ConfigMap const & config_map)
-    : m_level_min(config_map.getInteger("amr", "level_min", 0))
+    : m_config_map(config_map)
+    , m_level_min(config_map.getInteger("amr", "level_min", 0))
     , m_level_max(config_map.getInteger("amr", "level_max", 0))
     , m_num_levels(m_level_max - m_level_min + 1)
     , m_num_trees(config_map.getInteger("p4est_connectivity", "nbrick_x", 1) *
@@ -58,6 +59,9 @@ public:
                           MeshMap<dim, device_t> const &       mesh_map) -> level_histo_view_t;
 
 private:
+  //! config map (input parameter)
+  ConfigMap m_config_map;
+
   int m_level_min;
   int m_level_max;
   int m_num_levels;
