@@ -57,6 +57,8 @@ add_library(
   ComputeGhostedScalarField.h
   ComputeInterfaceNormalVector.cpp
   ComputeInterfaceNormalVector.h
+  ComputeNumberOfNeighborsOfQuadrant.cpp
+  ComputeNumberOfNeighborsOfQuadrant.h
   ComputeRefineFlags.h
   ComputeRefineFlags.cpp
   ComputeRefineFlagsMM.h
