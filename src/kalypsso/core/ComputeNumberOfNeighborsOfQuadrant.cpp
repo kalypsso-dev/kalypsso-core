@@ -150,8 +150,43 @@ ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_edge_neighbors(Face::fa
       }
       else if (m_count_type == +ComputeNumberOfNeighborsOfQuadrantType::EXACT)
       {
-        // TODO
-        return neighbor_count_t{ 1 };
+        const auto child_id = orchard_key_t<dim>::child_id(key_cur);
+        if constexpr (dim == 2)
+        {
+          const auto corner_id = ((face0 & 0x1) << 0) + ((face1 & 0x1) << 1);
+          return (child_id == corner_id) ? neighbor_count_t{ 1 } : neighbor_count_t{ 0 };
+        }
+        else if constexpr (dim == 3)
+        {
+          if ((face0 == Face::XMIN or face0 == Face::XMAX) and
+              (face1 == Face::YMIN or face1 == Face::YMAX))
+          {
+            // face0 => X
+            // face1 => Y
+            const auto edge_id = ((face0 & 0x1) << 0) + ((face1 & 0x1) << 1);
+            return ((child_id == edge_id) or (child_id == edge_id + 4)) ? neighbor_count_t{ 1 }
+                                                                        : neighbor_count_t{ 0 };
+          }
+          else if ((face0 == Face::XMIN or face0 == Face::XMAX) and
+                   (face1 == Face::ZMIN or face1 == Face::ZMAX))
+          {
+            // face0 => X
+            // face1 => Z
+            const auto edge_id = ((face0 & 0x1) << 0) + ((face1 & 0x1) << 2);
+            return ((child_id == edge_id) or (child_id == edge_id + 2)) ? neighbor_count_t{ 1 }
+                                                                        : neighbor_count_t{ 0 };
+          }
+          else if ((face0 == Face::YMIN or face1 == Face::YMAX) and
+                   (face1 == Face::ZMIN or face1 == Face::ZMAX))
+          {
+            // face0 => Y
+            // face1 => Z
+            const auto edge_id = ((face0 & 0x1) << 1) + ((face1 & 0x1) << 2);
+            return ((child_id == edge_id) or (child_id == edge_id + 1)) ? neighbor_count_t{ 1 }
+                                                                        : neighbor_count_t{ 0 };
+          }
+        }
+        return neighbor_count_t{ 0 };
       }
     }
     else
@@ -220,8 +255,9 @@ ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_corner_neighbors(Face::
 
         if (is_at_coarser_level)
         {
-          // TODO
-          return neighbor_count_t{ 1 };
+          const auto child_id = orchard_key_t<dim>::child_id(key_cur);
+          const auto corner_id = ((face0 & 0x1) << 0) + ((face1 & 0x1) << 1) + ((face2 & 0x1) << 2);
+          return (child_id == corner_id) ? neighbor_count_t{ 1 } : neighbor_count_t{ 0 };
         }
         else
         {
