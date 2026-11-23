@@ -99,7 +99,7 @@ run_test(const ParallelEnv & par_env, const ConfigMap & config_map)
       amr_mesh_info,
       brick_sizes,
       is_brick_periodic,
-      core::ComputeNumberOfNeighborsOfQuadrantType::MIRROR);
+      core::ComputeNumberOfNeighborsOfQuadrantType::APPROXIMATED);
 
     if constexpr (dim == 2)
     {

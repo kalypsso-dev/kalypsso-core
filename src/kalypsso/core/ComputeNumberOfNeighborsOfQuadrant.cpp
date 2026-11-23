@@ -26,48 +26,22 @@ ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_neighbors(
   ComputeNumberOfNeighborsOfQuadrantType type) -> neighbor_count_view_t
 {
 
-  const auto num_quadrants = [&]() -> size_t {
-    if (type == +ComputeNumberOfNeighborsOfQuadrantType::OWNED_AND_GHOST)
-    {
-      // make sure orchard_keys and conformal_status_view has the right size
-      KOKKOS_ASSERT(orchard_keys.extent(0) ==
-                      static_cast<size_t>(
-                        (amr_mesh_info.local_num_quadrants() + amr_mesh_info.local_num_ghosts())) &&
-                    "orchard keys has wrong size");
+  const auto num_quadrants = orchard_keys.extent(0);
+  KOKKOS_ASSERT(orchard_keys.extent(0) <=
+                  static_cast<size_t>((amr_mesh_info.local_num_quadrants())) &&
+                "orchard keys has wrong size (should smaller that the number of owned quadrants)");
 
-      return static_cast<size_t>(amr_mesh_info.local_num_quadrants() +
-                                 amr_mesh_info.local_num_ghosts());
-    }
-    else if (type == +ComputeNumberOfNeighborsOfQuadrantType::MIRROR)
-    {
-      // make sure orchard_keys and conformal_status_view has the right size
-      KOKKOS_ASSERT(orchard_keys.extent(0) ==
-                      static_cast<size_t>((amr_mesh_info.local_num_mirrors())) &&
-                    "orchard keys has wrong size");
-
-      return static_cast<size_t>(amr_mesh_info.local_num_mirrors());
-    }
-    KALYPSSO_ERROR("Unknown value for ComputeNumberOfNeighborsOfQuadrantType.");
-    return static_cast<size_t>(0);
-  }();
-
-  const auto data_name = [&]() {
-    if (type == +ComputeNumberOfNeighborsOfQuadrantType::OWNED_AND_GHOST)
-    {
-      return std::string("neighbor count view in owned and ghost");
-    }
-    else if (type == +ComputeNumberOfNeighborsOfQuadrantType::MIRROR)
-    {
-      return std::string("neighbor count view in mirror");
-    }
-    KALYPSSO_ERROR("Unknown value for ComputeNumberOfNeighborsOfQuadrantType.");
-    return std::string("");
-  }();
+  const auto data_name = std::string("neighbor count view");
 
   auto neighbor_count_view = neighbor_count_view_t(data_name, num_quadrants);
 
-  ComputeNumberOfNeighborsOfQuadrant<dim, device_t> functor(
-    amr_hashmap, orchard_keys, amr_mesh_info, brick_sizes, is_brick_periodic, neighbor_count_view);
+  ComputeNumberOfNeighborsOfQuadrant<dim, device_t> functor(amr_hashmap,
+                                                            orchard_keys,
+                                                            amr_mesh_info,
+                                                            brick_sizes,
+                                                            is_brick_periodic,
+                                                            neighbor_count_view,
+                                                            type);
 
   Kokkos::parallel_for("kalypsso::core::ComputeNumberOfNeighborsOfQuadrant",
                        Kokkos::RangePolicy<exec_space>(0, num_quadrants),
@@ -170,7 +144,15 @@ ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_edge_neighbors(Face::fa
 
     if (is_at_coarser_level)
     {
-      return neighbor_count_t{ 1 };
+      if (m_count_type == +ComputeNumberOfNeighborsOfQuadrantType::APPROXIMATED)
+      {
+        return neighbor_count_t{ 1 };
+      }
+      else if (m_count_type == +ComputeNumberOfNeighborsOfQuadrantType::EXACT)
+      {
+        // TODO
+        return neighbor_count_t{ 1 };
+      }
     }
     else
     {
@@ -204,53 +186,60 @@ ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_corner_neighbors(Face::
 {
   if constexpr (dim == 3)
   {
-    // const auto dir = core::get_direction<dim>(face0, face1, face2);
+    if (m_count_type == +ComputeNumberOfNeighborsOfQuadrantType::APPROXIMATED)
+    {
+      return neighbor_count_t{ 1 };
+    }
+    else if (m_count_type == +ComputeNumberOfNeighborsOfQuadrantType::EXACT)
+    {
 
-    // // get neighbor key at same level
-    // const auto key_neigh_same_level = orchard_key_t<dim>::get_neighbor_key_same_level(
-    //   key_cur, dir, m_brick_sizes, m_is_brick_periodic);
+      const auto dir = core::get_direction<dim>(face0, face1, face2);
 
-    // // check if neighbor key exists in hash map
-    // auto key_neigh_hashindex = m_amr_hashmap_device.find(key_neigh_same_level);
+      // get neighbor key at same level
+      const auto key_neigh_same_level = orchard_key_t<dim>::get_neighbor_key_same_level(
+        key_cur, dir, m_brick_sizes, m_is_brick_periodic);
 
-    // const auto is_at_same_level = m_amr_hashmap_device.valid_at(key_neigh_hashindex);
+      // check if neighbor key exists in hash map
+      auto key_neigh_hashindex = m_amr_hashmap_device.find(key_neigh_same_level);
 
-    // // if key is valid, it means neighbor is actually at the same level
-    // if (is_at_same_level)
-    // {
-    //   return neighbor_count_t{ 1 };
-    // }
-    // else
-    // {
-    //   // check if father exist (coarser level)
-    //   const auto key_neigh_coarser = orchard_key_t<dim>::father(key_neigh_same_level);
+      const auto is_at_same_level = m_amr_hashmap_device.valid_at(key_neigh_hashindex);
 
-    //   key_neigh_hashindex = m_amr_hashmap_device.find(key_neigh_coarser);
+      // if key is valid, it means neighbor is actually at the same level
+      if (is_at_same_level)
+      {
+        return neighbor_count_t{ 1 };
+      }
+      else
+      {
+        // check if father exist (coarser level)
+        const auto key_neigh_coarser = orchard_key_t<dim>::father(key_neigh_same_level);
 
-    //   const auto is_at_coarser_level = m_amr_hashmap_device.valid_at(key_neigh_hashindex);
+        key_neigh_hashindex = m_amr_hashmap_device.find(key_neigh_coarser);
 
-    //   if (is_at_coarser_level)
-    //   {
-    //     return neighbor_count_t{ 1 };
-    //   }
-    //   else
-    //   {
-    //     // test if a neighbor at finer scale exists
-    //     const auto child_id =
-    //       orchard_key_t<dim>::get_corner_neighbor_smallest_child_id(face0, face1, face2);
-    //     const auto key_neigh_finer = orchard_key_t<dim>::child(key_neigh_same_level, child_id);
+        const auto is_at_coarser_level = m_amr_hashmap_device.valid_at(key_neigh_hashindex);
 
-    //     key_neigh_hashindex = m_amr_hashmap_device.find(key_neigh_finer);
-    //     const auto is_at_finer_level = m_amr_hashmap_device.valid_at(key_neigh_hashindex);
+        if (is_at_coarser_level)
+        {
+          // TODO
+          return neighbor_count_t{ 1 };
+        }
+        else
+        {
+          // test if a neighbor at finer scale exists
+          const auto child_id =
+            orchard_key_t<dim>::get_corner_neighbor_smallest_child_id(face0, face1, face2);
+          const auto key_neigh_finer = orchard_key_t<dim>::child(key_neigh_same_level, child_id);
 
-    //     if (is_at_finer_level)
-    //     {
-    //       return neighbor_count_t{ 1 };
-    //     }
-    //   }
-    // }
+          key_neigh_hashindex = m_amr_hashmap_device.find(key_neigh_finer);
+          const auto is_at_finer_level = m_amr_hashmap_device.valid_at(key_neigh_hashindex);
 
-    return neighbor_count_t{ 1 };
+          if (is_at_finer_level)
+          {
+            return neighbor_count_t{ 1 };
+          }
+        }
+      }
+    }
 
   } // end if dim==3
 

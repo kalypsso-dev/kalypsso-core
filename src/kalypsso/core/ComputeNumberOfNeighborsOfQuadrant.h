@@ -34,23 +34,23 @@ namespace core
 {
 // clang-format off
 /**
- * An enum type to tell on which quadrant we apply the functor.
+ * An enum type to tell if the exact or approximated number of neighbors should be computed.
  */
 BETTER_ENUM(ComputeNumberOfNeighborsOfQuadrantType, uint8_t,
-            OWNED_AND_GHOST = 0,
-            MIRROR = 1)
+            APPROXIMATED = 0,
+            EXACT = 1)
 // clang-format on
 
 
 /**
  * \class ComputeNumberOfNeighborsOfQuadrant
  *
- * This functor computer an over-estimation of the number of neighbors of a quadrant.
- * - If the neighbors are either finer or at the same AMR level, the estimation is exact.
- * - It at least one neighbor across a face in 2d or across or edge in 3d is at coarser AMR level,
- * this number is over-estimated.
+ * This functor computer the number of neighbors of a quadrant using two variants:
+ * - compute the exact number of neighbors
+ * - compute a slightly over-estimate number of neighbor (the coarse neighbor maybe counted x2 in 2d
+ * or 4x in 3d)
  *
- * This estimation is enough to do memory allocation for a neighbor connectivity table.
+ * The purpose is to do memory allocation for a neighbor connectivity table.
  */
 template <size_t dim, typename device_t>
 class ComputeNumberOfNeighborsOfQuadrant
@@ -95,6 +95,9 @@ private:
   //! neighbor count array
   neighbor_count_view_t m_neighbor_count_view;
 
+  //! How to count number of neighbor (approximate value or exact value)
+  ComputeNumberOfNeighborsOfQuadrantType m_count_type;
+
 public:
   /**
    * Constructor.
@@ -108,19 +111,22 @@ public:
    * \param[in] is_brick_periodic array of boolean value indicating if the p4est
    *            brick connectivity is periodic in the given dimension
    * \param[out] neighbor_count_view
+   * \param[in] type determines which count method is used (approximate or exact)
    */
-  ComputeNumberOfNeighborsOfQuadrant(amr_hashmap_t            amr_hashmap,
-                                     orchard_key_view_t       orchard_keys,
-                                     AMRMeshInfo              amr_mesh_info,
-                                     brick_size_t<dim>        brick_sizes,
-                                     Kokkos::Array<bool, dim> is_brick_periodic,
-                                     neighbor_count_view_t    neighbor_count_view)
+  ComputeNumberOfNeighborsOfQuadrant(amr_hashmap_t                          amr_hashmap,
+                                     orchard_key_view_t                     orchard_keys,
+                                     AMRMeshInfo                            amr_mesh_info,
+                                     brick_size_t<dim>                      brick_sizes,
+                                     Kokkos::Array<bool, dim>               is_brick_periodic,
+                                     neighbor_count_view_t                  neighbor_count_view,
+                                     ComputeNumberOfNeighborsOfQuadrantType type)
     : m_amr_hashmap_device(amr_hashmap)
     , m_orchard_keys_device(orchard_keys)
     , m_amr_mesh_info(amr_mesh_info)
     , m_brick_sizes(brick_sizes)
     , m_is_brick_periodic(is_brick_periodic)
     , m_neighbor_count_view(neighbor_count_view)
+    , m_count_type(type)
   {}
 
   // ==============================================================
