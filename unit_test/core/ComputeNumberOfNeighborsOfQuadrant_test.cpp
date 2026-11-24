@@ -142,7 +142,7 @@ run_test(const ParallelEnv & par_env, const ConfigMap & config_map)
 
 // ====================================================================
 // ====================================================================
-TEST(kalypsso_shared, compute_number_of_neighbors_of_quadrant)
+TEST(kalypsso_core, compute_number_of_neighbors_of_quadrant)
 {
 
   // initialize mpi, kokkos and p4est, use default MPI communicator : MPI_COMM_WORLD
