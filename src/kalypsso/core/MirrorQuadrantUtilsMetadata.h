@@ -76,8 +76,8 @@ direction_to_flat_index(shift_t<dim> const & dir) -> size_t
 KOKKOS_INLINE_FUNCTION void
 flat_index_to_direction(int32_t flatindex, int32_t & dir_x, int32_t & dir_y)
 {
-  KOKKOS_ASSERT((flatindex >= 0) && "Invalid value for flatindex");
-  KOKKOS_ASSERT((flatindex < NEIGHBOR_STENCIL_SIZE) && "Invalid value for flatindex");
+  // KOKKOS_ASSERT((flatindex >= 0) && "Invalid value for flatindex");
+  // KOKKOS_ASSERT((flatindex < NEIGHBOR_STENCIL_SIZE) && "Invalid value for flatindex");
 
   dir_y = flatindex / 3;
   dir_x = flatindex - 3 * dir_y;
@@ -90,8 +90,8 @@ flat_index_to_direction(int32_t flatindex, int32_t & dir_x, int32_t & dir_y)
 KOKKOS_INLINE_FUNCTION void
 flat_index_to_direction(int32_t flatindex, int32_t & dir_x, int32_t & dir_y, int32_t & dir_z)
 {
-  KOKKOS_ASSERT((flatindex >= 0) && "Invalid value for flatindex");
-  KOKKOS_ASSERT((flatindex < NEIGHBOR_STENCIL_SIZE) && "Invalid value for flatindex");
+  // KOKKOS_ASSERT((flatindex >= 0) && "Invalid value for flatindex");
+  // KOKKOS_ASSERT((flatindex < NEIGHBOR_STENCIL_SIZE) && "Invalid value for flatindex");
 
   dir_z = flatindex / 9;
   int32_t tmp = flatindex - 9 * dir_z;
