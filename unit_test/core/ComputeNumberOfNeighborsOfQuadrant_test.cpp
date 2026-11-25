@@ -94,20 +94,40 @@ run_test(const ParallelEnv & par_env, const ConfigMap & config_map)
 
   {
     auto neighbor_counts = core::ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_neighbors(
+      par_env,
       amr_hashmap_device,
       orchard_keys_mirror,
       amr_mesh_info,
       brick_sizes,
       is_brick_periodic,
-      core::ComputeNumberOfNeighborsOfQuadrantType::APPROXIMATED);
+      core::ComputeNumberOfNeighborsOfQuadrantType::EXACT);
 
     if constexpr (dim == 2)
     {
       if (par_env.rank() == 0)
       {
-        // for (int mirror_id = 0; mirror_id < orchard_keys_mirror.size(); ++mirror_id)
+        // // for (int mirror_id = 0; mirror_id < orchard_keys_mirror.size(); ++mirror_id)
+        // {
+        //   size_t mirror_id = 15;
+        //   auto   mirror_key = orchard_keys_mirror(mirror_id);
+        //   size_t global_index = 0;
+        //   for (size_t ig = 0; ig < orchard_keys_device.size(); ++ig)
+        //   {
+        //     if (orchard_keys_device(ig) == mirror_key)
+        //     {
+        //       global_index = ig;
+        //       break;
+        //     }
+        //   }
+        //   KALYPSSO_INFO_ALL("global_index={} mirror_id = {} number of neighbors={}",
+        //                     global_index,
+        //                     mirror_id,
+        //                     neighbor_counts(mirror_id));
+        //   EXPECT_EQ(neighbor_counts(mirror_id), 10);
+        // }
+
+        for (size_t mirror_id = 0; mirror_id < orchard_keys_mirror.size(); ++mirror_id)
         {
-          size_t mirror_id = 15;
           auto   mirror_key = orchard_keys_mirror(mirror_id);
           size_t global_index = 0;
           for (size_t ig = 0; ig < orchard_keys_device.size(); ++ig)
@@ -118,11 +138,12 @@ run_test(const ParallelEnv & par_env, const ConfigMap & config_map)
               break;
             }
           }
-          printf("global_index=%ld mirror_id = %ld number of neighbors=%d\n",
-                 global_index,
-                 mirror_id,
-                 neighbor_counts(mirror_id));
-          EXPECT_EQ(neighbor_counts(mirror_id), 10);
+          KALYPSSO_INFO_ALL(
+            "global_index={} mirror_id = {} number of neighbors = {} - mirror_size: {}",
+            global_index,
+            mirror_id,
+            neighbor_counts(mirror_id),
+            orchard_keys_mirror.size());
         }
       }
     } // dim ==2

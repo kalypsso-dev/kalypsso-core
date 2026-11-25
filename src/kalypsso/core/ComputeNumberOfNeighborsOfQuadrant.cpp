@@ -18,6 +18,7 @@ namespace core
 template <size_t dim, typename device_t>
 auto
 ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_neighbors(
+  ParallelEnv const &                    par_env,
   amr_hashmap_t                          amr_hashmap,
   orchard_key_view_t                     orchard_keys,
   AMRMeshInfo                            amr_mesh_info,
@@ -35,7 +36,8 @@ ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_neighbors(
 
   auto neighbor_count_view = neighbor_count_view_t(data_name, num_quadrants);
 
-  ComputeNumberOfNeighborsOfQuadrant<dim, device_t> functor(amr_hashmap,
+  ComputeNumberOfNeighborsOfQuadrant<dim, device_t> functor(par_env,
+                                                            amr_hashmap,
                                                             orchard_keys,
                                                             amr_mesh_info,
                                                             brick_sizes,
@@ -286,6 +288,55 @@ ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_corner_neighbors(Face::
 // ====================================================================
 // ====================================================================
 template <size_t dim, typename device_t>
+KOKKOS_INLINE_FUNCTION auto
+ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_sector_neighbors(uint8_t sector,
+                                                                          key_t   key_cur) const
+  -> neighbor_count_t
+{
+
+  if constexpr (dim == 2)
+  {
+    // odd sector contain face neighbors
+    if (is_face_sector_2d(sector))
+    {
+      const auto face = get_face_id_2d(sector);
+      return count_face_neighbors(face, key_cur);
+    }
+    else if (is_corner_sector_2d(sector))
+    {
+      uint8_t face0, face1;
+      get_corner_ids_2d(sector, face0, face1);
+      return count_edge_neighbors(face0, face1, key_cur);
+    }
+    return 0;
+  }
+  else if constexpr (dim == 3)
+  {
+    if (is_face_sector_3d(sector))
+    {
+      const auto face = get_face_id_3d(sector);
+      return count_face_neighbors(face, key_cur);
+    }
+    else if (is_edge_sector_3d(sector))
+    {
+      uint8_t face0, face1;
+      get_edge_ids_3d(sector, face0, face1);
+      return count_edge_neighbors(face0, face1, key_cur);
+    }
+    else if (is_corner_sector_3d(sector))
+    {
+      uint8_t face0, face1, face2;
+      get_corner_ids_3d(sector, face0, face1, face2);
+      return count_corner_neighbors(face0, face1, face2, key_cur);
+    }
+    return 0;
+  }
+
+} // ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_sector_neighbors
+
+// ====================================================================
+// ====================================================================
+template <size_t dim, typename device_t>
 KOKKOS_INLINE_FUNCTION void
 ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::operator()(const index_t & iOct) const
 {
@@ -294,47 +345,35 @@ ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::operator()(const index_t & iO
   auto key_cur = m_orchard_keys_device(iOct);
 
   neighbor_count_t count = 0;
+  auto             local_offsets = local_offsets_t{}; // empty brace is zero initialization
 
-  //
-  // set face status
-  //
-  for (Face::face_t face = 0; face < Face::num_faces<dim>(); ++face)
+  // compute number of neighbors, sector by sector (from lower left to upper right sector)
+
+  const uint8_t num_sectors = (dim == 2) ? 9 : 27;
+
+  NeighborLocalOffsets<dim>::encode_local_offset(local_offsets, 0, count);
+  for (uint8_t sector = 0; sector < num_sectors; ++sector)
   {
-    count += count_face_neighbors(face, key_cur);
-  } // end for face
-
-  //
-  // set edge status
-  //
-  count += count_edge_neighbors(Face::XMIN, Face::YMIN, key_cur);
-  count += count_edge_neighbors(Face::XMAX, Face::YMIN, key_cur);
-  count += count_edge_neighbors(Face::XMIN, Face::YMAX, key_cur);
-  count += count_edge_neighbors(Face::XMAX, Face::YMAX, key_cur);
-
-  if constexpr (dim == 3)
-  {
-    count += count_edge_neighbors(Face::YMIN, Face::ZMIN, key_cur);
-    count += count_edge_neighbors(Face::YMAX, Face::ZMIN, key_cur);
-    count += count_edge_neighbors(Face::YMIN, Face::ZMAX, key_cur);
-    count += count_edge_neighbors(Face::YMAX, Face::ZMAX, key_cur);
-
-    count += count_edge_neighbors(Face::XMIN, Face::ZMIN, key_cur);
-    count += count_edge_neighbors(Face::XMAX, Face::ZMIN, key_cur);
-    count += count_edge_neighbors(Face::XMIN, Face::ZMAX, key_cur);
-    count += count_edge_neighbors(Face::XMAX, Face::ZMAX, key_cur);
+    count += count_sector_neighbors(sector, key_cur);
+    NeighborLocalOffsets<dim>::encode_local_offset(local_offsets, sector + 1, count);
   }
 
-  if constexpr (dim == 3)
-  {
-    count += count_corner_neighbors(Face::XMIN, Face::YMIN, Face::ZMIN, key_cur);
-    count += count_corner_neighbors(Face::XMAX, Face::YMIN, Face::ZMIN, key_cur);
-    count += count_corner_neighbors(Face::XMIN, Face::YMAX, Face::ZMIN, key_cur);
-    count += count_corner_neighbors(Face::XMAX, Face::YMAX, Face::ZMIN, key_cur);
-    count += count_corner_neighbors(Face::XMIN, Face::YMIN, Face::ZMAX, key_cur);
-    count += count_corner_neighbors(Face::XMAX, Face::YMIN, Face::ZMAX, key_cur);
-    count += count_corner_neighbors(Face::XMIN, Face::YMAX, Face::ZMAX, key_cur);
-    count += count_corner_neighbors(Face::XMAX, Face::YMAX, Face::ZMAX, key_cur);
-  }
+  // // clang-format off
+  // KOKKOS_IF_ON_HOST(
+  //   if ((m_par_env.rank() == 0 and (iOct >= 63 and iOct<67)) or
+  //       (m_par_env.rank() == 1 and iOct == 440)) {
+  //     for (uint8_t sector = 0; sector < num_sectors; ++sector)
+  //     {
+  //       KALYPSSO_INFO_ALL("mpi rank : {} iOct : {} sector: {} count : {} - mirror_size {}",
+  //                         m_par_env.rank(),
+  //                         iOct,
+  //                         sector,
+  //                         NeighborLocalOffsets<dim>::decode_local_offset(local_offsets, sector +
+  //                         1) - NeighborLocalOffsets<dim>::decode_local_offset(local_offsets,
+  //                         sector), m_orchard_keys_device.size());
+  //     }
+  //   })
+  // // clang-format on
 
   // status is up to date, just write it now
   m_neighbor_count_view(iOct) = count;

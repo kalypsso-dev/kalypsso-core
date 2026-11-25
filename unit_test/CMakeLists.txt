@@ -111,7 +111,9 @@ configure_file(StencilHelper_3d.ini StencilHelper_3d.ini COPYONLY)
 
 kalypsso_add_test(MirrorQuadrantUtilsMetadata_test TEST_USE_MPI_OFF core/MirrorQuadrantUtilsMetadata_test.cpp main.cpp)
 
-kalypsso_add_test(NeighborCount_test TEST_USE_MPI_OFF core/NeighborCount_test.cpp main.cpp)
+kalypsso_add_test(NeighborLocalOffsets_test TEST_USE_MPI_OFF core/NeighborLocalOffsets_test.cpp main.cpp)
+
+kalypsso_add_test(utils_sector_test TEST_USE_MPI_OFF core/utils_sector_test.cpp main.cpp)
 
 kalypsso_add_test(ComputeNumberOfNeighborsOfQuadrant_test TEST_USE_MPI_OFF core/ComputeNumberOfNeighborsOfQuadrant_test.cpp main.cpp)
 
