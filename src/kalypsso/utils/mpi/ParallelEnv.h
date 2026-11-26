@@ -39,6 +39,46 @@ namespace kalypsso
 void
 set_p4est_log_priority_from_env();
 
+// forward declaration
+class ParallelEnv;
+
+/**
+ * \class ParallelEnvDevice
+ *
+ * A simplified version of ParallelEnv to have access to MPI rank and size on device (i.e. inside a
+ * parallel for loop)
+ */
+class ParallelEnvDevice
+{
+public:
+  ParallelEnvDevice(int rank_, int size_)
+    : m_rank(rank_)
+    , m_size(size_)
+  {}
+
+  ParallelEnvDevice(ParallelEnv const & par_env);
+
+  ~ParallelEnvDevice() = default;
+
+  KOKKOS_INLINE_FUNCTION
+  auto
+  rank() const
+  {
+    return m_rank;
+  }
+
+  KOKKOS_INLINE_FUNCTION
+  auto
+  size() const
+  {
+    return m_size;
+  }
+
+private:
+  int m_rank;
+  int m_size;
+};
+
 /**
  * \class ParallelEnv
  * Should initialize MPI, Kokkos and p4est.
@@ -128,6 +168,9 @@ public:
   //! \return boolean to indicated if MPI is enabled
   static bool
   MPI_enabled();
+
+  //! return a ParallelEnvDevice
+  auto inline to_dev() { return ParallelEnvDevice(this->rank(), this->size()); }
 
 private:
   //! print Kokkos configuration (backend enabled, etc...)
