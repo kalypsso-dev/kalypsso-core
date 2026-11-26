@@ -115,7 +115,7 @@ kalypsso_add_test(NeighborLocalOffsets_test TEST_USE_MPI_OFF core/NeighborLocalO
 
 kalypsso_add_test(utils_sector_test TEST_USE_MPI_OFF core/utils_sector_test.cpp main.cpp)
 
-kalypsso_add_test(ComputeNumberOfNeighborsOfQuadrant_test TEST_USE_MPI_OFF core/ComputeNumberOfNeighborsOfQuadrant_test.cpp main.cpp)
+kalypsso_add_test(NeighborConnectivity_test TEST_USE_MPI_OFF core/NeighborConnectivity_test.cpp main.cpp)
 
 kalypsso_add_test(Box_test TEST_USE_MPI_OFF core/Box_test.cpp main.cpp)
 

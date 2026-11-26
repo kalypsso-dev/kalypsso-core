@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 /**
- * \file ComputeNumberOfNeighborsOfQuadrant_test.cpp
+ * \file NeighborConnectivity_test.cpp
  *
- * unit test for class ComputeNumberOfNeighborsOfQuadrant.
+ * unit test for class NeighborConnectivity.
  */
 
 #include <kalypsso/core/kalypsso_core_config.h>
@@ -17,7 +17,7 @@
 #include <kalypsso/utils/log/kalypsso_log.h>
 #include <kalypsso/core/real_type.h>
 
-#include <kalypsso/core/ComputeNumberOfNeighborsOfQuadrant.h>
+#include <kalypsso/core/NeighborConnectivity.h>
 
 #include <test_common/InitialAMRSetup.h>
 #include <test_common/DataWriter.h>
@@ -93,14 +93,17 @@ run_test(const ParallelEnv & par_env, const ConfigMap & config_map)
   }
 
   {
-    auto neighbor_counts = core::ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_neighbors(
-      par_env,
-      amr_hashmap_device,
-      orchard_keys_mirror,
-      amr_mesh_info,
-      brick_sizes,
-      is_brick_periodic,
-      core::ComputeNumberOfNeighborsOfQuadrantType::EXACT);
+    auto neighbor_connectivity =
+      core::NeighborConnectivity<dim, device_t>(par_env,
+                                                amr_hashmap_device,
+                                                orchard_keys_mirror,
+                                                brick_sizes,
+                                                is_brick_periodic,
+                                                core::NeighborConnectivityType::EXACT);
+
+    auto neighbor_counts = neighbor_connectivity.neighbor_count();
+
+    core::NeighborConnectivity<dim, device_t>::refresh_neighbor_count(neighbor_connectivity);
 
     if constexpr (dim == 2)
     {

@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 /**
- * \file ComputeNumberOfNeighborsOfQuadrant.h
+ * \file NeighborConnectivity.h
  *
  * Kokkos functor which computes the number of neighbor quadrants of each quadrants (either
  * owned+ghost or only mirror quadrants).
  */
-#ifndef KALYPSSO_CORE_COMPUTENUMBEROFNEIGHBORSOFQUADRANT_H_
-#define KALYPSSO_CORE_COMPUTENUMBEROFNEIGHBORSOFQUADRANT_H_
+#ifndef KALYPSSO_CORE_NEIGHBORCONNECTIVITY_H_
+#define KALYPSSO_CORE_NEIGHBORCONNECTIVITY_H_
 
 #include <kalypsso/core/kalypsso_core_config.h>
 #include <kalypsso/core/kokkos_shared.h>
@@ -39,7 +39,7 @@ namespace core
 /**
  * An enum type to tell if the exact or approximated number of neighbors should be computed.
  */
-BETTER_ENUM(ComputeNumberOfNeighborsOfQuadrantType, uint8_t,
+BETTER_ENUM(NeighborConnectivityType, uint8_t,
             APPROXIMATED = 0,
             EXACT = 1)
 // clang-format on
@@ -48,7 +48,7 @@ BETTER_ENUM(ComputeNumberOfNeighborsOfQuadrantType, uint8_t,
 // ====================================================================================
 // ====================================================================================
 /**
- * \class ComputeNumberOfNeighborsOfQuadrant
+ * \class NeighborConnectivity
  *
  * This functor computer the number of neighbors of a quadrant using two variants:
  * - compute the exact number of neighbors
@@ -69,7 +69,7 @@ BETTER_ENUM(ComputeNumberOfNeighborsOfQuadrantType, uint8_t,
  * connectivity table.
  */
 template <size_t dim, typename device_t>
-class ComputeNumberOfNeighborsOfQuadrant
+class NeighborConnectivity
 {
 public:
   using exec_space = typename device_t::execution_space;
@@ -115,9 +115,6 @@ private:
   //! list of orchard key of the mesh
   orchard_key_view_t m_orchard_keys_device;
 
-  //! AMR mesh info (number of owned, MPI ghost, outside quadrants)
-  AMRMeshInfo m_amr_mesh_info;
-
   //! p4est brick connectivity sizes
   const brick_size_t<dim> m_brick_sizes;
 
@@ -131,7 +128,7 @@ private:
   //! Array of encoded local offsets (same size as neighbor count view).
   //! Local offsets are defined as accumulated number of neighbors in all preceding sectors.
   //! Sectors are defined in NeighborLocalOffsets
-  local_offsets_view_t m_local_offset_view;
+  local_offsets_view_t m_local_offsets_view;
 
   //! Array of global offsets (same size as neighbor count view + 1).
   //! Global offsets are offsets into the list of neighbors, one offset for each quadrant
@@ -139,7 +136,7 @@ private:
   global_offsets_view_t m_global_offset_view;
 
   //! How to count number of neighbor (approximate value or exact value)
-  ComputeNumberOfNeighborsOfQuadrantType m_count_type;
+  NeighborConnectivityType m_count_type;
 
 public:
   /**
@@ -148,45 +145,68 @@ public:
    * \param[in] amr_hashmap unordered map from orchard key to memory index for owned and ghost
    *            quadrants
    * \param[in] orchard_keys array of orchard key ordered by Morton order
-   * \param[in] amr_mesh_info (number of owned, MPI ghosts and outside quadrants)
    * \param[in] brick_sizes is an array of p4est brick connectivity sizes (number of trees in
    *            each dimension)
    * \param[in] is_brick_periodic array of boolean value indicating if the p4est
    *            brick connectivity is periodic in the given dimension
-   * \param[out] neighbor_count_view
    * \param[in] type determines which count method is used (approximate or exact)
    */
-  ComputeNumberOfNeighborsOfQuadrant(ParallelEnv const &                    par_env,
-                                     amr_hashmap_t                          amr_hashmap,
-                                     orchard_key_view_t                     orchard_keys,
-                                     AMRMeshInfo                            amr_mesh_info,
-                                     brick_size_t<dim>                      brick_sizes,
-                                     Kokkos::Array<bool, dim>               is_brick_periodic,
-                                     neighbor_count_view_t                  neighbor_count_view,
-                                     ComputeNumberOfNeighborsOfQuadrantType type)
+  NeighborConnectivity(ParallelEnv const &        par_env,
+                       amr_hashmap_t const &      amr_hashmap,
+                       orchard_key_view_t const & orchard_keys,
+                       brick_size_t<dim>          brick_sizes,
+                       Kokkos::Array<bool, dim>   is_brick_periodic,
+                       NeighborConnectivityType   type)
     : m_par_env(par_env)
     , m_amr_hashmap_device(amr_hashmap)
     , m_orchard_keys_device(orchard_keys)
-    , m_amr_mesh_info(amr_mesh_info)
     , m_brick_sizes(brick_sizes)
     , m_is_brick_periodic(is_brick_periodic)
-    , m_neighbor_count_view(neighbor_count_view)
-    , m_local_offset_view("local offsets view", m_neighbor_count_view.size())
+    , m_neighbor_count_view("neighbor count view", orchard_keys.extent(0))
+    , m_local_offsets_view("local offsets view", orchard_keys.extent(0))
     , m_count_type(type)
   {}
 
   // ==============================================================
   // ==============================================================
-  //! Count number of neighbors.
-  static auto
-  count_neighbors(ParallelEnv const &                    par_env,
-                  amr_hashmap_t                          amr_hashmap,
-                  orchard_key_view_t                     orchard_keys,
-                  AMRMeshInfo                            amr_mesh_info,
-                  brick_size_t<dim>                      brick_sizes,
-                  Kokkos::Array<bool, dim>               is_brick_periodic,
-                  ComputeNumberOfNeighborsOfQuadrantType type) -> neighbor_count_view_t;
+  //! Refresh neighbor connectivity
+  static void
+  refresh_neighbor_count(NeighborConnectivity & neighbor_connectivity);
 
+  // =========================================================================
+  // =========================================================================
+  size_t
+  num_quadrants()
+  {
+    return m_orchard_keys_device.extent(0);
+  }
+
+  // =========================================================================
+  // =========================================================================
+  auto
+  neighbor_count()
+  {
+    return m_neighbor_count_view;
+  }
+
+  // =========================================================================
+  // =========================================================================
+  auto
+  neighbor_count() const
+  {
+    return m_neighbor_count_view;
+  }
+
+  // =========================================================================
+  // =========================================================================
+  void
+  resize()
+  {
+    m_neighbor_count_view.resize(m_orchard_keys_device.size());
+    m_local_offsets_view.resize(m_orchard_keys_device.size());
+  }
+
+private:
   // ==============================================================
   // ==============================================================
   KOKKOS_INLINE_FUNCTION auto
@@ -236,6 +256,7 @@ public:
   KOKKOS_INLINE_FUNCTION auto
   count_sector_neighbors(uint8_t sector, key_t key_cur) const -> neighbor_count_t;
 
+public:
   // ==============================================================
   // ==============================================================
   /**
@@ -244,14 +265,14 @@ public:
   KOKKOS_INLINE_FUNCTION void
   operator()(const index_t & iOct) const;
 
-}; // class ComputeNumberOfNeighborsOfQuadrant
+}; // class NeighborConnectivity
 
 // explicit template instantiation
-extern template class ComputeNumberOfNeighborsOfQuadrant<2, kalypsso::DefaultDevice>;
-extern template class ComputeNumberOfNeighborsOfQuadrant<3, kalypsso::DefaultDevice>;
+extern template class NeighborConnectivity<2, kalypsso::DefaultDevice>;
+extern template class NeighborConnectivity<3, kalypsso::DefaultDevice>;
 
 } // namespace core
 
 } // namespace kalypsso
 
-#endif // KALYPSSO_CORE_COMPUTENUMBEROFNEIGHBORSOFQUADRANT_H_
+#endif // KALYPSSO_CORE_NEIGHBORCONNECTIVITY_H_

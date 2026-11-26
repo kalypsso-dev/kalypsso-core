@@ -57,8 +57,6 @@ add_library(
   ComputeGhostedScalarField.h
   ComputeInterfaceNormalVector.cpp
   ComputeInterfaceNormalVector.h
-  ComputeNumberOfNeighborsOfQuadrant.cpp
-  ComputeNumberOfNeighborsOfQuadrant.h
   ComputeRefineFlags.h
   ComputeRefineFlags.cpp
   ComputeRefineFlagsMM.h
@@ -170,6 +168,8 @@ add_library(
   MultiMatFillBlockGhostCells.h
   myKokkos_Sort.h
   NeighborCellsAcrossFace.h
+  NeighborConnectivity.cpp
+  NeighborConnectivity.h
   orchard_key_base.h
   orchard_key.h
   orchard_key_impl_2d.h

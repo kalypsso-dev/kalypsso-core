@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 /**
- * \file ComputeNumberOfNeighborsOfQuadrant.cpp
+ * \file NeighborConnectivity.cpp
  */
-#include <kalypsso/core/ComputeNumberOfNeighborsOfQuadrant.h>
+#include <kalypsso/core/NeighborConnectivity.h>
 
 namespace kalypsso
 {
@@ -16,49 +16,24 @@ namespace core
 // ====================================================================
 // ====================================================================
 template <size_t dim, typename device_t>
-auto
-ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_neighbors(
-  ParallelEnv const &                    par_env,
-  amr_hashmap_t                          amr_hashmap,
-  orchard_key_view_t                     orchard_keys,
-  AMRMeshInfo                            amr_mesh_info,
-  brick_size_t<dim>                      brick_sizes,
-  Kokkos::Array<bool, dim>               is_brick_periodic,
-  ComputeNumberOfNeighborsOfQuadrantType type) -> neighbor_count_view_t
+void
+NeighborConnectivity<dim, device_t>::refresh_neighbor_count(
+  NeighborConnectivity & neighbor_connectivity)
 {
 
-  const auto num_quadrants = orchard_keys.extent(0);
-  KOKKOS_ASSERT(orchard_keys.extent(0) <=
-                  static_cast<size_t>((amr_mesh_info.local_num_quadrants())) &&
-                "orchard keys has wrong size (should smaller that the number of owned quadrants)");
+  neighbor_connectivity.resize();
 
-  const auto data_name = std::string("neighbor count view");
+  Kokkos::parallel_for("kalypsso::core::NeighborConnectivity::refresh_neighbor_connectivity",
+                       Kokkos::RangePolicy<exec_space>(0, neighbor_connectivity.num_quadrants()),
+                       neighbor_connectivity);
 
-  auto neighbor_count_view = neighbor_count_view_t(data_name, num_quadrants);
-
-  ComputeNumberOfNeighborsOfQuadrant<dim, device_t> functor(par_env,
-                                                            amr_hashmap,
-                                                            orchard_keys,
-                                                            amr_mesh_info,
-                                                            brick_sizes,
-                                                            is_brick_periodic,
-                                                            neighbor_count_view,
-                                                            type);
-
-  Kokkos::parallel_for("kalypsso::core::ComputeNumberOfNeighborsOfQuadrant",
-                       Kokkos::RangePolicy<exec_space>(0, num_quadrants),
-                       functor);
-
-  return neighbor_count_view;
-
-} // ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_neighbors
+} // NeighborConnectivity<dim, device_t>::count_neighbors
 
 // ====================================================================
 // ====================================================================
 template <size_t dim, typename device_t>
 KOKKOS_INLINE_FUNCTION auto
-ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_face_neighbors(Face::face_t face,
-                                                                        key_t        key_cur) const
+NeighborConnectivity<dim, device_t>::count_face_neighbors(Face::face_t face, key_t key_cur) const
   -> neighbor_count_t
 {
   const auto dir = core::get_direction<dim>(face);
@@ -108,16 +83,15 @@ ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_face_neighbors(Face::fa
 
   return neighbor_count_t{ 0 };
 
-} // ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_face_neighbors
+} // NeighborConnectivity<dim, device_t>::count_face_neighbors
 
 // ====================================================================
 // ====================================================================
 template <size_t dim, typename device_t>
 KOKKOS_INLINE_FUNCTION auto
-ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_edge_neighbors(Face::face_t face0,
-                                                                        Face::face_t face1,
-                                                                        key_t        key_cur) const
-  -> neighbor_count_t
+NeighborConnectivity<dim, device_t>::count_edge_neighbors(Face::face_t face0,
+                                                          Face::face_t face1,
+                                                          key_t key_cur) const -> neighbor_count_t
 {
   const auto dir = core::get_direction<dim>(face0, face1);
 
@@ -146,11 +120,11 @@ ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_edge_neighbors(Face::fa
 
     if (is_at_coarser_level)
     {
-      if (m_count_type == +ComputeNumberOfNeighborsOfQuadrantType::APPROXIMATED)
+      if (m_count_type == +NeighborConnectivityType::APPROXIMATED)
       {
         return neighbor_count_t{ 1 };
       }
-      else if (m_count_type == +ComputeNumberOfNeighborsOfQuadrantType::EXACT)
+      else if (m_count_type == +NeighborConnectivityType::EXACT)
       {
         const auto child_id = orchard_key_t<dim>::child_id(key_cur);
         if constexpr (dim == 2)
@@ -209,25 +183,24 @@ ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_edge_neighbors(Face::fa
 
   return neighbor_count_t{ 0 };
 
-} // ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_edge_neighbors
+} // NeighborConnectivity<dim, device_t>::count_edge_neighbors
 
 // ====================================================================
 // ====================================================================
 template <size_t dim, typename device_t>
 KOKKOS_INLINE_FUNCTION auto
-ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_corner_neighbors(Face::face_t face0,
-                                                                          Face::face_t face1,
-                                                                          Face::face_t face2,
-                                                                          key_t key_cur) const
-  -> neighbor_count_t
+NeighborConnectivity<dim, device_t>::count_corner_neighbors(Face::face_t face0,
+                                                            Face::face_t face1,
+                                                            Face::face_t face2,
+                                                            key_t key_cur) const -> neighbor_count_t
 {
   if constexpr (dim == 3)
   {
-    if (m_count_type == +ComputeNumberOfNeighborsOfQuadrantType::APPROXIMATED)
+    if (m_count_type == +NeighborConnectivityType::APPROXIMATED)
     {
       return neighbor_count_t{ 1 };
     }
-    else if (m_count_type == +ComputeNumberOfNeighborsOfQuadrantType::EXACT)
+    else if (m_count_type == +NeighborConnectivityType::EXACT)
     {
 
       const auto dir = core::get_direction<dim>(face0, face1, face2);
@@ -283,14 +256,13 @@ ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_corner_neighbors(Face::
 
   return neighbor_count_t{ 0 };
 
-} // ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_corner_neighbors
+} // NeighborConnectivity<dim, device_t>::count_corner_neighbors
 
 // ====================================================================
 // ====================================================================
 template <size_t dim, typename device_t>
 KOKKOS_INLINE_FUNCTION auto
-ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_sector_neighbors(uint8_t sector,
-                                                                          key_t   key_cur) const
+NeighborConnectivity<dim, device_t>::count_sector_neighbors(uint8_t sector, key_t key_cur) const
   -> neighbor_count_t
 {
 
@@ -332,13 +304,13 @@ ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_sector_neighbors(uint8_
     return 0;
   }
 
-} // ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::count_sector_neighbors
+} // NeighborConnectivity<dim, device_t>::count_sector_neighbors
 
 // ====================================================================
 // ====================================================================
 template <size_t dim, typename device_t>
 KOKKOS_INLINE_FUNCTION void
-ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::operator()(const index_t & iOct) const
+NeighborConnectivity<dim, device_t>::operator()(const index_t & iOct) const
 {
 
   // get orchard key of current octant
@@ -375,14 +347,15 @@ ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::operator()(const index_t & iO
   //   })
   // // clang-format on
 
-  // status is up to date, just write it now
+  // write count and local offsets
   m_neighbor_count_view(iOct) = count;
+  m_local_offsets_view(iOct) = local_offsets;
 
-} // ComputeNumberOfNeighborsOfQuadrant<dim, device_t>::operator()
+} // NeighborConnectivity<dim, device_t>::operator()
 
 // explicit template instantiation
-template class ComputeNumberOfNeighborsOfQuadrant<2, kalypsso::DefaultDevice>;
-template class ComputeNumberOfNeighborsOfQuadrant<3, kalypsso::DefaultDevice>;
+template class NeighborConnectivity<2, kalypsso::DefaultDevice>;
+template class NeighborConnectivity<3, kalypsso::DefaultDevice>;
 
 } // namespace core
 
