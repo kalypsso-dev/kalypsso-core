@@ -17,7 +17,7 @@
 
 #include <kalypsso/core/orchard_key_base.h>
 #include <kalypsso/core/orchard_key.h>
-#include <kalypsso/core/amr_hashmap.h>
+#include <kalypsso/core/MeshMap.h>
 #include <kalypsso/core/AMRMeshInfo.h>
 #include <kalypsso/core/mesh_utils.h> // for definition of Face::XMIN, etc...
 #include <kalypsso/core/utils_direction.h>
@@ -158,19 +158,18 @@ public:
    *            brick connectivity is periodic in the given dimension
    * \param[in] type determines which count method is used
    */
-  NeighborConnectivity(ParallelEnv const &        par_env,
-                       amr_hashmap_t const &      amr_hashmap,
-                       orchard_key_view_t const & orchard_keys,
-                       brick_size_t<dim>          brick_sizes,
-                       Kokkos::Array<bool, dim>   is_brick_periodic)
+  NeighborConnectivity(ParallelEnv const &      par_env,
+                       MeshMap<dim, device_t> & mesh_map,
+                       brick_size_t<dim>        brick_sizes,
+                       Kokkos::Array<bool, dim> is_brick_periodic)
     : m_par_env(par_env)
-    , m_amr_hashmap_device(amr_hashmap)
-    , m_orchard_keys_device(orchard_keys)
+    , m_amr_hashmap_device(mesh_map.hashmap())
+    , m_orchard_keys_device("orchard keys", 0)
     , m_brick_sizes(brick_sizes)
     , m_is_brick_periodic(is_brick_periodic)
-    , m_neighbor_count_view("neighbor count view", orchard_keys.extent(0))
-    , m_local_offsets_view("local offsets view", orchard_keys.extent(0))
-    , m_global_offsets_view("global offsets view", orchard_keys.extent(0) + 1)
+    , m_neighbor_count_view("neighbor count view", m_orchard_keys_device.extent(0))
+    , m_local_offsets_view("local offsets view", m_orchard_keys_device.extent(0))
+    , m_global_offsets_view("global offsets view", m_orchard_keys_device.extent(0) + 1)
     , m_neighbor_octant_ids_view("neighbor octant ids view", 0)
   {}
 
@@ -178,7 +177,8 @@ public:
   // ==============================================================
   //! Refresh neighbor connectivity
   static void
-  refresh_neighbor_count(NeighborConnectivity & neighbor_connectivity);
+  refresh_neighbor_count(NeighborConnectivity & neighbor_connectivity,
+                         orchard_key_view_t     orchard_keys_device);
 
   // =========================================================================
   // =========================================================================
@@ -239,11 +239,12 @@ public:
   // =========================================================================
   // =========================================================================
   void
-  resize()
+  set_keys_and_resize(orchard_key_view_t orchard_keys_device)
   {
-    m_neighbor_count_view.resize(m_orchard_keys_device.size());
-    m_local_offsets_view.resize(m_orchard_keys_device.size());
-    m_global_offsets_view.resize(m_orchard_keys_device.size() + 1);
+    m_orchard_keys_device = orchard_keys_device;
+    m_neighbor_count_view.resize(m_orchard_keys_device.extent(0));
+    m_local_offsets_view.resize(m_orchard_keys_device.extent(0));
+    m_global_offsets_view.resize(m_orchard_keys_device.extent(0) + 1);
   }
 
   // =========================================================================

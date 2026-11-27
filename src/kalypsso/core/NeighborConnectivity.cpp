@@ -18,10 +18,11 @@ namespace core
 template <size_t dim, typename device_t>
 void
 NeighborConnectivity<dim, device_t>::refresh_neighbor_count(
-  NeighborConnectivity & neighbor_connectivity)
+  NeighborConnectivity & neighbor_connectivity,
+  orchard_key_view_t     orchard_keys_device)
 {
 
-  neighbor_connectivity.resize();
+  neighbor_connectivity.set_keys_and_resize(orchard_keys_device);
 
   Kokkos::parallel_for(
     "kalypsso::core::NeighborConnectivity::TagCountNeighbors",

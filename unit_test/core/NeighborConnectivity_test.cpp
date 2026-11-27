@@ -93,12 +93,14 @@ run_test(const ParallelEnv & par_env, const ConfigMap & config_map)
   }
 
   {
-    auto neighbor_connectivity = core::NeighborConnectivity<dim, device_t>(
-      par_env, amr_hashmap_device, orchard_keys_mirror, brick_sizes, is_brick_periodic);
+    auto neighbor_connectivity =
+      core::NeighborConnectivity<dim, device_t>(par_env, *mesh_map, brick_sizes, is_brick_periodic);
+
+    core::NeighborConnectivity<dim, device_t>::refresh_neighbor_count(neighbor_connectivity,
+                                                                      orchard_keys_mirror);
 
     auto neighbor_counts = neighbor_connectivity.neighbor_count();
 
-    core::NeighborConnectivity<dim, device_t>::refresh_neighbor_count(neighbor_connectivity);
 
     auto global_offsets = neighbor_connectivity.global_offsets();
     auto neighbor_octants_ids = neighbor_connectivity.neighbor_octants_ids();
