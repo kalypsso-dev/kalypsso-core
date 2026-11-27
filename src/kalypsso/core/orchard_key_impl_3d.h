@@ -844,6 +844,21 @@ struct orchard_key_t<3> : public BitFieldInteger<key_t>
 
   } // get_face_neighbor_smallest_child_id
 
+  //! return array of child ids of direct neighbors across a face
+  KOKKOS_INLINE_FUNCTION
+  static Kokkos::Array<uint8_t, 4>
+  get_face_neighbor_child_ids(Face::face_t face)
+  {
+    auto child_id = get_face_neighbor_smallest_child_id(face);
+    if (Face::is_face_along<IX>(face))
+      return Kokkos::Array<uint8_t, 4>{ child_id, child_id + 2, child_id + 4, child_id + 6 };
+    else if (Face::is_face_along<IY>(face))
+      return Kokkos::Array<uint8_t, 4>{ child_id, child_id + 1, child_id + 4, child_id + 5 };
+    else if (Face::is_face_along<IZ>(face))
+      return Kokkos::Array<uint8_t, 4>{ child_id, child_id + 1, child_id + 2, child_id + 3 };
+    return Kokkos::Array<uint8_t, 4>{};
+  }
+
   /**
    *
    * For a given edge/corner (identified by intersection of two faces),
@@ -896,6 +911,27 @@ struct orchard_key_t<3> : public BitFieldInteger<key_t>
     }
 
   } // get_edge_neighbor_smallest_child_id
+
+  //! return array of child ids of direct neighbors across an edge
+  KOKKOS_INLINE_FUNCTION
+  static Kokkos::Array<uint8_t, 2>
+  get_edge_neighbor_child_ids(Face::face_t face0, Face::face_t face1)
+  {
+    auto child_id = get_edge_neighbor_smallest_child_id(face0, face1);
+
+    if (Face::is_face_along<IX>(face0) and Face::is_face_along<IY>(face1))
+      return Kokkos::Array<uint8_t, 2>{ child_id, child_id + 4 }; // edge along Z
+    else if (Face::is_face_along<IX>(face0) and Face::is_face_along<IZ>(face1))
+      return Kokkos::Array<uint8_t, 2>{ child_id, child_id + 2 }; // edge along Y
+    else if (Face::is_face_along<IY>(face0) and Face::is_face_along<IZ>(face1))
+      return Kokkos::Array<uint8_t, 2>{ child_id, child_id + 1 }; // edge along X
+    else
+    {
+      // we should not be here
+      KOKKOS_ASSERT(false && "Wrong input to get_edge_neighbor_child_ids");
+    }
+    return Kokkos::Array<uint8_t, 2>{};
+  }
 
   KOKKOS_INLINE_FUNCTION
   static uint8_t

@@ -86,6 +86,19 @@ struct Face
     return Kokkos::Array<face_t, 2>{ Face::XMIN, Face::XMAX };
   }
 
+  template <int dir>
+  KOKKOS_INLINE_FUNCTION static constexpr bool
+  is_face_along(face_t face)
+  {
+    if constexpr (dir == IX)
+      return face == Face::XMIN or Face::XMAX;
+    else if constexpr (dir == IY)
+      return face == Face::YMIN or Face::YMAX;
+    else if constexpr (dir == IZ)
+      return face == Face::ZMIN or Face::ZMAX;
+    return false;
+  }
+
 }; // struct Face
 
 // =======================================================================

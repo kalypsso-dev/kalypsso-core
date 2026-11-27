@@ -35,14 +35,6 @@ namespace kalypsso
 
 namespace core
 {
-// clang-format off
-/**
- * An enum type to tell if the exact or approximated number of neighbors should be computed.
- */
-BETTER_ENUM(NeighborConnectivityType, uint8_t,
-            APPROXIMATED = 0,
-            EXACT = 1)
-// clang-format on
 
 // ====================================================================================
 // ====================================================================================
@@ -109,6 +101,14 @@ public:
    */
   using neighbor_octant_ids_view_t = DataArray<iOct_t, device_t>;
 
+  //! Tag class used in operator() for computing the number of neighbors of each quadrant
+  struct TagCountNeighbors
+  {};
+
+  //! Tag class used in operator() for filling the connectivity table
+  struct TagFillNeighbors
+  {};
+
 private:
   //! parallel environment
   ParallelEnvDevice m_par_env;
@@ -145,9 +145,6 @@ private:
   //! via an exclusive scan as need also need global offsets)
   neighbor_octant_ids_view_t m_neighbor_octant_ids_view;
 
-  //! How to count number of neighbor (approximate value or exact value)
-  NeighborConnectivityType m_count_type;
-
 public:
   /**
    * Constructor.
@@ -159,14 +156,13 @@ public:
    *            each dimension)
    * \param[in] is_brick_periodic array of boolean value indicating if the p4est
    *            brick connectivity is periodic in the given dimension
-   * \param[in] type determines which count method is used (approximate or exact)
+   * \param[in] type determines which count method is used
    */
   NeighborConnectivity(ParallelEnv const &        par_env,
                        amr_hashmap_t const &      amr_hashmap,
                        orchard_key_view_t const & orchard_keys,
                        brick_size_t<dim>          brick_sizes,
-                       Kokkos::Array<bool, dim>   is_brick_periodic,
-                       NeighborConnectivityType   type)
+                       Kokkos::Array<bool, dim>   is_brick_periodic)
     : m_par_env(par_env)
     , m_amr_hashmap_device(amr_hashmap)
     , m_orchard_keys_device(orchard_keys)
@@ -176,7 +172,6 @@ public:
     , m_local_offsets_view("local offsets view", orchard_keys.extent(0))
     , m_global_offsets_view("global offsets view", orchard_keys.extent(0) + 1)
     , m_neighbor_octant_ids_view("neighbor octant ids view", 0)
-    , m_count_type(type)
   {}
 
   // ==============================================================
@@ -223,6 +218,22 @@ public:
   global_offsets() const
   {
     return m_global_offsets_view;
+  }
+
+  // =========================================================================
+  // =========================================================================
+  auto
+  neighbor_octants_ids()
+  {
+    return m_neighbor_octant_ids_view;
+  }
+
+  // =========================================================================
+  // =========================================================================
+  auto
+  neighbor_octants_ids() const
+  {
+    return m_neighbor_octant_ids_view;
   }
 
   // =========================================================================
@@ -311,14 +322,55 @@ private:
   KOKKOS_INLINE_FUNCTION auto
   count_sector_neighbors(uint8_t sector, key_t key_cur) const -> neighbor_count_t;
 
+  // ==============================================================
+  // ==============================================================
+  KOKKOS_INLINE_FUNCTION void
+  fill_face_neighbors(Face::face_t     face,
+                      global_offsets_t global_offset,
+                      uint8_t          local_offset,
+                      key_t            key_cur) const;
+
+  // ==============================================================
+  // ==============================================================
+  KOKKOS_INLINE_FUNCTION
+  void
+  fill_edge_neighbors(Face::face_t     face0,
+                      Face::face_t     face1,
+                      global_offsets_t global_offset,
+                      uint8_t          local_offset,
+                      key_t            key_cur) const;
+
+  // ==============================================================
+  // ==============================================================
+  KOKKOS_INLINE_FUNCTION void
+  fill_corner_neighbors(Face::face_t     face0,
+                        Face::face_t     face1,
+                        Face::face_t     face2,
+                        global_offsets_t global_offset,
+                        uint8_t          local_offset,
+                        key_t            key_cur) const;
+
+  // ==============================================================
+  // ==============================================================
+  KOKKOS_INLINE_FUNCTION void
+  fill_sector_neighbors(uint8_t sector, key_t key_cur, index_t iOct) const;
+
 public:
   // ==============================================================
   // ==============================================================
   /**
-   * range policy functor
+   * Compute the number of neighbors of each quadrant.
    */
   KOKKOS_INLINE_FUNCTION void
-  operator()(const index_t & iOct) const;
+  operator()(TagCountNeighbors const &, const index_t & iOct) const;
+
+  // ==============================================================
+  // ==============================================================
+  /**
+   * fill the connectivity table.
+   */
+  KOKKOS_INLINE_FUNCTION void
+  operator()(TagFillNeighbors const &, const index_t & iOct) const;
 
 }; // class NeighborConnectivity
 

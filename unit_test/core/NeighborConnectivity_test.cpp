@@ -93,17 +93,15 @@ run_test(const ParallelEnv & par_env, const ConfigMap & config_map)
   }
 
   {
-    auto neighbor_connectivity =
-      core::NeighborConnectivity<dim, device_t>(par_env,
-                                                amr_hashmap_device,
-                                                orchard_keys_mirror,
-                                                brick_sizes,
-                                                is_brick_periodic,
-                                                core::NeighborConnectivityType::EXACT);
+    auto neighbor_connectivity = core::NeighborConnectivity<dim, device_t>(
+      par_env, amr_hashmap_device, orchard_keys_mirror, brick_sizes, is_brick_periodic);
 
     auto neighbor_counts = neighbor_connectivity.neighbor_count();
 
     core::NeighborConnectivity<dim, device_t>::refresh_neighbor_count(neighbor_connectivity);
+
+    auto global_offsets = neighbor_connectivity.global_offsets();
+    auto neighbor_octants_ids = neighbor_connectivity.neighbor_octants_ids();
 
     if constexpr (dim == 2)
     {
@@ -147,6 +145,23 @@ run_test(const ParallelEnv & par_env, const ConfigMap & config_map)
             mirror_id,
             neighbor_counts(mirror_id),
             orchard_keys_mirror.size());
+
+          KOKKOS_IF_ON_HOST(if ((par_env.rank() == 0 and (mirror_id >= 63 and mirror_id < 67)) or
+                                (par_env.rank() == 1 and mirror_id == 440)) {
+            const auto num_neighbors = neighbor_counts(mirror_id);
+            for (uint8_t ineigh = 0; ineigh < num_neighbors; ++ineigh)
+            {
+              const auto global_offset = global_offsets(mirror_id);
+              KALYPSSO_INFO_ALL(
+                "mpi rank={} global_index={} iOct={} count={} ineigh={} neighhor_id={}",
+                par_env.rank(),
+                global_index,
+                mirror_id,
+                num_neighbors,
+                ineigh,
+                neighbor_octants_ids(global_offset + ineigh));
+            }
+          })
         }
       }
     } // dim ==2
