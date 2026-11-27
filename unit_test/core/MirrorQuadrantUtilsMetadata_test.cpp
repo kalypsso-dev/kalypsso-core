@@ -103,21 +103,22 @@ run_test(const ParallelEnv & par_env, const ConfigMap & config_map)
       const uint32_t iOct = 1284;
       for (int mirror_id = 0; mirror_id < orchard_keys_mirror.size(); ++mirror_id)
       {
-        auto global_index = mirror_quadrant_utils_metadata.mirror_neighbor_index(mirror_id, 0, 0);
-        // if (global_index == iOct)
-        {
-          for (int j = -1; j < 2; ++j)
-            for (int i = -1; i < 2; ++i)
-              printf("mirror_id = %d global_id=%ld mirror_rank=%d dir=%d,%d neighbor_index=%ld "
-                     "active=%d\n",
-                     mirror_id,
-                     mirror_quadrant_utils_metadata.mirror_neighbor_index(mirror_id, 0, 0),
-                     mirror_quadrant_utils_metadata.mirror_quadrant_mpi_ranks()(mirror_id),
-                     i,
-                     j,
-                     mirror_quadrant_utils_metadata.mirror_neighbor_index(mirror_id, i, j),
-                     mirror_quadrant_utils_metadata.active_neigbor(mirror_id, i, j));
-        }
+        // auto global_index = mirror_quadrant_utils_metadata.mirror_neighbor_index(mirror_id, 0,
+        // 0);
+        //  if (global_index == iOct)
+        //  {
+        //    for (int j = -1; j < 2; ++j)
+        //      for (int i = -1; i < 2; ++i)
+        //        printf("mirror_id = %d global_id=%ld mirror_rank=%d dir=%d,%d neighbor_index=%ld "
+        //               "active=%d\n",
+        //               mirror_id,
+        //               mirror_quadrant_utils_metadata.mirror_neighbor_index(mirror_id, 0, 0),
+        //               mirror_quadrant_utils_metadata.mirror_quadrant_mpi_ranks()(mirror_id),
+        //               i,
+        //               j,
+        //               mirror_quadrant_utils_metadata.mirror_neighbor_index(mirror_id, i, j),
+        //               mirror_quadrant_utils_metadata.active_neigbor(mirror_id, i, j));
+        //  }
       }
     }
   } // dim ==2

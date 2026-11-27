@@ -123,7 +123,7 @@ flat_index_to_direction(int32_t flatindex) -> shift_t<dim>
   return dir;
 }
 
-} // namespace details
+} // namespace utils
 
 // ====================================================================
 // ====================================================================
@@ -144,18 +144,13 @@ public:
   //! our kokkos execution space
   using exec_space = typename device_t::execution_space;
 
-  //! Stencil size.
-  //! In 2d, stencil is 3x3, in 3d it is 3x3x3
-  constexpr static size_t NEIGHBOR_STENCIL_SIZE = dim == 2 ? 9 : 27;
-
 private:
   //! parallel environment
   const ParallelEnv & m_par_env;
 
-  //! array of global index (from 0 to local_num_quadrants_total) containing
-  //! NEIGHBOR_STENCIL_SIZE values per mirror quadrants.
-  //! So this array must be of size local_num_mirrors*NEIGHBOR_STENCIL_SIZE
-  DataArray<iOct_t, device_t> m_mirror_index_to_neighbor_global_index;
+  //! array of index mapping mirror_id (in range 0 to num_mirrors-1) into global index (from 0 to
+  //! local_num_quadrants)
+  DataArray<iOct_t, device_t> m_mirror_global_indexes;
 
   //! array with same layout as m_mirror_index_to_neighbor_global_index
   //! indicating which neighbor are actually ghost, which data can be send to
@@ -181,6 +176,11 @@ private:
   void
   update_mirror_mpi_ranks(AMRmesh<dim> & amr_mesh);
 
+  //! After AMR cycle, mesh changed, i.e. mirrors changed, so here we update
+  //! the array of associated global indexes
+  void
+  update_mirror_global_indexes(MeshMap<dim, device_t> & mesh_map, AMRmesh<dim> & amr_mesh);
+
 public:
   // ====================================================================
   // ====================================================================
@@ -188,7 +188,7 @@ public:
   //!
   MirrorQuadrantUtilsMetadata(ParallelEnv const & par_env)
     : m_par_env(par_env)
-    , m_mirror_index_to_neighbor_global_index("mirror_index_to_neighbor_global_index", 0)
+    , m_mirror_global_indexes("mirror_global_indexes", 0)
     , m_active_neighbors("active_neighbor", 0)
     , m_ghost_quadrant_mpi_ranks("ghost_quadrant_mpi_ranks", 0)
     , m_mirror_quadrant_mpi_ranks("mirror_quadrant_mpi_ranks", 0)
@@ -214,9 +214,9 @@ public:
   // ====================================================================
   // ====================================================================
   DataArray<iOct_t, device_t> const &
-  mirror_index_to_neighbor_global_index()
+  mirror_global_indexes()
   {
-    return m_mirror_index_to_neighbor_global_index;
+    return m_mirror_global_indexes;
   }
 
   // ====================================================================
@@ -233,86 +233,86 @@ public:
   update(MeshMap<dim, device_t> & mesh_map, AMRmesh<dim> & amr_mesh, ConfigMap const & config_map);
 
 
-  /**
-   * \brief Return index of neighbor quadrant to a given mirror in a given direction
-   *
-   * \param[in] mirror_id
-   * \param[in] dir_x direction along X pointing to neighbor quadrant
-   * \param[in] dir_y direction along Y pointing to neighbor quadrant
-   *
-   */
-  template <size_t dim_ = dim, std::enable_if_t<(dim_ == 2), bool> = true>
-  KOKKOS_FUNCTION auto
-  mirror_neighbor_index(iOct_t mirror_id, int32_t dir_x, int32_t dir_y) const -> iOct_t
-  {
-    return m_mirror_index_to_neighbor_global_index(mirror_id * NEIGHBOR_STENCIL_SIZE +
-                                                   utils::direction_to_flat_index(dir_x, dir_y));
-  }
+  // /**
+  //  * \brief Return index of neighbor quadrant to a given mirror in a given direction
+  //  *
+  //  * \param[in] mirror_id
+  //  * \param[in] dir_x direction along X pointing to neighbor quadrant
+  //  * \param[in] dir_y direction along Y pointing to neighbor quadrant
+  //  *
+  //  */
+  // template <size_t dim_ = dim, std::enable_if_t<(dim_ == 2), bool> = true>
+  // KOKKOS_FUNCTION auto
+  // mirror_neighbor_index(iOct_t mirror_id, int32_t dir_x, int32_t dir_y) const -> iOct_t
+  // {
+  //   return m_mirror_index_to_neighbor_global_index(mirror_id * NEIGHBOR_STENCIL_SIZE +
+  //                                                  utils::direction_to_flat_index(dir_x, dir_y));
+  // }
 
-  /**
-   * \brief Return index of neighbor quadrant to a given mirror in a given direction
-   *
-   * \param[in] mirror_id
-   * \param[in] dir_x direction along X pointing to neighbor quadrant
-   * \param[in] dir_y direction along Y pointing to neighbor quadrant
-   * \param[in] dir_z direction along Z pointing to neighbor quadrant
-   *
-   */
-  template <size_t dim_ = dim, std::enable_if_t<(dim_ == 3), bool> = true>
-  KOKKOS_FUNCTION auto
-  mirror_neighbor_index(iOct_t mirror_id, int32_t dir_x, int32_t dir_y, int32_t dir_z) const
-    -> iOct_t
-  {
-    return m_mirror_index_to_neighbor_global_index(
-      mirror_id * NEIGHBOR_STENCIL_SIZE + utils::direction_to_flat_index(dir_x, dir_y, dir_z));
-  }
+  // /**
+  //  * \brief Return index of neighbor quadrant to a given mirror in a given direction
+  //  *
+  //  * \param[in] mirror_id
+  //  * \param[in] dir_x direction along X pointing to neighbor quadrant
+  //  * \param[in] dir_y direction along Y pointing to neighbor quadrant
+  //  * \param[in] dir_z direction along Z pointing to neighbor quadrant
+  //  *
+  //  */
+  // template <size_t dim_ = dim, std::enable_if_t<(dim_ == 3), bool> = true>
+  // KOKKOS_FUNCTION auto
+  // mirror_neighbor_index(iOct_t mirror_id, int32_t dir_x, int32_t dir_y, int32_t dir_z) const
+  //   -> iOct_t
+  // {
+  //   return m_mirror_index_to_neighbor_global_index(
+  //     mirror_id * NEIGHBOR_STENCIL_SIZE + utils::direction_to_flat_index(dir_x, dir_y, dir_z));
+  // }
 
-  /**
-   * \brief Return index of neighbor quadrant to a given mirror in a given direction
-   *
-   * \param[in] mirror_id
-   * \param[in] dir direction pointing to neighbor quadrant
-   *
-   */
-  KOKKOS_FUNCTION auto
-  mirror_neighbor_index(iOct_t mirror_id, shift_t<dim> const & dir) const -> iOct_t
-  {
-    return m_mirror_index_to_neighbor_global_index(mirror_id * NEIGHBOR_STENCIL_SIZE +
-                                                   utils::direction_to_flat_index(dir));
-  }
+  // /**
+  //  * \brief Return index of neighbor quadrant to a given mirror in a given direction
+  //  *
+  //  * \param[in] mirror_id
+  //  * \param[in] dir direction pointing to neighbor quadrant
+  //  *
+  //  */
+  // KOKKOS_FUNCTION auto
+  // mirror_neighbor_index(iOct_t mirror_id, shift_t<dim> const & dir) const -> iOct_t
+  // {
+  //   return m_mirror_index_to_neighbor_global_index(mirror_id * NEIGHBOR_STENCIL_SIZE +
+  //                                                  utils::direction_to_flat_index(dir));
+  // }
 
-  /**
-   * \brief Return boolean value indicating if the neighbor octant in a given direction is active
-   * (i.e. we need to send data to).
-   *
-   * \param[in] mirror_id
-   * \param[in] dir_x direction along X pointing to neighbor quadrant
-   * \param[in] dir_y direction along Y pointing to neighbor quadrant
-   */
-  template <size_t dim_ = dim, std::enable_if_t<(dim_ == 2), bool> = true>
-  KOKKOS_FUNCTION auto
-  active_neigbor(iOct_t mirror_id, int32_t dir_x, int32_t dir_y) const -> bool
-  {
-    return m_active_neighbors(mirror_id * NEIGHBOR_STENCIL_SIZE +
-                              utils::direction_to_flat_index(dir_x, dir_y));
-  }
+  // /**
+  //  * \brief Return boolean value indicating if the neighbor octant in a given direction is active
+  //  * (i.e. we need to send data to).
+  //  *
+  //  * \param[in] mirror_id
+  //  * \param[in] dir_x direction along X pointing to neighbor quadrant
+  //  * \param[in] dir_y direction along Y pointing to neighbor quadrant
+  //  */
+  // template <size_t dim_ = dim, std::enable_if_t<(dim_ == 2), bool> = true>
+  // KOKKOS_FUNCTION auto
+  // active_neigbor(iOct_t mirror_id, int32_t dir_x, int32_t dir_y) const -> bool
+  // {
+  //   return m_active_neighbors(mirror_id * NEIGHBOR_STENCIL_SIZE +
+  //                             utils::direction_to_flat_index(dir_x, dir_y));
+  // }
 
-  /**
-   * \brief Return boolean value indicating if the neighbor octant in a given direction is active
-   * (i.e. we need to send data to).
-   *
-   * \param[in] mirror_id
-   * \param[in] dir_x direction along X pointing to neighbor quadrant
-   * \param[in] dir_y direction along Y pointing to neighbor quadrant
-   * \param[in] dir_z direction along Z pointing to neighbor quadrant
-   */
-  template <size_t dim_ = dim, std::enable_if_t<(dim_ == 3), bool> = true>
-  KOKKOS_FUNCTION auto
-  active_neighbor(iOct_t mirror_id, int32_t dir_x, int32_t dir_y, int32_t dir_z) const -> bool
-  {
-    return m_active_neighbors(mirror_id * NEIGHBOR_STENCIL_SIZE +
-                              utils::direction_to_flat_index(dir_x, dir_y, dir_z));
-  }
+  // /**
+  //  * \brief Return boolean value indicating if the neighbor octant in a given direction is active
+  //  * (i.e. we need to send data to).
+  //  *
+  //  * \param[in] mirror_id
+  //  * \param[in] dir_x direction along X pointing to neighbor quadrant
+  //  * \param[in] dir_y direction along Y pointing to neighbor quadrant
+  //  * \param[in] dir_z direction along Z pointing to neighbor quadrant
+  //  */
+  // template <size_t dim_ = dim, std::enable_if_t<(dim_ == 3), bool> = true>
+  // KOKKOS_FUNCTION auto
+  // active_neighbor(iOct_t mirror_id, int32_t dir_x, int32_t dir_y, int32_t dir_z) const -> bool
+  // {
+  //   return m_active_neighbors(mirror_id * NEIGHBOR_STENCIL_SIZE +
+  //                             utils::direction_to_flat_index(dir_x, dir_y, dir_z));
+  // }
 
   /**
    * \brief Return boolean value indicating if the neighbor octant in a given direction is active
