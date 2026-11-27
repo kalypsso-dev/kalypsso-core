@@ -27,9 +27,9 @@ MirrorBitMaskArray<dim, device_t>::update_mask(
 {
   const auto num_mirrors = mesh_map.get_amr_mesh_info().local_num_mirrors();
 
-  auto config = m_mirror_bit_mask_configs_host(mask_id);
+  const auto config = m_mirror_bit_mask_configs_host(mask_id);
 
-  auto mask_array = get_mirror_bit_mask(mask_id);
+  const auto mask_array = get_mirror_bit_mask(mask_id);
 
   const auto mirror_keys = mesh_map.mirror_orchard_keys();
   const auto keys = mesh_map.orchard_keys();
