@@ -82,7 +82,7 @@ MeshGhostsExchanger<dim, T, device_t>::pack_mirror_data(DataArrayLeaf_t    userd
 
   auto amr_hashmap = m_mesh_map.hashmap();
 
-  // traverse the list of mirror keys, and for each key try to find it in the old hashmap
+  // traverse the list of mirror keys, and for each key try to find it in the hashmap
   Kokkos::parallel_for(
     "pack_mirror_data - leaf",
     Kokkos::RangePolicy<exec_space>(0, local_num_mirrors),
@@ -146,7 +146,7 @@ MeshGhostsExchanger<dim, T, device_t>::pack_mirror_data(DataArrayBlock_t   userd
   auto mir_data = DataArrayBlockUnmanaged_t(m_send.data(), bSizes, num_vars, num_mirror_quad);
 
   {
-    // traverse the list of mirror keys, and for each key try to find it in the old hashmap
+    // traverse the list of mirror keys, and for each key try to find it in the hashmap
     Kokkos::parallel_for(
       "pack_mirror_data - block - cell center data",
       Kokkos::RangePolicy<exec_space>(0, num_mirror_quad * num_cells),
@@ -209,7 +209,7 @@ MeshGhostsExchanger<dim, T, device_t>::pack_mirror_data(FaceDataArrayBlock_t fac
   auto userdata = face_userdata.logical_view();
 
   {
-    // traverse the list of mirror keys, and for each key try to find it in the old hashmap
+    // traverse the list of mirror keys, and for each key try to find it in the hashmap
     Kokkos::parallel_for(
       "pack_mirror_data - block - face center data",
       Kokkos::RangePolicy<exec_space>(0, num_mirror_quad * num_elts_per_octant),
