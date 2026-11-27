@@ -20,6 +20,7 @@ namespace core
 template <size_t dim, typename device_t>
 void
 MirrorBitMaskArray<dim, device_t>::update_mask(
+  Lock,
   MeshMap<dim, device_t> &                           mesh_map,
   MirrorQuadrantUtilsMetadata<dim, device_t> const & mirror_quad_metadata,
   size_t                                             mask_id)
@@ -42,7 +43,7 @@ MirrorBitMaskArray<dim, device_t>::update_mask(
     Kokkos::parallel_for(
       "MirrorBitMaskArray<dim, device_t>::update_mask",
       Kokkos::RangePolicy<exec_space>(0, num_iterations),
-      KOKKOS_CLASS_LAMBDA(const size_t index) {
+      KOKKOS_LAMBDA(const size_t index) {
         uint8_t res = 0;
 
         // index = i_byte + num_bytes_per_mirror * i_mirror
@@ -213,7 +214,7 @@ MirrorBitMaskArray<dim, device_t>::update_all_masks(
   // 3. recompute mask pattern
   for (size_t i_mask = 0; i_mask > m_num_mirror_bit_mask; ++i_mask)
   {
-    update_mask(mesh_map, mirror_quad_metadata, i_mask);
+    update_mask(Lock{}, mesh_map, mirror_quad_metadata, i_mask);
   }
 
 } // MirrorBitMaskArray<dim, device_t>::update_all_masks

@@ -184,21 +184,6 @@ private:
   DataArray<MirrorBitMaskConfig<dim>, kalypsso::HostDevice> m_mirror_bit_mask_configs_host;
 
   /**
-   * Recompute a mirror bit mask (after AMR cycle, the list of mirror octant changed)
-   *
-   * This member is intended to be called inside update_all_masks, which is responsible for resizing
-   * storage.
-   *
-   * \param[in] mesh_map to get access to orchard keys (as kokkos view) and amr_mesh_info
-   * \param[in] mirror_quad_metadata mirror quad neighborhood connectivity information
-   * \param[in] mirror_bit_mask_id identifies the bit mask array to update
-   */
-  void
-  update_mask(MeshMap<dim, device_t> &                           mesh_map,
-              MirrorQuadrantUtilsMetadata<dim, device_t> const & mirror_quad_metadata,
-              size_t                                             mirror_bit_mask_id);
-
-  /**
    * Reset configuration and memory.
    *
    * Here we do multiple things:
@@ -208,6 +193,12 @@ private:
    */
   void
   reset(size_t num_mirrors);
+
+  //! This struct is only defined as way to protect some public API to be called inadvertedly
+  struct Lock
+  {
+    explicit Lock() = default;
+  };
 
 public:
   //! constructor
@@ -246,6 +237,22 @@ public:
   size_t
   register_mirror_bit_mask(block_size_t<dim> const &      block_sizes,
                            MirrorBitMaskArrayType const & mirror_bit_mask_type);
+
+  /**
+   * Recompute a mirror bit mask (after AMR cycle, the list of mirror octant changed)
+   *
+   * This member is intended to be called inside update_all_masks, which is responsible for resizing
+   * storage. It should be a private member of this class, but nvcc compiler need to ha
+   *
+   * \param[in] mesh_map to get access to orchard keys (as kokkos view) and amr_mesh_info
+   * \param[in] mirror_quad_metadata mirror quad neighborhood connectivity information
+   * \param[in] mirror_bit_mask_id identifies the bit mask array to update
+   */
+  void
+  update_mask(Lock,
+              MeshMap<dim, device_t> &                           mesh_map,
+              MirrorQuadrantUtilsMetadata<dim, device_t> const & mirror_quad_metadata,
+              size_t                                             mirror_bit_mask_id);
 
   /**
    * Recompute all mirror bit mask (after AMR cycle, the list of mirror octant changed)
