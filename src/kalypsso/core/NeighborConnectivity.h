@@ -104,6 +104,11 @@ public:
   using global_offsets_t = uint64_t;
   using global_offsets_view_t = DataArray<global_offsets_t, device_t>;
 
+  /**
+   * typename to store neighbor octant ids
+   */
+  using neighbor_octant_ids_view_t = DataArray<iOct_t, device_t>;
+
 private:
   //! parallel environment
   ParallelEnvDevice m_par_env;
@@ -133,7 +138,12 @@ private:
   //! Array of global offsets (same size as neighbor count view + 1).
   //! Global offsets are offsets into the list of neighbors, one offset for each quadrant
   //! (should be computed as a cumulative scan of the neighbor count view)
-  global_offsets_view_t m_global_offset_view;
+  global_offsets_view_t m_global_offsets_view;
+
+  //! Array of neighbor octant ids (this is the connectivity table)
+  //! the size of this view is compute as the sum of neighbor count view elements (actually obtained
+  //! via an exclusive scan as need also need global offsets)
+  neighbor_octant_ids_view_t m_neighbor_octant_ids_view;
 
   //! How to count number of neighbor (approximate value or exact value)
   NeighborConnectivityType m_count_type;
@@ -164,6 +174,8 @@ public:
     , m_is_brick_periodic(is_brick_periodic)
     , m_neighbor_count_view("neighbor count view", orchard_keys.extent(0))
     , m_local_offsets_view("local offsets view", orchard_keys.extent(0))
+    , m_global_offsets_view("global offsets view", orchard_keys.extent(0) + 1)
+    , m_neighbor_octant_ids_view("neighbor octant ids view", 0)
     , m_count_type(type)
   {}
 
@@ -199,12 +211,55 @@ public:
 
   // =========================================================================
   // =========================================================================
+  auto
+  global_offsets()
+  {
+    return m_global_offsets_view;
+  }
+
+  // =========================================================================
+  // =========================================================================
+  auto
+  global_offsets() const
+  {
+    return m_global_offsets_view;
+  }
+
+  // =========================================================================
+  // =========================================================================
   void
   resize()
   {
     m_neighbor_count_view.resize(m_orchard_keys_device.size());
     m_local_offsets_view.resize(m_orchard_keys_device.size());
+    m_global_offsets_view.resize(m_orchard_keys_device.size() + 1);
   }
+
+  // =========================================================================
+  // =========================================================================
+  void
+  resize_connectivity(size_t total_number_of_neighbors)
+  {
+    m_neighbor_octant_ids_view.resize(total_number_of_neighbors);
+  }
+
+  // =========================================================================
+  // =========================================================================
+  uint64_t
+  allocated_size_in_bytes()
+  {
+    uint64_t total = 0;
+    total += m_neighbor_count_view.allocated_size_in_bytes();
+    total += m_local_offsets_view.allocated_size_in_bytes();
+    total += m_global_offsets_view.allocated_size_in_bytes();
+    total += m_neighbor_octant_ids_view.allocated_size_in_bytes();
+    return total;
+  }
+
+  // =========================================================================
+  // =========================================================================
+  void
+  report(ParallelEnv const & par_env, std::string type);
 
 private:
   // ==============================================================

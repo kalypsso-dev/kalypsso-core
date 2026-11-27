@@ -27,7 +27,121 @@ NeighborConnectivity<dim, device_t>::refresh_neighbor_count(
                        Kokkos::RangePolicy<exec_space>(0, neighbor_connectivity.num_quadrants()),
                        neighbor_connectivity);
 
+  auto neighbor_count_view = neighbor_connectivity.neighbor_count();
+  auto global_offsets_view = neighbor_connectivity.global_offsets();
+
+  const auto num_quadrants = neighbor_connectivity.num_quadrants();
+
+  size_t total_number_of_neighbors = 0;
+
+  // refresh global offsets doing an exclusive scan
+  Kokkos::parallel_scan(
+    "Compute global offsets",
+    num_quadrants,
+    KOKKOS_LAMBDA(const size_t i, global_offsets_t & update, const bool final) {
+      const auto value = neighbor_count_view(i);
+      if (final)
+      {
+        global_offsets_view(i) = update;
+        // Last iteration also write the total number of neighbors
+        if (i == num_quadrants - 1)
+        {
+          global_offsets_view(num_quadrants) = update + value;
+        }
+      }
+      update += value;
+    },
+    total_number_of_neighbors);
+
+  // resize neighbor connectivity table
+  neighbor_connectivity.resize_connectivity(total_number_of_neighbors);
+
+  // fill neighbor index
+
+
 } // NeighborConnectivity<dim, device_t>::count_neighbors
+
+// ====================================================================
+// ====================================================================
+template <size_t dim, typename device_t>
+void
+NeighborConnectivity<dim, device_t>::report(ParallelEnv const & par_env, std::string type)
+{
+#ifdef KALYPSSO_CORE_USE_MPI
+  KALYPSSO_INFO("============================={:=^{}}", "=", type.size());
+  KALYPSSO_INFO("Neighbor connectivity report {}", type);
+  KALYPSSO_INFO("============================={:=^{}}", "=", type.size());
+
+  const auto num_ranks = static_cast<size_t>(par_env.size());
+
+  const auto num_quadrants = m_neighbor_count_view.size();
+  size_t     num_quadrants_min = 0;
+  size_t     num_quadrants_sum = 0;
+  size_t     num_quadrants_max = 0;
+  par_env.comm().MPI_Reduce<MpiComm::MIN>(&num_quadrants, &num_quadrants_min, 1, 0);
+  par_env.comm().MPI_Reduce<MpiComm::SUM>(&num_quadrants, &num_quadrants_sum, 1, 0);
+  par_env.comm().MPI_Reduce<MpiComm::MAX>(&num_quadrants, &num_quadrants_max, 1, 0);
+
+  KALYPSSO_INFO("{:<30} ({:^8} / {:^8} / {:^8} of {} MPI ranks)",
+                "Number of quadrants",
+                "min",
+                "mean",
+                "max",
+                num_ranks);
+  KALYPSSO_INFO("{:<30}  {:^8} / {:^8} / {:^8}",
+                "",
+                num_quadrants_min,
+                num_quadrants_sum / num_ranks,
+                num_quadrants_max)
+
+  const auto num_quadrants_neighbors = m_neighbor_octant_ids_view.size();
+  size_t     num_quadrants_neighbors_min = 0;
+  size_t     num_quadrants_neighbors_sum = 0;
+  size_t     num_quadrants_neighbors_max = 0;
+  par_env.comm().MPI_Reduce<MpiComm::MIN>(
+    &num_quadrants_neighbors, &num_quadrants_neighbors_min, 1, 0);
+  par_env.comm().MPI_Reduce<MpiComm::SUM>(
+    &num_quadrants_neighbors, &num_quadrants_neighbors_sum, 1, 0);
+  par_env.comm().MPI_Reduce<MpiComm::MAX>(
+    &num_quadrants_neighbors, &num_quadrants_neighbors_max, 1, 0);
+
+  KALYPSSO_INFO("{:<30} ({:^8} / {:^8} / {:^8} of {} MPI ranks)",
+                "Number of quadrants neighbors",
+                "min",
+                "mean",
+                "max",
+                num_ranks);
+  KALYPSSO_INFO("{:<30}  {:^8} / {:^8} / {:^8}",
+                "",
+                num_quadrants_neighbors_min,
+                num_quadrants_neighbors_sum / num_ranks,
+                num_quadrants_neighbors_max)
+
+  const auto num_neigh_per_quad = static_cast<real_t>(m_neighbor_octant_ids_view.size()) /
+                                  static_cast<real_t>(m_neighbor_count_view.size());
+  real_t num_neigh_per_quad_min = ZERO_F;
+  real_t num_neigh_per_quad_sum = ZERO_F;
+  real_t num_neigh_per_quad_max = ZERO_F;
+  par_env.comm().MPI_Reduce<MpiComm::MIN>(&num_neigh_per_quad, &num_neigh_per_quad_min, 1, 0);
+  par_env.comm().MPI_Reduce<MpiComm::SUM>(&num_neigh_per_quad, &num_neigh_per_quad_sum, 1, 0);
+  par_env.comm().MPI_Reduce<MpiComm::MAX>(&num_neigh_per_quad, &num_neigh_per_quad_max, 1, 0);
+
+  KALYPSSO_INFO("{:<30} ({:^8} / {:^8} / {:^8} of {} MPI ranks)",
+                "Number of neighbors per quad",
+                "min",
+                "mean",
+                "max",
+                num_ranks);
+  KALYPSSO_INFO("{:<30}  {:^8.2f} / {:^8.2f} / {:^8.2f}",
+                "",
+                num_neigh_per_quad_min,
+                num_neigh_per_quad_sum / static_cast<real_t>(num_ranks),
+                num_neigh_per_quad_max)
+
+  KALYPSSO_INFO("============================={:=^{}}", "=", type.size());
+
+#endif
+} // NeighborConnectivity<dim, device_t>::report
 
 // ====================================================================
 // ====================================================================

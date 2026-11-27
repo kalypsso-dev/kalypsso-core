@@ -160,6 +160,7 @@ run_test(const ParallelEnv & par_env, const ConfigMap & config_map)
         }
       }
     } // dim == 3
+    neighbor_connectivity.report(par_env, "for mirror octants");
   }
 
 } // run_test
