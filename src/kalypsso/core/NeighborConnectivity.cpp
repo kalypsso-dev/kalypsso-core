@@ -17,9 +17,8 @@ namespace core
 // ====================================================================
 template <size_t dim, typename device_t>
 void
-NeighborConnectivity<dim, device_t>::refresh_neighbor_count(
-  NeighborConnectivity & neighbor_connectivity,
-  orchard_key_view_t     orchard_keys_device)
+NeighborConnectivity<dim, device_t>::refresh(NeighborConnectivity &     neighbor_connectivity,
+                                             orchard_key_view_t const & orchard_keys_device)
 {
 
   neighbor_connectivity.set_keys_and_resize(orchard_keys_device);
@@ -64,7 +63,7 @@ NeighborConnectivity<dim, device_t>::refresh_neighbor_count(
     Kokkos::RangePolicy<exec_space, TagFillNeighbors>(0, neighbor_connectivity.num_quadrants()),
     neighbor_connectivity);
 
-} // NeighborConnectivity<dim, device_t>::count_neighbors
+} // NeighborConnectivity<dim, device_t>::refresh
 
 // ====================================================================
 // ====================================================================

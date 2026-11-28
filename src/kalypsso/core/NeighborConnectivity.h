@@ -115,9 +115,9 @@ private:
 
   //! AMR unordered map which maps orchard keys to quadrant number for all key in the mesh
   //! (owned quadrants and ghost quadrants)
-  amr_hashmap_t m_amr_hashmap_device;
+  amr_hashmap_t const & m_amr_hashmap_device;
 
-  //! list of orchard key of the mesh
+  //! list of orchard key of the mesh (will change when calling refresh)
   orchard_key_view_t m_orchard_keys_device;
 
   //! p4est brick connectivity sizes
@@ -149,19 +149,18 @@ public:
   /**
    * Constructor.
    *
+   * \param[in] par_env parallel environment
    * \param[in] amr_hashmap unordered map from orchard key to memory index for owned and ghost
    *            quadrants
-   * \param[in] orchard_keys array of orchard key ordered by Morton order
    * \param[in] brick_sizes is an array of p4est brick connectivity sizes (number of trees in
    *            each dimension)
    * \param[in] is_brick_periodic array of boolean value indicating if the p4est
    *            brick connectivity is periodic in the given dimension
-   * \param[in] type determines which count method is used
    */
-  NeighborConnectivity(ParallelEnv const &      par_env,
-                       MeshMap<dim, device_t> & mesh_map,
-                       brick_size_t<dim>        brick_sizes,
-                       Kokkos::Array<bool, dim> is_brick_periodic)
+  NeighborConnectivity(ParallelEnv const &            par_env,
+                       MeshMap<dim, device_t> const & mesh_map,
+                       brick_size_t<dim>              brick_sizes,
+                       Kokkos::Array<bool, dim>       is_brick_periodic)
     : m_par_env(par_env)
     , m_amr_hashmap_device(mesh_map.hashmap())
     , m_orchard_keys_device("orchard keys", 0)
@@ -177,8 +176,8 @@ public:
   // ==============================================================
   //! Refresh neighbor connectivity
   static void
-  refresh_neighbor_count(NeighborConnectivity & neighbor_connectivity,
-                         orchard_key_view_t     orchard_keys_device);
+  refresh(NeighborConnectivity &     neighbor_connectivity,
+          orchard_key_view_t const & orchard_keys_device);
 
   // =========================================================================
   // =========================================================================
@@ -198,7 +197,7 @@ public:
 
   // =========================================================================
   // =========================================================================
-  auto
+  auto const &
   neighbor_count() const
   {
     return m_neighbor_count_view;
@@ -214,7 +213,7 @@ public:
 
   // =========================================================================
   // =========================================================================
-  auto
+  auto const &
   global_offsets() const
   {
     return m_global_offsets_view;
@@ -230,7 +229,7 @@ public:
 
   // =========================================================================
   // =========================================================================
-  auto
+  auto const &
   neighbor_octants_ids() const
   {
     return m_neighbor_octant_ids_view;
