@@ -10,6 +10,7 @@
 #ifndef KALYPSSO_CORE_MIRRORQUADRANTUTILSMETADATA_H_
 #define KALYPSSO_CORE_MIRRORQUADRANTUTILSMETADATA_H_
 
+#include <kalypsso/core/NeighborConnectivity.h>
 #include <kalypsso/core/kalypsso_core_config.h>
 #include <kalypsso/core/kokkos_shared.h>
 #include <kalypsso/core/MeshMap.h>          // for orchard_key_view_t and amr_map_t
@@ -152,8 +153,9 @@ private:
   //! local_num_quadrants)
   DataArray<iOct_t, device_t> m_mirror_global_indexes;
 
-  //! array with same layout as m_mirror_index_to_neighbor_global_index
-  //! indicating which neighbor are actually ghost, which data can be send to
+  //! array with same layout and length as the mirror connectivity table
+  //! indicating which neighbor are actually ghost, will be used to determine if current mirror
+  //! quadrant contains data that need to be sent to another MPI process
   DataArray<bool, device_t> m_active_neighbors;
 
   //! array of mpi ranks for all ghost quadrants.
@@ -169,17 +171,18 @@ private:
   //! After AMR cycle, mesh changed, i.e. ghosts changed, so here we update
   //! the array of MPI ranks associated
   void
-  update_ghost_mpi_ranks(AMRmesh<dim> & amr_mesh);
+  update_ghost_mpi_ranks(AMRmesh<dim> const & amr_mesh);
 
   //! After AMR cycle, mesh changed, i.e. mirrors changed, so here we update
   //! the array of MPI ranks associated
   void
-  update_mirror_mpi_ranks(AMRmesh<dim> & amr_mesh);
+  update_mirror_mpi_ranks(AMRmesh<dim> const & amr_mesh);
 
   //! After AMR cycle, mesh changed, i.e. mirrors changed, so here we update
   //! the array of associated global indexes
   void
-  update_mirror_global_indexes(MeshMap<dim, device_t> & mesh_map, AMRmesh<dim> & amr_mesh);
+  update_mirror_global_indexes(MeshMap<dim, device_t> const & mesh_map,
+                               AMRmesh<dim> const &           amr_mesh);
 
 public:
   // ====================================================================
@@ -227,10 +230,14 @@ public:
    * Must be called after AMR cycle to refresh mirror metadata
    *
    * \param[in] mesh_map Unordered map of AMR keys
+   * \param[in] amr_mesh
    * \param[in] config_map input parameter config
    */
   void
-  update(MeshMap<dim, device_t> & mesh_map, AMRmesh<dim> & amr_mesh, ConfigMap const & config_map);
+  update(MeshMap<dim, device_t> const &              mesh_map,
+         AMRmesh<dim> const &                        amr_mesh,
+         NeighborConnectivity<dim, device_t> const & mirror_connectivity,
+         ConfigMap const &                           config_map);
 
 
   // /**

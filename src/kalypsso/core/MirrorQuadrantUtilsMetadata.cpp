@@ -19,7 +19,7 @@ namespace core
 // ====================================================================
 template <size_t dim, typename device_t>
 void
-MirrorQuadrantUtilsMetadata<dim, device_t>::update_ghost_mpi_ranks(AMRmesh<dim> & amr_mesh)
+MirrorQuadrantUtilsMetadata<dim, device_t>::update_ghost_mpi_ranks(AMRmesh<dim> const & amr_mesh)
 {
 
   m_ghost_quadrant_mpi_ranks.resize(static_cast<size_t>(amr_mesh.local_num_ghosts()));
@@ -45,7 +45,7 @@ MirrorQuadrantUtilsMetadata<dim, device_t>::update_ghost_mpi_ranks(AMRmesh<dim> 
 // ====================================================================
 template <size_t dim, typename device_t>
 void
-MirrorQuadrantUtilsMetadata<dim, device_t>::update_mirror_mpi_ranks(AMRmesh<dim> & amr_mesh)
+MirrorQuadrantUtilsMetadata<dim, device_t>::update_mirror_mpi_ranks(AMRmesh<dim> const & amr_mesh)
 {
 
   m_mirror_quadrant_mpi_ranks.resize(static_cast<size_t>(amr_mesh.local_num_mirrors()));
@@ -72,8 +72,8 @@ MirrorQuadrantUtilsMetadata<dim, device_t>::update_mirror_mpi_ranks(AMRmesh<dim>
 template <size_t dim, typename device_t>
 void
 MirrorQuadrantUtilsMetadata<dim, device_t>::update_mirror_global_indexes(
-  MeshMap<dim, device_t> & mesh_map,
-  AMRmesh<dim> &           amr_mesh)
+  MeshMap<dim, device_t> const & mesh_map,
+  AMRmesh<dim> const &           amr_mesh)
 {
 
   [[maybe_unused]] auto local_num_quadrants = amr_mesh.local_num_quadrants();
@@ -120,9 +120,11 @@ MirrorQuadrantUtilsMetadata<dim, device_t>::update_mirror_global_indexes(
 // ====================================================================
 template <size_t dim, typename device_t>
 void
-MirrorQuadrantUtilsMetadata<dim, device_t>::update(MeshMap<dim, device_t> & mesh_map,
-                                                   AMRmesh<dim> &           amr_mesh,
-                                                   ConfigMap const &        config_map)
+MirrorQuadrantUtilsMetadata<dim, device_t>::update(
+  MeshMap<dim, device_t> const &              mesh_map,
+  AMRmesh<dim> const &                        amr_mesh,
+  NeighborConnectivity<dim, device_t> const & mirror_connectivity,
+  ConfigMap const &                           config_map)
 {
   // update mirror global indexes
   update_mirror_global_indexes(mesh_map, amr_mesh);
@@ -131,38 +133,35 @@ MirrorQuadrantUtilsMetadata<dim, device_t>::update(MeshMap<dim, device_t> & mesh
   update_ghost_mpi_ranks(amr_mesh);
   update_mirror_mpi_ranks(amr_mesh);
 
-  // TODO
-  m_active_neighbors.resize(0);
+  const auto mirror_conn_table = mirror_connectivity.neighbor_octants_ids();
+  const auto total_number_of_neighbors = mirror_conn_table.size();
 
-  const auto mirror_keys = mesh_map.mirror_orchard_keys();
-  const auto keys = mesh_map.orchard_keys();
-  const auto amr_hashmap = mesh_map.hashmap();
+  m_active_neighbors.resize(total_number_of_neighbors);
 
-  const auto local_num_quadrants = mesh_map.get_amr_mesh_info().local_num_quadrants();
-
-  // Kokkos::parallel_for(
-  //   "compute_mirror_index_to_neighbor_global",
-  //   Kokkos::RangePolicy<exec_space>(0, m_mirror_index_to_neighbor_global_index.size()),
-  //   KOKKOS_CLASS_LAMBDA(const size_t index) {
-  //     // mapping is index = neighbor_index + NEIGHBOR_STENCIL_SIZE * mirror_id
-  //     const auto mirror_id = index / NEIGHBOR_STENCIL_SIZE;
-  //     const auto neighbor_index = index - mirror_id * NEIGHBOR_STENCIL_SIZE;
+  Kokkos::parallel_for(
+    "compute active neighbor flags",
+    Kokkos::RangePolicy<exec_space>(0, total_number_of_neighbors),
+    KOKKOS_LAMBDA(const size_t index){
+      // mapping is index = neighbor_index + NEIGHBOR_STENCIL_SIZE * mirror_id
+      // const auto mirror_id = index / NEIGHBOR_STENCIL_SIZE;
+      // const auto neighbor_index = index - mirror_id * NEIGHBOR_STENCIL_SIZE;
 
 
-  //     // auto is_active = false;
-  //     // // active neighbors are neighbors that are ghost, and the mpi rank is equal to the rank
-  //     // // attached to current mirror.
-  //     // if (cell_loc_neigh.iOct >= local_num_quadrants and !cell_loc_neigh.is_outside_domain)
-  //     // {
-  //     //   auto ighost = cell_loc_neigh.iOct - local_num_quadrants;
-  //     //   if (m_ghost_quadrant_mpi_ranks(ighost) == m_mirror_quadrant_mpi_ranks(mirror_id))
-  //     //   {
-  //     //     is_active = true;
-  //     //   }
-  //     // }
-  //     // m_active_neighbors(index) = is_active;
-  //   });
-}
+      // auto is_active = false;
+      // // active neighbors are neighbors that are ghost, and the mpi rank is equal to the rank
+      // // attached to current mirror.
+      // if (cell_loc_neigh.iOct >= local_num_quadrants and !cell_loc_neigh.is_outside_domain)
+      // {
+      //   auto ighost = cell_loc_neigh.iOct - local_num_quadrants;
+      //   if (m_ghost_quadrant_mpi_ranks(ighost) == m_mirror_quadrant_mpi_ranks(mirror_id))
+      //   {
+      //     is_active = true;
+      //   }
+      // }
+      // m_active_neighbors(index) = is_active;
+    });
+
+} // MirrorQuadrantUtilsMetadata<dim, device_t>::update
 
 // explicit template instantiation
 template class MirrorQuadrantUtilsMetadata<2, kalypsso::DefaultDevice>;

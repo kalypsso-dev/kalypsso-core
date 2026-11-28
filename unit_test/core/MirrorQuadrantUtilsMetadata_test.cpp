@@ -18,6 +18,7 @@
 #include <kalypsso/core/real_type.h>
 
 #include <kalypsso/core/MirrorQuadrantUtilsMetadata.h>
+#include <kalypsso/core/NeighborConnectivity.h>
 
 #include <test_common/InitialAMRSetup.h>
 #include <test_common/DataWriter.h>
@@ -81,7 +82,11 @@ run_test(const ParallelEnv & par_env, const ConfigMap & config_map)
 
   auto mirror_quadrant_utils_metadata = core::MirrorQuadrantUtilsMetadata<dim, device_t>(par_env);
 
-  mirror_quadrant_utils_metadata.update(*mesh_map, amr_mesh, config_map);
+  auto neighbor_connectivity =
+    core::NeighborConnectivity<dim, device_t>(par_env, *mesh_map, brick_sizes, is_brick_periodic);
+  core::NeighborConnectivity<dim, device_t>::refresh(neighbor_connectivity, orchard_keys_mirror);
+
+  mirror_quadrant_utils_metadata.update(*mesh_map, amr_mesh, neighbor_connectivity, config_map);
 
   {
     // for testing DataArrayBlock
