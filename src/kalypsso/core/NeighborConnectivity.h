@@ -99,7 +99,7 @@ public:
   /**
    * typename to store neighbor octant ids
    */
-  using neighbor_octant_ids_view_t = DataArray<iOct_t, device_t>;
+  using octant_ids_view_t = DataArray<iOct_t, device_t>;
 
   //! Tag class used in operator() for computing the number of neighbors of each quadrant
   struct TagCountNeighbors
@@ -143,7 +143,11 @@ private:
   //! Array of neighbor octant ids (this is the connectivity table)
   //! the size of this view is compute as the sum of neighbor count view elements (actually obtained
   //! via an exclusive scan as need also need global offsets)
-  neighbor_octant_ids_view_t m_neighbor_octant_ids_view;
+  octant_ids_view_t m_neighbor_octant_ids_view;
+
+  //! array with the same size as m_neighbor_octant_ids_view
+  //! each element hold the quadrant id the neighbor is "attached" to
+  octant_ids_view_t m_quadrant_owner;
 
 public:
   /**
@@ -170,6 +174,7 @@ public:
     , m_local_offsets_view("local offsets view", m_orchard_keys_device.extent(0))
     , m_global_offsets_view("global offsets view", m_orchard_keys_device.extent(0) + 1)
     , m_neighbor_octant_ids_view("neighbor octant ids view", 0)
+    , m_quadrant_owner("quadrant owner", 0)
   {}
 
   // ==============================================================
@@ -237,6 +242,22 @@ public:
 
   // =========================================================================
   // =========================================================================
+  auto
+  quadrant_owner()
+  {
+    return m_quadrant_owner;
+  }
+
+  // =========================================================================
+  // =========================================================================
+  auto const &
+  quadrant_owner() const
+  {
+    return m_quadrant_owner;
+  }
+
+  // =========================================================================
+  // =========================================================================
   void
   set_keys_and_resize(orchard_key_view_t orchard_keys_device)
   {
@@ -252,6 +273,7 @@ public:
   resize_connectivity(size_t total_number_of_neighbors)
   {
     m_neighbor_octant_ids_view.resize(total_number_of_neighbors);
+    m_quadrant_owner.resize(total_number_of_neighbors);
   }
 
   // =========================================================================

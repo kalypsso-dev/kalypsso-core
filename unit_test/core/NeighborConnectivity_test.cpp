@@ -96,14 +96,14 @@ run_test(const ParallelEnv & par_env, const ConfigMap & config_map)
     auto neighbor_connectivity =
       core::NeighborConnectivity<dim, device_t>(par_env, *mesh_map, brick_sizes, is_brick_periodic);
 
-    core::NeighborConnectivity<dim, device_t>::refresh_neighbor_count(neighbor_connectivity,
-                                                                      orchard_keys_mirror);
+    core::NeighborConnectivity<dim, device_t>::refresh(neighbor_connectivity, orchard_keys_mirror);
 
     auto neighbor_counts = neighbor_connectivity.neighbor_count();
 
 
     auto global_offsets = neighbor_connectivity.global_offsets();
     auto neighbor_octants_ids = neighbor_connectivity.neighbor_octants_ids();
+    auto mirror_owner = neighbor_connectivity.quadrant_owner();
 
     if constexpr (dim == 2)
     {
@@ -154,14 +154,15 @@ run_test(const ParallelEnv & par_env, const ConfigMap & config_map)
             for (uint8_t ineigh = 0; ineigh < num_neighbors; ++ineigh)
             {
               const auto global_offset = global_offsets(mirror_id);
-              KALYPSSO_INFO_ALL(
-                "mpi rank={} global_index={} iOct={} count={} ineigh={} neighhor_id={}",
-                par_env.rank(),
-                global_index,
-                mirror_id,
-                num_neighbors,
-                ineigh,
-                neighbor_octants_ids(global_offset + ineigh));
+              KALYPSSO_INFO_ALL("mpi rank={} global_index={} iOct={} count={} ineigh={} "
+                                "neighhor_id={} quadrant_owner={}",
+                                par_env.rank(),
+                                global_index,
+                                mirror_id,
+                                num_neighbors,
+                                ineigh,
+                                neighbor_octants_ids(global_offset + ineigh),
+                                mirror_owner(global_offset + ineigh));
             }
           })
         }

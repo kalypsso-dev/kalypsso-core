@@ -775,6 +775,14 @@ NeighborConnectivity<dim, device_t>::operator()(TagFillNeighbors const &,
   {
     fill_sector_neighbors(sector, key_cur, iOct);
   }
+
+  const auto global_offset = m_global_offsets_view(iOct);
+  const auto num_neighbors = m_neighbor_count_view(iOct);
+  for (size_t idx = global_offset; idx < global_offset + num_neighbors; ++idx)
+  {
+    m_quadrant_owner(idx) = iOct;
+  }
+
 } // NeighborConnectivity<dim, device_t>::operator() - TagFillNeighbors
 
 // explicit template instantiation
